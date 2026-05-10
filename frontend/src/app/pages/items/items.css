@@ -1,0 +1,98 @@
+.items-page {
+  padding: 2rem;
+  background-color: var(--background-item-color);
+  min-height: calc(100vh - 4.5rem);
+}
+
+.filters-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.search-field {
+  width: 22rem;
+}
+
+.filter-field {
+  width: 16rem;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.error-message {
+  color: var(--error-color);
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.item-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 1rem;
+  background-color: var(--white);
+  box-shadow: 0 0.125rem 0.5rem var(--mdc-elevation-overlay-color);
+}
+
+.patient-image {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.patient-info mat-card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.patient-info mat-card-content {
+  padding: 0;
+}
+
+.patient-info p {
+  margin: 0.15rem 0;
+  font-size: 0.95rem;
+}
+
+.healthsite-line {
+  margin-top: 0.35rem;
+  color: var(--healthsite-text-color);
+  font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+  .items-page {
+    padding: 1rem;
+  }
+
+  .filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-field,
+  .filter-field {
+    width: 100%;
+  }
+
+  .item-card {
+    align-items: flex-start;
+  }
+}

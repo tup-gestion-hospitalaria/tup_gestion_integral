@@ -1,0 +1,26 @@
+<div class="settings-container">
+
+  <mat-card class="user-card">
+    <img src="/foto-perfil.png" alt="Perfil" class="profile-img" />
+
+    <h2>{{ user.name }}</h2>
+    <p>{{ user.email }}</p>
+    <p>{{ user.role }}</p>
+
+    <button mat-raised-button color="warn" (click)="logout()">
+      Cerrar sesión
+    </button>
+  </mat-card>
+
+  <mat-card class="app-info">
+    <img src="/logo-proyect.png" alt="Logo" class="logo" />
+
+    <h3>Gestión Hospitalaria</h3>
+    <p>Versión {{ version }}</p>
+
+    <small class="user-agent">
+      {{ userAgent }}
+    </small>
+  </mat-card>
+
+</div>

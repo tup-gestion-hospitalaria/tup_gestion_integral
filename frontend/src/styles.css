@@ -1,1 +1,36 @@
-/* You can add global styles to this file, and also import other style files */
+@font-face {
+  font-family: 'Inter';
+  src: url('assets/fonts/Inter-VariableFont_opsz,wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --primary-color: #282729;
+  --secondary-color: #ffffff;
+  --background-color: #ffffff;
+  --background-item-color: #f7f8fc;
+  --text-color: #212529;
+  --sidebar-color: #b3b7c9;
+  --white: #ffffff;
+  --sidebar-box-shadow: 0.125rem 0 0.75rem rgba(54, 51, 51, 0.948);
+  --sidebar-hover-color: rgb(181, 159, 238);
+  --healthsite-text-color: #4f46e5;
+  --error-color: #b00020;
+  --mdc-elevation-overlay-color: rgba(0, 0, 0, 0.08);
+  --patient-card-bg: #cccccc;
+}
+
+body,
+.mat-typography,
+.mat-mdc-typography {
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.4;
+}
