@@ -7,8 +7,17 @@
   <mat-sidenav-container class="sidenav-container">
     <mat-sidenav mode="side" opened class="sidebar">
       <mat-nav-list>
-        <a mat-list-item routerLink="/items" routerLinkActive="active">Items</a>
-        <a mat-list-item routerLink="/configuracion" routerLinkActive="active">Configuración</a>
+        <a mat-list-item routerLink="/items" routerLinkActive="active">
+          Pacientes
+        </a>
+
+        <a mat-list-item routerLink="/centros-derivacion" routerLinkActive="active">
+          Derivaciones
+        </a>
+
+        <a mat-list-item routerLink="/configuracion" routerLinkActive="active">
+          Configuración
+        </a>
       </mat-nav-list>
     </mat-sidenav>
 
@@ -18,7 +27,8 @@
   </mat-sidenav-container>
 
   <nav class="bottom-bar">
-    <a routerLink="/items" routerLinkActive="active">Items</a>
+    <a routerLink="/items" routerLinkActive="active">Pacientes</a>
+    <a routerLink="/centros-derivacion" routerLinkActive="active">Derivaciones</a>
     <a routerLink="/configuracion" routerLinkActive="active">Configuración</a>
   </nav>
 </div>

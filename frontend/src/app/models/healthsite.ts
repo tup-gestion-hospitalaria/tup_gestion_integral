@@ -7,4 +7,5 @@ export interface Healthsite {
   latitude: number | null;
   longitude: number | null;
   googleMapsUrl: string | null;
+  distance?: number | null;
 }

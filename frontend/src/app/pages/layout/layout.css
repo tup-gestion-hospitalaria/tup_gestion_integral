@@ -26,7 +26,7 @@
 }
 
 .sidebar {
-  width: 12rem;
+  width: 15rem;
   padding: 1rem;
   background-color: var(--sidebar-color);
   box-shadow: var(--sidebar-box-shadow);

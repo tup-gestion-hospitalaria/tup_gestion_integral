@@ -6,7 +6,7 @@
         matInput
         [(ngModel)]="filterText"
         (input)="onFilterChange()"
-        placeholder="Paciente, email, ciudad o centro de salud"
+        placeholder="Paciente, email, ciudad o país"
       />
     </mat-form-field>
 
@@ -17,7 +17,6 @@
         <mat-option value="email">Email</mat-option>
         <mat-option value="city">Ciudad</mat-option>
         <mat-option value="country">País</mat-option>
-        <mat-option value="healthsite">Centro de salud</mat-option>
       </mat-select>
     </mat-form-field>
 
@@ -52,13 +51,13 @@
         <mat-card-content>
           <p>{{ patient.email }}</p>
           <p>{{ patient.city }}, {{ patient.country }}</p>
-
-          <p *ngIf="patient.healthsite" class="healthsite-line">
-            <strong>Centro asignado:</strong>
-            {{ patient.healthsite.name }} -
-            {{ patient.healthsite.city }}
-          </p>
         </mat-card-content>
+
+        <mat-card-actions>
+          <button type="button" (click)="referPatient(patient)">
+            Derivar
+          </button>
+        </mat-card-actions>
       </div>
     </mat-card>
   </div>

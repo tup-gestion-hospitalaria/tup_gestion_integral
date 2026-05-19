@@ -1,7 +1,8 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map, Observable, of } from 'rxjs';
+import { forkJoin, map, Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+
 import { Healthsite } from '../models/healthsite';
 import { StorageService } from './storage.service';
 
@@ -11,7 +12,7 @@ import { StorageService } from './storage.service';
 export class ItemsService {
   private readonly apiUrl = '/api/v3/facilities';
   private readonly apiKey = 'ade0af6b7f80ec943d4791ee29a9f5c586c85a0e';
-  private readonly cacheKey = 'healthsites';
+  private readonly cacheKey = 'healthsites-la-plata-v4';
 
   constructor(
     private http: HttpClient,
@@ -25,15 +26,27 @@ export class ItemsService {
       return of(cachedItems);
     }
 
-    const params = new HttpParams()
-      .set('api-key', this.apiKey)
-      .set('country', 'Argentina')
-      .set('page', '1')
-      .set('flat-properties', 'true');
+    const requests = [1, 2, 3].map((page) => {
+      const params = new HttpParams()
+        .set('api-key', this.apiKey)
+        .set('extent', '-58.20,-35.10,-57.70,-34.70')
+        .set('page', page.toString())
+        .set('flat-properties', 'true');
 
-    return this.http.get<{ results?: unknown[] } | unknown[]>(this.apiUrl, { params }).pipe(
-      map((response) => {
-        const rawItems = Array.isArray(response) ? response : response.results ?? [];
+      return this.http.get<{ results?: unknown[] } | unknown[]>(
+        this.apiUrl,
+        { params }
+      );
+    });
+
+    return forkJoin(requests).pipe(
+      map((responses) => {
+        const rawItems = responses.flatMap((response) =>
+          Array.isArray(response)
+            ? response
+            : response.results ?? []
+        );
+
         const items = this.mapHealthsites(rawItems);
 
         this.storageService.setItem(this.cacheKey, items, 5);
@@ -50,20 +63,47 @@ export class ItemsService {
   private mapHealthsites(items: unknown[]): Healthsite[] {
     return items.map((item, index) => {
       const healthsite = item as any;
-
       const properties = healthsite.attributes ?? healthsite.properties ?? healthsite;
-      const coordinates = healthsite.centroid?.coordinates ?? healthsite.geometry?.coordinates ?? [];
 
-      const longitude = coordinates[0] ?? null;
-      const latitude = coordinates[1] ?? null;
+      const coordinates =
+        healthsite.centroid?.coordinates ??
+        healthsite.geometry?.coordinates ??
+        [];
 
-      const type = properties.amenity ?? properties.healthcare ?? 'hospital';
+      const longitude =
+        coordinates[0] ??
+        properties.longitude ??
+        properties.lon ??
+        properties.lng ??
+        properties['addr:lon'] ??
+        null;
+
+      const latitude =
+        coordinates[1] ??
+        properties.latitude ??
+        properties.lat ??
+        properties['addr:lat'] ??
+        null;
+
+      const type =
+        properties.amenity ??
+        properties.healthcare ??
+        'hospital';
 
       return {
         id: healthsite.id?.toString() ?? index.toString(),
         name: properties.name || this.getDefaultName(type, index),
-        city: properties.city || properties.addr_city || 'Sin información',
-        address: properties.address || properties.addr_full || properties.addr_street || 'Sin información',
+        city:
+          properties.city ||
+          properties.addr_city ||
+          properties['addr:city'] ||
+          'Sin información',
+        address:
+          properties.address ||
+          properties.addr_full ||
+          properties.addr_street ||
+          properties['addr:street'] ||
+          'Sin información',
         type,
         latitude,
         longitude,
