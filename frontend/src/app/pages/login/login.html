@@ -1,0 +1,17 @@
+<div class="login-container">
+
+  <div class="brand">
+    <img src="/logo-proyect.png" alt="Logo" class="logo" />
+    <h1>Gestión Hospitalaria</h1>
+  </div>
+
+  <button mat-raised-button color="primary" (click)="login()" [disabled]="loading">
+    <span *ngIf="!loading">Iniciar sesión</span>
+    <mat-spinner
+      *ngIf="loading"
+      diameter="20"
+      strokeWidth="3">
+    </mat-spinner>
+  </button>
+
+</div>

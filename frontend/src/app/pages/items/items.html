@@ -1,0 +1,64 @@
+<section class="items-page">
+  <div class="filters-bar">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar</mat-label>
+      <input
+        matInput
+        [(ngModel)]="filterText"
+        (input)="onFilterChange()"
+        placeholder="Paciente, email, ciudad o país"
+      />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Ordenar por</mat-label>
+      <mat-select [(ngModel)]="sortField" (selectionChange)="sortPatients()">
+        <mat-option value="fullName">Nombre</mat-option>
+        <mat-option value="email">Email</mat-option>
+        <mat-option value="city">Ciudad</mat-option>
+        <mat-option value="country">País</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Dirección</mat-label>
+      <mat-select [(ngModel)]="sortDirection" (selectionChange)="sortPatients()">
+        <mat-option value="asc">Ascendente</mat-option>
+        <mat-option value="desc">Descendente</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div *ngIf="isLoading" class="spinner-container">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage" class="items-list">
+    <mat-card *ngFor="let patient of filteredPatients" class="item-card">
+      <img
+        [src]="patient.picture"
+        [alt]="patient.fullName"
+        class="patient-image"
+      />
+
+      <div class="patient-info">
+        <mat-card-title>{{ patient.fullName }}</mat-card-title>
+
+        <mat-card-content>
+          <p>{{ patient.email }}</p>
+          <p>{{ patient.city }}, {{ patient.country }}</p>
+        </mat-card-content>
+
+        <mat-card-actions>
+          <button type="button" (click)="referPatient(patient)">
+            Derivar
+          </button>
+        </mat-card-actions>
+      </div>
+    </mat-card>
+  </div>
+</section>

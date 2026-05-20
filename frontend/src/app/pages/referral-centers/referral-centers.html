@@ -1,0 +1,137 @@
+<section class="referral-page">
+  <h2>Centros de derivación</h2>
+
+  <p>
+    Centros disponibles tomando como referencia la ciudad de La Plata.
+  </p>
+
+  <p *ngIf="selectedPatient">
+    Paciente seleccionado:
+    <strong>{{ selectedPatient.fullName }}</strong>
+  </p>
+
+  <div class="filters-bar">
+
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar centro</mat-label>
+
+      <input
+        matInput
+        [(ngModel)]="filterText"
+        (input)="applyFilters()"
+        placeholder="Nombre, ciudad o dirección"
+      />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Tipo de centro</mat-label>
+
+      <mat-select
+        [(ngModel)]="selectedType"
+        (selectionChange)="applyFilters()"
+      >
+
+        <mat-option value="all">
+          Todos
+        </mat-option>
+
+        <mat-option
+          *ngFor="let type of availableTypes"
+          [value]="type"
+        >
+          {{ translateType(type) }}
+        </mat-option>
+
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Ciudad</mat-label>
+
+      <mat-select
+        [(ngModel)]="selectedCity"
+        (selectionChange)="applyFilters()"
+      >
+
+        <mat-option value="all">
+          Todas
+        </mat-option>
+
+        <mat-option
+          *ngFor="let city of availableCities"
+          [value]="city"
+        >
+          {{ city }}
+        </mat-option>
+
+      </mat-select>
+    </mat-form-field>
+
+  </div>
+
+  <div *ngIf="isLoading" class="spinner-container">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <p *ngIf="!isLoading && !errorMessage && filteredHealthsites.length === 0">
+    No se encontraron centros con los filtros seleccionados.
+  </p>
+
+  <div *ngIf="!isLoading && !errorMessage" class="healthsites-list">
+
+    <mat-card
+      *ngFor="let healthsite of filteredHealthsites"
+      class="healthsite-card"
+    >
+
+      <mat-card-title>
+        {{ healthsite.name }}
+      </mat-card-title>
+
+      <mat-card-content>
+
+        <p>
+          <strong>Ciudad:</strong>
+          {{ healthsite.city }}
+        </p>
+
+        <p>
+          <strong>Dirección:</strong>
+          {{ healthsite.address }}
+        </p>
+
+        <p>
+          <strong>Tipo:</strong>
+          {{ translateType(healthsite.type) }}
+        </p>
+
+      </mat-card-content>
+
+      <mat-card-actions>
+
+        <button
+          *ngIf="selectedPatient"
+          type="button"
+          (click)="referToHealthsite(healthsite)"
+        >
+          Derivar aquí
+        </button>
+
+        <a
+          *ngIf="healthsite.googleMapsUrl"
+          [href]="healthsite.googleMapsUrl"
+          target="_blank"
+        >
+          Ver ubicación
+        </a>
+
+      </mat-card-actions>
+
+    </mat-card>
+
+  </div>
+</section>
