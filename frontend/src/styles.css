@@ -16,10 +16,19 @@
   --white: #ffffff;
   --sidebar-box-shadow: 0.125rem 0 0.75rem rgba(54, 51, 51, 0.948);
   --sidebar-hover-color: rgb(181, 159, 238);
-  --healthsite-text-color: #4f46e5;
+  --healthsite-text-color: #2171e2;
   --error-color: #b00020;
   --mdc-elevation-overlay-color: rgba(0, 0, 0, 0.08);
   --patient-card-bg: #cccccc;
+  --border-color: #d1d5db;
+  --muted-text-color: #6b7280;
+
+  --login-brand-gradient: linear-gradient(
+    135deg,
+    #8ac1fc 0%,
+    #ffffff 55%,
+    #b3d7fd 100%
+  );
 }
 
 body,

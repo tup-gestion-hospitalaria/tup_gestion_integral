@@ -1,35 +1,37 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatCardModule],
+  imports: [CommonModule, MatButtonModule, MatCardModule, RouterLink],
   templateUrl: './settings.html',
   styleUrl: './settings.css'
 })
 export class Settings {
-
-  user = {
-    name: 'Juan Pérez',
-    email: 'juan.perez@email.com',
-    role: 'Administrador'
-  };
-
   version = '1.0.0';
   userAgent = navigator.userAgent;
 
-  constructor(private router: Router) {}
+  constructor(
+    public authService: AuthService,
+    private router: Router
+  ) {}
 
-  logout(): void {
+  async logout(): Promise<void> {
     const confirmLogout = confirm('¿Seguro que querés cerrar sesión?');
 
-    if (confirmLogout) {
-      sessionStorage.clear();
-      this.router.navigate(['/login']);
+    if (!confirmLogout) {
+      return;
     }
+
+    await this.authService.logout();
+
+    this.router.navigate(['/login']);
   }
 }

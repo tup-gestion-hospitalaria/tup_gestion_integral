@@ -1,17 +1,141 @@
-<div class="login-container">
+<div class="login-page">
 
-  <div class="brand">
-    <img src="/logo-proyect.png" alt="Logo" class="logo" />
-    <h1>Gestión Hospitalaria</h1>
-  </div>
+  <section class="login-brand">
 
-  <button mat-raised-button color="primary" (click)="login()" [disabled]="loading">
-    <span *ngIf="!loading">Iniciar sesión</span>
-    <mat-spinner
-      *ngIf="loading"
-      diameter="20"
-      strokeWidth="3">
-    </mat-spinner>
-  </button>
+    <div class="brand-content">
+
+      <img
+        src="/logo-proyect.png"
+        alt="Logo Gestión Hospitalaria"
+        class="brand-logo"
+      />
+
+      <h1>Gestión Hospitalaria</h1>
+
+      <p>
+        Sistema de gestión integral para instituciones de salud
+      </p>
+
+    </div>
+
+  </section>
+
+  <section class="login-panel">
+
+    <form class="login-card" (ngSubmit)="loginWithEmail()">
+
+      <button
+        mat-stroked-button
+        type="button"
+        class="google-button"
+        (click)="loginWithGoogle()"
+        [disabled]="loading">
+
+        <span class="button-content">
+
+          <img
+            src="/google-icon.png"
+            alt=""
+            class="google-icon"
+          />
+
+          <span *ngIf="!loading">
+            Iniciar sesión con Google
+          </span>
+
+          <mat-spinner
+            *ngIf="loading"
+            diameter="20"
+            strokeWidth="3">
+          </mat-spinner>
+
+        </span>
+
+      </button>
+
+      <div class="divider" aria-hidden="true">
+
+        <span></span>
+
+        <p>O</p>
+
+        <span></span>
+
+      </div>
+
+      <label class="input-group">
+
+        <mat-icon aria-hidden="true">mail</mat-icon>
+
+        <input
+          type="email"
+          name="email"
+          placeholder="Correo electrónico"
+          autocomplete="email"
+          [(ngModel)]="email"
+          class="login-input"
+        />
+
+      </label>
+
+      <label class="input-group">
+
+        <mat-icon aria-hidden="true">lock</mat-icon>
+
+        <input
+          type="password"
+          name="password"
+          placeholder="Contraseña"
+          autocomplete="current-password"
+          [(ngModel)]="password"
+          class="login-input"
+        />
+
+      </label>
+
+      <button
+        mat-flat-button
+        type="submit"
+        class="email-button"
+        [disabled]="loading">
+
+        <span class="button-content">
+
+          <mat-icon aria-hidden="true">person</mat-icon>
+
+          <span *ngIf="!loading">
+            Iniciar sesión con Email
+          </span>
+
+          <mat-spinner
+            *ngIf="loading"
+            diameter="20"
+            strokeWidth="3">
+          </mat-spinner>
+
+        </span>
+
+      </button>
+
+      <button
+        mat-button
+        type="button"
+        class="register-button"
+        (click)="registerWithEmail()"
+        [disabled]="loading">
+
+        <span class="button-content">
+
+          <mat-icon aria-hidden="true">person_add</mat-icon>
+
+          Crear cuenta
+
+        </span>
+
+      </button>
+
+    </form>
+
+  </section>
 
 </div>

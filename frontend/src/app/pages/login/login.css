@@ -1,24 +1,265 @@
-.login-container {
+.login-page {
+  min-height: 100vh;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.login-brand {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 4rem;
+
+  background: var(--login-brand-gradient);
+  border-right: 0.125rem solid var(--healthsite-text-color);
+}
+
+.brand-content {
+  max-width: 42rem;
+
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 3rem;
-  gap: 1.5rem;
+
+  text-align: center;
 }
 
-.brand {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.1rem;
+.brand-logo {
+  width: 24rem;
+  height: 24rem;
+
+  object-fit: contain;
 }
 
-.logo {
-  width: 20rem;
-  height: auto;
+.brand-content h1 {
+  margin: 0 0 1rem;
+
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1.1;
+
+  color: var(--primary-color);
 }
 
-h1 {
+.brand-content p {
   margin: 0;
-  font-size: 1.75rem;
+
+  font-size: 1.3rem;
+  line-height: 1.5;
+
+  color: var(--text-color);
+
+  opacity: 0.75;
+}
+
+.login-panel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 4rem;
+
+  background-color: var(--secondary-color);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 38rem;
+
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  padding: 3rem;
+
+  background-color: var(--secondary-color);
+  border-radius: 2rem;
+  box-shadow: 0 1rem 3rem var(--mdc-elevation-overlay-color);
+
+  box-sizing: border-box;
+}
+
+.google-button,
+.email-button,
+.register-button {
+  width: 100%;
+
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.google-button,
+.email-button {
+  min-height: 4rem;
+
+  border-radius: 1rem !important;
+}
+
+.google-button {
+  background-color: var(--secondary-color) !important;
+  color: var(--healthsite-text-color) !important;
+
+  border-color: var(--sidebar-color) !important;
+
+  box-shadow: 0 0.25rem 1rem var(--mdc-elevation-overlay-color);
+}
+
+.google-button:hover {
+  background-color: var(--background-item-color) !important;
+}
+
+.email-button {
+  background-color: var(--healthsite-text-color) !important;
+  color: var(--white) !important;
+
+  box-shadow: 0 0.5rem 1.5rem var(--mdc-elevation-overlay-color);
+}
+
+.register-button {
+  min-height: 3rem;
+
+  color: var(--healthsite-text-color) !important;
+}
+
+.button-content {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 0.75rem;
+}
+
+.google-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+
+  object-fit: contain;
+
+  display: block;
+  flex-shrink: 0;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+
+  gap: 1rem;
+
+  color: var(--text-color);
+
+  opacity: 0.7;
+}
+
+.divider span {
+  flex: 1;
+
+  height: 0.0625rem;
+
+  background-color: var(--sidebar-color);
+}
+
+.divider p {
+  margin: 0;
+
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.input-group {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+
+  padding: 0 1.25rem;
+
+  border: 1px solid var(--sidebar-color);
+  border-radius: 1rem;
+
+  background-color: var(--secondary-color);
+
+  box-sizing: border-box;
+  box-shadow: 0 0.25rem 0.75rem var(--mdc-elevation-overlay-color);
+}
+
+.input-group:focus-within {
+  outline: 2px solid var(--sidebar-hover-color);
+  outline-offset: 2px;
+}
+
+.input-group mat-icon {
+  color: var(--healthsite-text-color);
+
+  font-size: 1.5rem;
+
+  width: 1.5rem;
+  height: 1.5rem;
+
+  flex-shrink: 0;
+}
+
+.login-input {
+  width: 100%;
+
+  padding: 1.15rem 0;
+
+  border: none;
+  outline: none;
+
+  font-family: inherit;
+  font-size: 1rem;
+
+  color: var(--text-color);
+  background-color: transparent;
+
+  box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+
+  .login-page {
+    grid-template-columns: 1fr;
+  }
+
+  .login-brand {
+    padding: 2rem 1rem;
+
+    border-right: none;
+    border-bottom: 0.125rem solid var(--healthsite-text-color);
+  }
+
+  .brand-logo {
+    width: 13rem;
+    height: 13rem;
+
+    margin-bottom: 1rem;
+  }
+
+  .brand-content h1 {
+    font-size: 2.5rem;
+  }
+
+  .brand-content p {
+    font-size: 1rem;
+  }
+
+  .login-panel {
+    padding: 2rem 1rem;
+  }
+
+  .login-card {
+    max-width: 100%;
+
+    padding: 2rem;
+  }
+
 }
