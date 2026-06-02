@@ -25,6 +25,11 @@ export class AuthService {
     });
   }
 
+  async waitForAuthState(): Promise<void> {
+    await auth.authStateReady();
+    this.user = auth.currentUser;
+  }
+
   async loginWithGoogle(): Promise<void> {
     const provider = new GoogleAuthProvider();
 
@@ -32,11 +37,13 @@ export class AuthService {
       prompt: 'select_account'
     });
 
-    await signInWithPopup(auth, provider);
+    const credential = await signInWithPopup(auth, provider);
+    this.user = credential.user;
   }
 
   async loginWithEmail(email: string, password: string): Promise<void> {
-    await signInWithEmailAndPassword(auth, email, password);
+    const credential = await signInWithEmailAndPassword(auth, email, password);
+    this.user = credential.user;
   }
 
   async registerWithEmail(
@@ -61,13 +68,14 @@ export class AuthService {
 
   async logout(): Promise<void> {
     await signOut(auth);
+    this.user = null;
   }
 
   isAuthenticated(): boolean {
-    return this.user !== null;
+    return auth.currentUser !== null;
   }
 
   getCurrentUser(): User | null {
-    return this.user;
+    return auth.currentUser;
   }
 }

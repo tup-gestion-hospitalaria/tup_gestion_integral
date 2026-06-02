@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -25,7 +25,7 @@ import { RegisterDialog } from '../register-dialog/register-dialog';
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
-export class Login implements OnInit {
+export class Login {
   loading = false;
 
   email = '';
@@ -37,12 +37,6 @@ export class Login implements OnInit {
     private dialog: MatDialog,
     private cdr: ChangeDetectorRef
   ) {}
-
-  ngOnInit(): void {
-    if (this.authService.isAuthenticated()) {
-      this.router.navigate(['/items']);
-    }
-  }
 
   private setLoading(value: boolean): void {
     this.loading = value;
