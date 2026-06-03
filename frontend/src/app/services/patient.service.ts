@@ -6,7 +6,7 @@ import { Patient } from '../models/patient';
 import { StorageService } from './storage.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PatientService {
   private readonly http = inject(HttpClient);
@@ -23,13 +23,13 @@ export class PatientService {
     }
 
     return this.http.get<any>(this.apiUrl).pipe(
-      map(response => {
+      map((response) => {
         const patients = response.results.map((patient: any) => ({
           fullName: `${patient.name.first} ${patient.name.last}`,
           email: patient.email,
           city: patient.location.city,
           country: patient.location.country,
-          picture: patient.picture.large
+          picture: patient.picture.large,
         }));
 
         this.storageService.setItem(this.cacheKey, patients, 5);
@@ -39,7 +39,7 @@ export class PatientService {
       catchError((error) => {
         console.error('Error al obtener pacientes:', error);
         return of([]);
-      })
+      }),
     );
   }
 }

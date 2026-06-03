@@ -1,11 +1,11 @@
 <div class="settings-container">
-
   <mat-card class="user-card" *ngIf="authService.user as user; else notLogged">
-
     <img
       class="profile-img"
       [src]="user.photoURL ? user.photoURL : '/foto-perfil.png'"
-      [alt]="user.displayName ? 'Foto de perfil de ' + user.displayName : 'Foto de perfil del usuario'"
+      [alt]="
+        user.displayName ? 'Foto de perfil de ' + user.displayName : 'Foto de perfil del usuario'
+      "
       referrerpolicy="no-referrer"
     />
 
@@ -18,48 +18,30 @@
       {{ user.providerData[0].providerId === 'google.com' ? 'Google' : 'Email y contraseña' }}
     </p>
 
-    <button
-      mat-raised-button
-      color="warn"
-      type="button"
-      (click)="logout()">
-      Cerrar sesión
+    <button mat-raised-button color="warn" type="button" (click)="logout()">
+      {{ 'SETTINGS.LOGOUT' | translate }}
     </button>
-
   </mat-card>
 
   <ng-template #notLogged>
     <mat-card class="user-card">
+      <h2>{{ 'SETTINGS.NO_SESSION' | translate }}</h2>
 
-      <h2>No hay una sesión iniciada</h2>
-
-      <button
-        mat-raised-button
-        color="primary"
-        type="button"
-        routerLink="/login">
-        Ir al login
+      <button mat-raised-button color="primary" type="button" routerLink="/login">
+        {{ 'SETTINGS.GO_TO_LOGIN' | translate }}
       </button>
-
     </mat-card>
   </ng-template>
 
   <mat-card class="app-info">
+    <img src="/logo-proyect.png" alt="Logo de Gestión Hospitalaria" class="logo" />
 
-    <img
-      src="/logo-proyect.png"
-      alt="Logo de Gestión Hospitalaria"
-      class="logo"
-    />
+    <h3>{{ 'APP.TITLE' | translate }}</h3>
 
-    <h3>Gestión Hospitalaria</h3>
-
-    <p>Versión {{ version }}</p>
+    <p>{{ 'APP.VERSION' | translate }} {{ version }}</p>
 
     <small class="user-agent">
       {{ userAgent }}
     </small>
-
   </mat-card>
-
 </div>

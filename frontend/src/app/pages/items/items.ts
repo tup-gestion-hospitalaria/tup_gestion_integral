@@ -10,6 +10,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { Patient } from '../../models/patient';
 import { PatientService } from '../../services/patient.service';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-items',
@@ -19,10 +20,11 @@ import { PatientService } from '../../services/patient.service';
     MatInputModule,
     MatSelectModule,
     MatCardModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    TranslateModule,
   ],
   templateUrl: './items.html',
-  styleUrl: './items.css'
+  styleUrl: './items.css',
 })
 export class Items implements OnInit {
   private readonly patientService = inject(PatientService);
@@ -51,16 +53,16 @@ export class Items implements OnInit {
         this.isLoading = false;
       },
       error: () => {
-        this.errorMessage = 'No se pudieron cargar los pacientes.';
+        this.errorMessage = 'ITEMS.LOAD_ERROR';
         this.isLoading = false;
-      }
+      },
     });
   }
 
   onFilterChange(): void {
     const text = this.filterText.toLowerCase().trim();
 
-    this.filteredPatients = this.patients.filter(patient => {
+    this.filteredPatients = this.patients.filter((patient) => {
       return (
         patient.fullName.toLowerCase().includes(text) ||
         patient.email.toLowerCase().includes(text) ||
@@ -85,7 +87,7 @@ export class Items implements OnInit {
 
   referPatient(patient: Patient): void {
     this.router.navigate(['/centros-derivacion'], {
-      state: { patient }
+      state: { patient },
     });
   }
 

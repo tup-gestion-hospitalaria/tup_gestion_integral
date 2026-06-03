@@ -6,13 +6,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 
 import { AuthService } from '../../services/auth.service';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatCardModule, RouterLink],
+  imports: [CommonModule, MatButtonModule, MatCardModule, RouterLink, TranslateModule],
   templateUrl: './settings.html',
-  styleUrl: './settings.css'
+  styleUrl: './settings.css',
 })
 export class Settings {
   version = '1.0.0';
@@ -20,7 +21,7 @@ export class Settings {
 
   constructor(
     public authService: AuthService,
-    private router: Router
+    private router: Router,
   ) {}
 
   async logout(): Promise<void> {

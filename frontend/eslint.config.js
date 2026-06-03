@@ -6,7 +6,7 @@ const angular = require('angular-eslint');
 
 module.exports = defineConfig([
   {
-    ignores: ['dist/**', 'node_modules/**', '.angular/**']
+    ignores: ['dist/**', 'node_modules/**', '.angular/**'],
   },
   {
     files: ['**/*.ts'],
@@ -14,7 +14,7 @@ module.exports = defineConfig([
       eslint.configs.recommended,
       tseslint.configs.recommended,
       tseslint.configs.stylistic,
-      angular.configs.tsRecommended
+      angular.configs.tsRecommended,
     ],
     processor: angular.processInlineTemplates,
     rules: {
@@ -23,32 +23,29 @@ module.exports = defineConfig([
         {
           type: 'attribute',
           prefix: 'app',
-          style: 'camelCase'
-        }
+          style: 'camelCase',
+        },
       ],
       '@angular-eslint/component-selector': [
         'error',
         {
           type: 'element',
           prefix: 'app',
-          style: 'kebab-case'
-        }
+          style: 'kebab-case',
+        },
       ],
 
       '@angular-eslint/prefer-inject': 'off',
       '@angular-eslint/template/prefer-control-flow': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unused-vars': 'off'
-    }
+      '@typescript-eslint/no-unused-vars': 'off',
+    },
   },
   {
     files: ['**/*.html'],
-    extends: [
-      angular.configs.templateRecommended,
-      angular.configs.templateAccessibility
-    ],
+    extends: [angular.configs.templateRecommended, angular.configs.templateAccessibility],
     rules: {
-      '@angular-eslint/template/prefer-control-flow': 'off'
-    }
-  }
+      '@angular-eslint/template/prefer-control-flow': 'off',
+    },
+  },
 ]);

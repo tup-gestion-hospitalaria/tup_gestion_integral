@@ -10,6 +10,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { AuthService } from '../../services/auth.service';
 import { RegisterDialog } from '../register-dialog/register-dialog';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-login',
@@ -20,10 +21,11 @@ import { RegisterDialog } from '../register-dialog/register-dialog';
     MatButtonModule,
     MatProgressSpinnerModule,
     MatDialogModule,
-    MatIconModule
+    MatIconModule,
+    TranslateModule,
   ],
   templateUrl: './login.html',
-  styleUrl: './login.css'
+  styleUrl: './login.css',
 })
 export class Login {
   loading = false;
@@ -35,7 +37,7 @@ export class Login {
     private router: Router,
     private authService: AuthService,
     private dialog: MatDialog,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   private setLoading(value: boolean): void {
@@ -67,10 +69,7 @@ export class Login {
     try {
       this.setLoading(true);
 
-      await this.authService.loginWithEmail(
-        this.email.trim(),
-        this.password
-      );
+      await this.authService.loginWithEmail(this.email.trim(), this.password);
 
       this.router.navigate(['/items']);
     } catch (error: any) {
@@ -91,7 +90,7 @@ export class Login {
   registerWithEmail(): void {
     const dialogRef = this.dialog.open(RegisterDialog, {
       width: '28rem',
-      disableClose: true
+      disableClose: true,
     });
 
     dialogRef.afterClosed().subscribe(async (result) => {
@@ -107,7 +106,7 @@ export class Login {
           result.email,
           result.password,
           result.displayName,
-          result.photoURL
+          result.photoURL,
         );
 
         this.router.navigate(['/items']);

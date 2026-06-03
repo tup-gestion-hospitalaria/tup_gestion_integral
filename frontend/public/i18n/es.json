@@ -1,0 +1,57 @@
+{
+  "APP": {
+    "TITLE": "Gestión Hospitalaria",
+    "VERSION": "Versión"
+  },
+  "NAV": {
+    "PATIENTS": "Pacientes",
+    "REFERRALS": "Derivaciones",
+    "SETTINGS": "Configuración"
+  },
+  "LOGIN": {
+    "TITLE": "Iniciar sesión",
+    "SUBTITLE": "Sistema de gestión integral para instituciones de salud",
+    "EMAIL": "Correo electrónico",
+    "PASSWORD": "Contraseña",
+    "GOOGLE": "Iniciar sesión con Google",
+    "EMAIL_LOGIN": "Iniciar sesión con Email",
+    "REGISTER": "Crear cuenta",
+    "OR": "O"
+  },
+  "SETTINGS": {
+    "LOGOUT": "Cerrar sesión",
+    "AUTH_WITH": "Usuario autenticado con",
+    "GOOGLE": "Google",
+    "EMAIL_PASSWORD": "Email y contraseña"
+  },
+  "ITEMS": {
+    "SEARCH": "Buscar",
+    "SEARCH_PLACEHOLDER": "Paciente, email, ciudad o país",
+    "SORT_BY": "Ordenar por",
+    "NAME": "Nombre",
+    "EMAIL": "Email",
+    "CITY": "Ciudad",
+    "COUNTRY": "País",
+    "DIRECTION": "Dirección",
+    "ASC": "Ascendente",
+    "DESC": "Descendente",
+    "REFER": "Derivar",
+    "LOAD_ERROR": "No se pudieron cargar los pacientes."
+  },
+  "REFERRAL_CENTERS": {
+    "TITLE": "Centros de derivación",
+    "DESCRIPTION": "Centros disponibles tomando como referencia la ciudad de La Plata.",
+    "SELECTED_PATIENT": "Paciente seleccionado:",
+    "SEARCH": "Buscar centro",
+    "SEARCH_PLACEHOLDER": "Nombre, ciudad o dirección",
+    "TYPE": "Tipo de centro",
+    "CITY": "Ciudad",
+    "ALL": "Todos",
+    "ALL_FEMALE": "Todas",
+    "NO_RESULTS": "No se encontraron centros con los filtros seleccionados.",
+    "ADDRESS": "Dirección:",
+    "CENTER_TYPE": "Tipo:",
+    "REFER_HERE": "Derivar aquí",
+    "VIEW_LOCATION": "Ver ubicación"
+  }
+}
