@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 
 import {
   GoogleAuthProvider,
@@ -19,9 +20,15 @@ import { auth } from '../firebase';
 export class AuthService {
   user: User | null = null;
 
-  constructor() {
+  constructor(private router: Router) {
     onAuthStateChanged(auth, (user) => {
       this.user = user;
+
+      if (user) {
+        this.router.navigate(['/items']);
+      } else {
+        this.router.navigate(['/login']);
+      }
     });
   }
 
@@ -58,8 +65,6 @@ export class AuthService {
       displayName,
       photoURL: photoURL || null,
     });
-
-    this.user = credential.user;
   }
 
   async logout(): Promise<void> {
