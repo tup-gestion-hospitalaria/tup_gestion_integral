@@ -1,0 +1,63 @@
+<h2>Crear cuenta</h2>
+
+<div class="register-form">
+
+    <input
+        type="text"
+        placeholder="Nombre de usuario"
+        [(ngModel)]="displayName"
+        class="register-input"
+    />
+
+    <input
+        type="text"
+        placeholder="URL de foto de perfil (opcional)"
+        [(ngModel)]="photoURL"
+        class="register-input"
+    />
+
+    <input
+        type="email"
+        placeholder="Correo electrónico"
+        [(ngModel)]="email"
+        class="register-input"
+    />
+
+  <input
+    type="password"
+    placeholder="Contraseña"
+    [(ngModel)]="password"
+    class="register-input"
+  />
+
+  <input
+    type="password"
+    placeholder="Confirmar contraseña"
+    [(ngModel)]="confirmPassword"
+    class="register-input"
+  />
+
+  <p class="error-message" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </p>
+
+</div>
+
+<div class="dialog-actions">
+
+  <button
+    mat-button
+    type="button"
+    (click)="cancel()">
+    Cancelar
+  </button>
+
+  <button
+    mat-raised-button
+    color="primary"
+    type="button"
+    (click)="createAccount()">
+    Crear cuenta
+  </button>
+
+</div>

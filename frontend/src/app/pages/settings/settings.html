@@ -1,26 +1,65 @@
 <div class="settings-container">
 
-  <mat-card class="user-card">
-    <img src="/foto-perfil.png" alt="Perfil" class="profile-img" />
+  <mat-card class="user-card" *ngIf="authService.user as user; else notLogged">
 
-    <h2>{{ user.name }}</h2>
-    <p>{{ user.email }}</p>
-    <p>{{ user.role }}</p>
+    <img
+      class="profile-img"
+      [src]="user.photoURL ? user.photoURL : '/foto-perfil.png'"
+      [alt]="user.displayName ? 'Foto de perfil de ' + user.displayName : 'Foto de perfil del usuario'"
+      referrerpolicy="no-referrer"
+    />
 
-    <button mat-raised-button color="warn" (click)="logout()">
+    <h2>{{ user.displayName || 'Usuario sin nombre' }}</h2>
+
+    <p>{{ user.email || 'Email no disponible' }}</p>
+
+    <p>
+      Usuario autenticado con
+      {{ user.providerData[0].providerId === 'google.com' ? 'Google' : 'Email y contraseña' }}
+    </p>
+
+    <button
+      mat-raised-button
+      color="warn"
+      type="button"
+      (click)="logout()">
       Cerrar sesión
     </button>
+
   </mat-card>
 
+  <ng-template #notLogged>
+    <mat-card class="user-card">
+
+      <h2>No hay una sesión iniciada</h2>
+
+      <button
+        mat-raised-button
+        color="primary"
+        type="button"
+        routerLink="/login">
+        Ir al login
+      </button>
+
+    </mat-card>
+  </ng-template>
+
   <mat-card class="app-info">
-    <img src="/logo-proyect.png" alt="Logo" class="logo" />
+
+    <img
+      src="/logo-proyect.png"
+      alt="Logo de Gestión Hospitalaria"
+      class="logo"
+    />
 
     <h3>Gestión Hospitalaria</h3>
+
     <p>Versión {{ version }}</p>
 
     <small class="user-agent">
       {{ userAgent }}
     </small>
+
   </mat-card>
 
 </div>

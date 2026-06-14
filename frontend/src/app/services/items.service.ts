@@ -10,7 +10,7 @@ import { StorageService } from './storage.service';
   providedIn: 'root'
 })
 export class ItemsService {
-  private readonly apiUrl = '/api/v3/facilities';
+  private readonly apiUrl = '/api/v3/facilities/';
   private readonly apiKey = 'ade0af6b7f80ec943d4791ee29a9f5c586c85a0e';
   private readonly cacheKey = 'healthsites-la-plata-v4';
 
