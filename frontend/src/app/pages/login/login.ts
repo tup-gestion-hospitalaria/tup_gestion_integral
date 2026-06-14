@@ -1,5 +1,4 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -32,7 +31,6 @@ export class Login {
   password = '';
 
   constructor(
-    private router: Router,
     private authService: AuthService,
     private dialog: MatDialog,
     private cdr: ChangeDetectorRef
@@ -48,8 +46,6 @@ export class Login {
       this.setLoading(true);
 
       await this.authService.loginWithGoogle();
-
-      this.router.navigate(['/items']);
     } catch (error) {
       console.error(error);
       alert('No se pudo iniciar sesión con Google.');
@@ -71,8 +67,6 @@ export class Login {
         this.email.trim(),
         this.password
       );
-
-      this.router.navigate(['/items']);
     } catch (error: any) {
       console.error(error);
 
@@ -109,12 +103,8 @@ export class Login {
           result.displayName,
           result.photoURL
         );
-
-        this.router.navigate(['/items']);
       } catch (error: any) {
         console.error(error);
-
-        this.setLoading(false);
 
         if (error.code === 'auth/email-already-in-use') {
           alert('Ese correo ya está registrado. Iniciá sesión con Email.');

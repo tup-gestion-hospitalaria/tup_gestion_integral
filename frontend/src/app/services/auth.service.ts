@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 
 import {
   GoogleAuthProvider,
@@ -8,20 +9,26 @@ import {
   signOut,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  updateProfile
+  updateProfile,
 } from 'firebase/auth';
 
 import { auth } from '../firebase';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   user: User | null = null;
 
-  constructor() {
+  constructor(private router: Router) {
     onAuthStateChanged(auth, (user) => {
       this.user = user;
+
+      if (user) {
+        this.router.navigate(['/items']);
+      } else {
+        this.router.navigate(['/login']);
+      }
     });
   }
 
@@ -34,7 +41,7 @@ export class AuthService {
     const provider = new GoogleAuthProvider();
 
     provider.setCustomParameters({
-      prompt: 'select_account'
+      prompt: 'select_account',
     });
 
     const credential = await signInWithPopup(auth, provider);
@@ -50,20 +57,14 @@ export class AuthService {
     email: string,
     password: string,
     displayName: string,
-    photoURL?: string
+    photoURL?: string,
   ): Promise<void> {
-    const credential = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
+    const credential = await createUserWithEmailAndPassword(auth, email, password);
 
     await updateProfile(credential.user, {
       displayName,
-      photoURL: photoURL || null
+      photoURL: photoURL || null,
     });
-
-    this.user = credential.user;
   }
 
   async logout(): Promise<void> {
