@@ -16,7 +16,16 @@
     "GOOGLE": "Iniciar sesión con Google",
     "EMAIL_LOGIN": "Iniciar sesión con Email",
     "REGISTER": "Crear cuenta",
-    "OR": "O"
+    "OR": "O",
+
+    "GOOGLE_ERROR": "No se pudo iniciar sesión con Google.",
+    "FIELDS_REQUIRED": "Completá correo electrónico y contraseña.",
+    "INVALID_EMAIL": "El correo electrónico no tiene un formato válido.",
+    "INVALID_CREDENTIALS": "Correo o contraseña incorrectos.",
+    "EMAIL_LOGIN_ERROR": "No se pudo iniciar sesión con Email.",
+    "EMAIL_ALREADY_IN_USE": "Ese correo ya está registrado. Iniciá sesión con Email.",
+    "WEAK_PASSWORD": "La contraseña debe tener al menos 6 caracteres.",
+    "CREATE_ACCOUNT_ERROR": "No se pudo crear la cuenta."
   },
   "SETTINGS": {
     "LOGOUT": "Cerrar sesión",
