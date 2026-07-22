@@ -23,12 +23,7 @@
   --border-color: #d1d5db;
   --muted-text-color: #6b7280;
 
-  --login-brand-gradient: linear-gradient(
-    135deg,
-    #8ac1fc 0%,
-    #ffffff 55%,
-    #b3d7fd 100%
-  );
+  --login-brand-gradient: linear-gradient(135deg, #8ac1fc 0%, #ffffff 55%, #b3d7fd 100%);
 }
 
 body,

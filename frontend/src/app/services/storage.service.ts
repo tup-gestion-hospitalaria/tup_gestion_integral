@@ -6,7 +6,7 @@ interface CacheData<T> {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class StorageService {
   setItem<T>(key: string, data: T, durationInMinutes: number): void {
@@ -14,7 +14,7 @@ export class StorageService {
 
     const cacheData: CacheData<T> = {
       data,
-      expiration
+      expiration,
     };
 
     localStorage.setItem(key, JSON.stringify(cacheData));
@@ -27,7 +27,7 @@ export class StorageService {
       return null;
     }
 
-    const cacheData: CacheData<T> = JSON.parse(storedData);
+    const cacheData = JSON.parse(storedData) as CacheData<T>;
 
     if (Date.now() > cacheData.expiration) {
       localStorage.removeItem(key);
@@ -35,5 +35,9 @@ export class StorageService {
     }
 
     return cacheData.data;
+  }
+
+  removeItem(key: string): void {
+    localStorage.removeItem(key);
   }
 }

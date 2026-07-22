@@ -10,6 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { Patient } from '../../models/patient';
 import { Healthsite } from '../../models/healthsite';
 import { ItemsService } from '../../services/items.service';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-referral-centers',
@@ -19,10 +20,11 @@ import { ItemsService } from '../../services/items.service';
     MatCardModule,
     MatProgressSpinnerModule,
     MatInputModule,
-    MatSelectModule
+    MatSelectModule,
+    TranslateModule,
   ],
   templateUrl: './referral-centers.html',
-  styleUrl: './referral-centers.css'
+  styleUrl: './referral-centers.css',
 })
 export class ReferralCenters implements OnInit {
   private readonly itemsService = inject(ItemsService);
@@ -54,19 +56,11 @@ export class ReferralCenters implements OnInit {
         this.healthsites = healthsites;
 
         this.availableTypes = [
-          ...new Set(
-            healthsites
-              .map(healthsite => healthsite.type)
-              .filter(type => type)
-          )
+          ...new Set(healthsites.map((healthsite) => healthsite.type).filter((type) => type)),
         ].sort();
 
         this.availableCities = [
-          ...new Set(
-            healthsites
-              .map(healthsite => healthsite.city)
-              .filter(city => city)
-          )
+          ...new Set(healthsites.map((healthsite) => healthsite.city).filter((city) => city)),
         ].sort();
 
         this.applyFilters();
@@ -76,27 +70,22 @@ export class ReferralCenters implements OnInit {
       error: () => {
         this.errorMessage = 'No se pudieron cargar los centros de derivación.';
         this.isLoading = false;
-      }
+      },
     });
   }
 
   applyFilters(): void {
     const text = this.filterText.toLowerCase().trim();
 
-    this.filteredHealthsites = this.healthsites.filter(healthsite => {
-
+    this.filteredHealthsites = this.healthsites.filter((healthsite) => {
       const matchesText =
         healthsite.name.toLowerCase().includes(text) ||
         healthsite.city.toLowerCase().includes(text) ||
         healthsite.address.toLowerCase().includes(text);
 
-      const matchesType =
-        this.selectedType === 'all' ||
-        healthsite.type === this.selectedType;
+      const matchesType = this.selectedType === 'all' || healthsite.type === this.selectedType;
 
-      const matchesCity =
-        this.selectedCity === 'all' ||
-        healthsite.city === this.selectedCity;
+      const matchesCity = this.selectedCity === 'all' || healthsite.city === this.selectedCity;
 
       return matchesText && matchesType && matchesCity;
     });
@@ -109,13 +98,10 @@ export class ReferralCenters implements OnInit {
 
     this.selectedPatient.healthsite = healthsite;
 
-    alert(
-      `${this.selectedPatient.fullName} fue derivado a ${healthsite.name}`
-    );
+    alert(`${this.selectedPatient.fullName} fue derivado a ${healthsite.name}`);
   }
 
   translateType(type: string): string {
-
     const translations: Record<string, string> = {
       pharmacy: 'Farmacia',
       clinic: 'Clínica',
@@ -123,7 +109,7 @@ export class ReferralCenters implements OnInit {
       doctors: 'Consultorio médico',
       dentist: 'Odontología',
       laboratory: 'Laboratorio',
-      healthcare: 'Centro de salud'
+      healthcare: 'Centro de salud',
     };
 
     return translations[type.toLowerCase()] ?? type;

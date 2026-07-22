@@ -9,6 +9,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { AuthService } from '../../services/auth.service';
 import { RegisterDialog } from '../register-dialog/register-dialog';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-login',
@@ -19,10 +20,11 @@ import { RegisterDialog } from '../register-dialog/register-dialog';
     MatButtonModule,
     MatProgressSpinnerModule,
     MatDialogModule,
-    MatIconModule
+    MatIconModule,
+    TranslateModule,
   ],
   templateUrl: './login.html',
-  styleUrl: './login.css'
+  styleUrl: './login.css',
 })
 export class Login {
   loading = false;
@@ -33,7 +35,8 @@ export class Login {
   constructor(
     private authService: AuthService,
     private dialog: MatDialog,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private translate: TranslateService,
   ) {}
 
   private setLoading(value: boolean): void {
@@ -48,7 +51,7 @@ export class Login {
       await this.authService.loginWithGoogle();
     } catch (error) {
       console.error(error);
-      alert('No se pudo iniciar sesión con Google.');
+      this.translate.get('LOGIN.GOOGLE_ERROR').subscribe((res: string) => alert(res));
     } finally {
       this.setLoading(false);
     }
@@ -56,26 +59,23 @@ export class Login {
 
   async loginWithEmail(): Promise<void> {
     if (!this.email.trim() || !this.password.trim()) {
-      alert('Completá correo electrónico y contraseña.');
+      this.translate.get('LOGIN.FIELDS_REQUIRED').subscribe((res: string) => alert(res));
       return;
     }
 
     try {
       this.setLoading(true);
 
-      await this.authService.loginWithEmail(
-        this.email.trim(),
-        this.password
-      );
+      await this.authService.loginWithEmail(this.email.trim(), this.password);
     } catch (error: any) {
       console.error(error);
 
       if (error.code === 'auth/invalid-email') {
-        alert('El correo electrónico no tiene un formato válido.');
+        this.translate.get('LOGIN.INVALID_EMAIL').subscribe((res: string) => alert(res));
       } else if (error.code === 'auth/invalid-credential') {
-        alert('Correo o contraseña incorrectos.');
+        this.translate.get('LOGIN.INVALID_CREDENTIALS').subscribe((res: string) => alert(res));
       } else {
-        alert('No se pudo iniciar sesión con Email.');
+        this.translate.get('LOGIN.EMAIL_LOGIN_ERROR').subscribe((res: string) => alert(res));
       }
     } finally {
       this.setLoading(false);
@@ -85,7 +85,7 @@ export class Login {
   registerWithEmail(): void {
     const dialogRef = this.dialog.open(RegisterDialog, {
       width: '28rem',
-      disableClose: true
+      disableClose: true,
     });
 
     dialogRef.afterClosed().subscribe(async (result) => {
@@ -101,19 +101,19 @@ export class Login {
           result.email,
           result.password,
           result.displayName,
-          result.photoURL
+          result.photoURL,
         );
       } catch (error: any) {
         console.error(error);
 
         if (error.code === 'auth/email-already-in-use') {
-          alert('Ese correo ya está registrado. Iniciá sesión con Email.');
+          this.translate.get('LOGIN.EMAIL_ALREADY_IN_USE').subscribe((res: string) => alert(res));
         } else if (error.code === 'auth/invalid-email') {
-          alert('El correo electrónico no tiene un formato válido.');
+          this.translate.get('LOGIN.INVALID_EMAIL').subscribe((res: string) => alert(res));
         } else if (error.code === 'auth/weak-password') {
-          alert('La contraseña debe tener al menos 6 caracteres.');
+          this.translate.get('LOGIN.WEAK_PASSWORD').subscribe((res: string) => alert(res));
         } else {
-          alert('No se pudo crear la cuenta.');
+          this.translate.get('LOGIN.CREATE_ACCOUNT_ERROR').subscribe((res: string) => alert(res));
         }
       } finally {
         this.setLoading(false);

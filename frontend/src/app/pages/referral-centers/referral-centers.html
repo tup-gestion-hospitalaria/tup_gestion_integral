@@ -1,72 +1,54 @@
 <section class="referral-page">
-  <h2>Centros de derivación</h2>
+  <h2>{{ 'REFERRAL_CENTERS.TITLE' | translate }}</h2>
 
   <p>
-    Centros disponibles tomando como referencia la ciudad de La Plata.
+    {{ 'REFERRAL_CENTERS.DESCRIPTION' | translate }}
   </p>
 
   <p *ngIf="selectedPatient">
-    Paciente seleccionado:
+    {{ 'REFERRAL_CENTERS.SELECTED_PATIENT' | translate }}
     <strong>{{ selectedPatient.fullName }}</strong>
   </p>
 
   <div class="filters-bar">
-
     <mat-form-field appearance="outline" class="search-field">
-      <mat-label>Buscar centro</mat-label>
+      <mat-label>{{ 'REFERRAL_CENTERS.SEARCH' | translate }}</mat-label>
 
       <input
         matInput
         [(ngModel)]="filterText"
         (input)="applyFilters()"
-        placeholder="Nombre, ciudad o dirección"
+        [placeholder]="'REFERRAL_CENTERS.SEARCH_PLACEHOLDER' | translate"
       />
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="filter-field">
-      <mat-label>Tipo de centro</mat-label>
+      <mat-label>{{ 'REFERRAL_CENTERS.TYPE' | translate }}</mat-label>
 
-      <mat-select
-        [(ngModel)]="selectedType"
-        (selectionChange)="applyFilters()"
-      >
-
+      <mat-select [(ngModel)]="selectedType" (selectionChange)="applyFilters()">
         <mat-option value="all">
-          Todos
+          {{ 'REFERRAL_CENTERS.ALL' | translate }}
         </mat-option>
 
-        <mat-option
-          *ngFor="let type of availableTypes"
-          [value]="type"
-        >
+        <mat-option *ngFor="let type of availableTypes" [value]="type">
           {{ translateType(type) }}
         </mat-option>
-
       </mat-select>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="filter-field">
-      <mat-label>Ciudad</mat-label>
+      <mat-label>{{ 'REFERRAL_CENTERS.CITY' | translate }}</mat-label>
 
-      <mat-select
-        [(ngModel)]="selectedCity"
-        (selectionChange)="applyFilters()"
-      >
-
+      <mat-select [(ngModel)]="selectedCity" (selectionChange)="applyFilters()">
         <mat-option value="all">
-          Todas
+          {{ 'REFERRAL_CENTERS.ALL_FEMALE' | translate }}
         </mat-option>
 
-        <mat-option
-          *ngFor="let city of availableCities"
-          [value]="city"
-        >
+        <mat-option *ngFor="let city of availableCities" [value]="city">
           {{ city }}
         </mat-option>
-
       </mat-select>
     </mat-form-field>
-
   </div>
 
   <div *ngIf="isLoading" class="spinner-container">
@@ -74,64 +56,45 @@
   </div>
 
   <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage }}
+    {{ errorMessage | translate }}
   </div>
 
   <p *ngIf="!isLoading && !errorMessage && filteredHealthsites.length === 0">
-    No se encontraron centros con los filtros seleccionados.
+    {{ 'REFERRAL_CENTERS.NO_RESULTS' | translate }}
   </p>
 
   <div *ngIf="!isLoading && !errorMessage" class="healthsites-list">
-
-    <mat-card
-      *ngFor="let healthsite of filteredHealthsites"
-      class="healthsite-card"
-    >
-
+    <mat-card *ngFor="let healthsite of filteredHealthsites" class="healthsite-card">
       <mat-card-title>
         {{ healthsite.name }}
       </mat-card-title>
 
       <mat-card-content>
-
         <p>
-          <strong>Ciudad:</strong>
+          <strong>{{ 'REFERRAL_CENTERS.CITY' | translate }}:</strong>
           {{ healthsite.city }}
         </p>
 
         <p>
-          <strong>Dirección:</strong>
+          <strong>{{ 'REFERRAL_CENTERS.ADDRESS' | translate }}</strong>
           {{ healthsite.address }}
         </p>
 
         <p>
-          <strong>Tipo:</strong>
+          <strong>{{ 'REFERRAL_CENTERS.CENTER_TYPE' | translate }}</strong>
           {{ translateType(healthsite.type) }}
         </p>
-
       </mat-card-content>
 
       <mat-card-actions>
-
-        <button
-          *ngIf="selectedPatient"
-          type="button"
-          (click)="referToHealthsite(healthsite)"
-        >
-          Derivar aquí
+        <button *ngIf="selectedPatient" type="button" (click)="referToHealthsite(healthsite)">
+          {{ 'REFERRAL_CENTERS.REFER_HERE' | translate }}
         </button>
 
-        <a
-          *ngIf="healthsite.googleMapsUrl"
-          [href]="healthsite.googleMapsUrl"
-          target="_blank"
-        >
-          Ver ubicación
+        <a *ngIf="healthsite.googleMapsUrl" [href]="healthsite.googleMapsUrl" target="_blank">
+          {{ 'REFERRAL_CENTERS.VIEW_LOCATION' | translate }}
         </a>
-
       </mat-card-actions>
-
     </mat-card>
-
   </div>
 </section>

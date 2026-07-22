@@ -225,7 +225,6 @@
 }
 
 @media (max-width: 900px) {
-
   .login-page {
     grid-template-columns: 1fr;
   }
@@ -261,5 +260,4 @@
 
     padding: 2rem;
   }
-
 }

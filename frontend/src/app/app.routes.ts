@@ -12,12 +12,12 @@ export const routes: Routes = [
   {
     path: '',
     redirectTo: 'login',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
   {
     path: 'login',
     component: Login,
-    canActivate: [autoLoginGuard]
+    canActivate: [autoLoginGuard],
   },
   {
     path: '',
@@ -26,20 +26,20 @@ export const routes: Routes = [
     children: [
       {
         path: 'items',
-        component: Items
+        component: Items,
       },
       {
         path: 'centros-derivacion',
-        component: ReferralCenters
+        component: ReferralCenters,
       },
       {
         path: 'configuracion',
-        component: Settings
-      }
-    ]
+        component: Settings,
+      },
+    ],
   },
   {
     path: '**',
-    redirectTo: 'login'
-  }
+    redirectTo: 'login',
+  },
 ];
