@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Gestión Hospitalaria</string>
+    <string name="title_activity_main">Gestión Hospitalaria</string>
+    <string name="package_name">com.gestionhospitalaria.app</string>
+    <string name="custom_url_scheme">com.gestionhospitalaria.app</string>
+</resources>
