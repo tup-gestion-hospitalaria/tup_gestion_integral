@@ -26,12 +26,21 @@
               }
             ],
             "styles": ["src/material-theme.scss", "src/styles.css"],
+            "serviceWorker": "ngsw-config.json",
             "security": {
               "allowedHosts": []
             }
           },
           "configurations": {
             "production": {
+              "optimization": {
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": true
+                },
+                "fonts": false
+              },
               "budgets": [
                 {
                   "type": "initial",
