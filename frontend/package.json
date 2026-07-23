@@ -4,7 +4,11 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --port 4201",
+    "start:desktop": "tauri dev",
     "build": "ng build",
+    "build:desktop": "tauri build",
+    "build:mobile": "ng build && cap sync android",
+    "android": "npm run build:mobile && cap open android",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
@@ -19,6 +23,8 @@
     "@angular/material": "^21.2.7",
     "@angular/platform-browser": "^21.2.0",
     "@angular/router": "^21.2.0",
+    "@capacitor/android": "^8.4.2",
+    "@capacitor/core": "^8.4.2",
     "firebase": "^12.13.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
@@ -28,6 +34,8 @@
     "@angular/build": "^21.2.7",
     "@angular/cli": "^21.2.7",
     "@angular/compiler-cli": "^21.2.0",
+    "@capacitor/cli": "^8.4.2",
+    "@tauri-apps/cli": "^2.11.4",
     "@types/node": "^20.17.19",
     "prettier": "^3.8.1",
     "typescript": "~5.9.2"
