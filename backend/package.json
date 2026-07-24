@@ -1,0 +1,19 @@
+{
+  "name": "gestion-hospitalaria-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "dev:windows": "node --use-system-ca --watch src/server.js",
+    "start": "node src/server.js",
+    "start:windows": "node --use-system-ca src/server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
