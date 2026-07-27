@@ -6,8 +6,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import * as Sentry from '@sentry/angular';
 
 import { AuthService } from '../../services/auth.service';
+import { AnalyticsService } from '../../services/analytics.service';
 import { RegisterDialog } from '../register-dialog/register-dialog';
 
 @Component({
@@ -19,10 +21,10 @@ import { RegisterDialog } from '../register-dialog/register-dialog';
     MatButtonModule,
     MatProgressSpinnerModule,
     MatDialogModule,
-    MatIconModule
+    MatIconModule,
   ],
   templateUrl: './login.html',
-  styleUrl: './login.css'
+  styleUrl: './login.css',
 })
 export class Login {
   loading = false;
@@ -33,7 +35,8 @@ export class Login {
   constructor(
     private authService: AuthService,
     private dialog: MatDialog,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private analyticsService: AnalyticsService,
   ) {}
 
   private setLoading(value: boolean): void {
@@ -46,6 +49,10 @@ export class Login {
       this.setLoading(true);
 
       await this.authService.loginWithGoogle();
+
+      const email = this.authService.getCurrentUser()?.email ?? 'email-no-disponible';
+      this.analyticsService.login(email, 'google');
+      this.reportSentryLoginTestError(email, 'google');
     } catch (error) {
       console.error(error);
       alert('No se pudo iniciar sesión con Google.');
@@ -63,10 +70,11 @@ export class Login {
     try {
       this.setLoading(true);
 
-      await this.authService.loginWithEmail(
-        this.email.trim(),
-        this.password
-      );
+      await this.authService.loginWithEmail(this.email.trim(), this.password);
+
+      const email = this.authService.getCurrentUser()?.email ?? this.email.trim();
+      this.analyticsService.login(email, 'email_password');
+      this.reportSentryLoginTestError(email, 'email_password');
     } catch (error: any) {
       console.error(error);
 
@@ -85,7 +93,7 @@ export class Login {
   registerWithEmail(): void {
     const dialogRef = this.dialog.open(RegisterDialog, {
       width: '28rem',
-      disableClose: true
+      disableClose: true,
     });
 
     dialogRef.afterClosed().subscribe(async (result) => {
@@ -101,7 +109,7 @@ export class Login {
           result.email,
           result.password,
           result.displayName,
-          result.photoURL
+          result.photoURL,
         );
       } catch (error: any) {
         console.error(error);
@@ -118,6 +126,15 @@ export class Login {
       } finally {
         this.setLoading(false);
       }
+    });
+  }
+
+  private reportSentryLoginTestError(email: string, loginMethod: string): void {
+    Sentry.withScope((scope) => {
+      scope.setUser({ email });
+      scope.setTag('login_method', loginMethod);
+      scope.setContext('login', { email, method: loginMethod });
+      Sentry.captureException(new Error(`Sentry test error after login: ${email}`));
     });
   }
 }

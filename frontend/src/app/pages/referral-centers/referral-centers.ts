@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { MatCardModule } from '@angular/material/card';
@@ -10,6 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { Patient } from '../../models/patient';
 import { Healthsite } from '../../models/healthsite';
 import { ItemsService } from '../../services/items.service';
+import { AnalyticsService } from '../../services/analytics.service';
 
 @Component({
   selector: 'app-referral-centers',
@@ -19,13 +20,15 @@ import { ItemsService } from '../../services/items.service';
     MatCardModule,
     MatProgressSpinnerModule,
     MatInputModule,
-    MatSelectModule
+    MatSelectModule,
   ],
   templateUrl: './referral-centers.html',
-  styleUrl: './referral-centers.css'
+  styleUrl: './referral-centers.css',
 })
-export class ReferralCenters implements OnInit {
+export class ReferralCenters implements OnInit, OnDestroy {
   private readonly itemsService = inject(ItemsService);
+  private readonly analyticsService = inject(AnalyticsService);
+  private featureStartTime = 0;
 
   selectedPatient: Patient | null = null;
 
@@ -43,9 +46,17 @@ export class ReferralCenters implements OnInit {
   errorMessage = '';
 
   ngOnInit(): void {
+    this.featureStartTime = performance.now();
+    this.analyticsService.featureOpened('centros_derivacion');
+
     this.selectedPatient = history.state.patient ?? null;
 
     this.loadHealthsites();
+  }
+
+  ngOnDestroy(): void {
+    const durationSeconds = Math.round((performance.now() - this.featureStartTime) / 1000);
+    this.analyticsService.featureTimeSpent('centros_derivacion', durationSeconds);
   }
 
   private loadHealthsites(): void {
@@ -54,19 +65,11 @@ export class ReferralCenters implements OnInit {
         this.healthsites = healthsites;
 
         this.availableTypes = [
-          ...new Set(
-            healthsites
-              .map(healthsite => healthsite.type)
-              .filter(type => type)
-          )
+          ...new Set(healthsites.map((healthsite) => healthsite.type).filter((type) => type)),
         ].sort();
 
         this.availableCities = [
-          ...new Set(
-            healthsites
-              .map(healthsite => healthsite.city)
-              .filter(city => city)
-          )
+          ...new Set(healthsites.map((healthsite) => healthsite.city).filter((city) => city)),
         ].sort();
 
         this.applyFilters();
@@ -76,27 +79,22 @@ export class ReferralCenters implements OnInit {
       error: () => {
         this.errorMessage = 'No se pudieron cargar los centros de derivación.';
         this.isLoading = false;
-      }
+      },
     });
   }
 
   applyFilters(): void {
     const text = this.filterText.toLowerCase().trim();
 
-    this.filteredHealthsites = this.healthsites.filter(healthsite => {
-
+    this.filteredHealthsites = this.healthsites.filter((healthsite) => {
       const matchesText =
         healthsite.name.toLowerCase().includes(text) ||
         healthsite.city.toLowerCase().includes(text) ||
         healthsite.address.toLowerCase().includes(text);
 
-      const matchesType =
-        this.selectedType === 'all' ||
-        healthsite.type === this.selectedType;
+      const matchesType = this.selectedType === 'all' || healthsite.type === this.selectedType;
 
-      const matchesCity =
-        this.selectedCity === 'all' ||
-        healthsite.city === this.selectedCity;
+      const matchesCity = this.selectedCity === 'all' || healthsite.city === this.selectedCity;
 
       return matchesText && matchesType && matchesCity;
     });
@@ -109,13 +107,10 @@ export class ReferralCenters implements OnInit {
 
     this.selectedPatient.healthsite = healthsite;
 
-    alert(
-      `${this.selectedPatient.fullName} fue derivado a ${healthsite.name}`
-    );
+    alert(`${this.selectedPatient.fullName} fue derivado a ${healthsite.name}`);
   }
 
   translateType(type: string): string {
-
     const translations: Record<string, string> = {
       pharmacy: 'Farmacia',
       clinic: 'Clínica',
@@ -123,7 +118,7 @@ export class ReferralCenters implements OnInit {
       doctors: 'Consultorio médico',
       dentist: 'Odontología',
       laboratory: 'Laboratorio',
-      healthcare: 'Centro de salud'
+      healthcare: 'Centro de salud',
     };
 
     return translations[type.toLowerCase()] ?? type;

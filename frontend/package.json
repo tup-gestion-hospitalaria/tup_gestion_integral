@@ -6,7 +6,11 @@
     "start": "ng serve --port 4201",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "report:lighthouse": "npm run build && lhci autorun",
+    "report:stats": "ng build --configuration production --stats-json",
+    "report:bundle": "npm run report:stats && esbuild-visualizer --metadata dist/frontend/stats.json --filename reports/bundle-analysis.html",
+    "report:state": "npm run report:bundle && npm run report:lighthouse"
   },
   "private": true,
   "packageManager": "npm@11.11.0",
@@ -19,6 +23,7 @@
     "@angular/material": "^21.2.7",
     "@angular/platform-browser": "^21.2.0",
     "@angular/router": "^21.2.0",
+    "@sentry/angular": "^10.62.0",
     "firebase": "^12.13.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
@@ -28,7 +33,9 @@
     "@angular/build": "^21.2.7",
     "@angular/cli": "^21.2.7",
     "@angular/compiler-cli": "^21.2.0",
+    "@lhci/cli": "^0.15.1",
     "@types/node": "^20.17.19",
+    "esbuild-visualizer": "^0.7.0",
     "prettier": "^3.8.1",
     "typescript": "~5.9.2"
   }
