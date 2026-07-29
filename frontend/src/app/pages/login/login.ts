@@ -6,8 +6,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import * as Sentry from '@sentry/angular';
 
 import { AuthService } from '../../services/auth.service';
+import { AnalyticsService } from '../../services/analytics.service';
 import { RegisterDialog } from '../register-dialog/register-dialog';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -37,6 +39,7 @@ export class Login {
     private dialog: MatDialog,
     private cdr: ChangeDetectorRef,
     private translate: TranslateService,
+    private analyticsService: AnalyticsService,
   ) {}
 
   private setLoading(value: boolean): void {
@@ -49,6 +52,10 @@ export class Login {
       this.setLoading(true);
 
       await this.authService.loginWithGoogle();
+
+      const email = this.authService.getCurrentUser()?.email ?? 'email-no-disponible';
+      this.analyticsService.login(email, 'google');
+      this.reportSentryLoginTestError(email, 'google');
     } catch (error) {
       console.error(error);
       this.translate.get('LOGIN.GOOGLE_ERROR').subscribe((res: string) => alert(res));
@@ -67,6 +74,10 @@ export class Login {
       this.setLoading(true);
 
       await this.authService.loginWithEmail(this.email.trim(), this.password);
+
+      const email = this.authService.getCurrentUser()?.email ?? this.email.trim();
+      this.analyticsService.login(email, 'email_password');
+      this.reportSentryLoginTestError(email, 'email_password');
     } catch (error: any) {
       console.error(error);
 
@@ -118,6 +129,15 @@ export class Login {
       } finally {
         this.setLoading(false);
       }
+    });
+  }
+
+  private reportSentryLoginTestError(email: string, loginMethod: string): void {
+    Sentry.withScope((scope) => {
+      scope.setUser({ email });
+      scope.setTag('login_method', loginMethod);
+      scope.setContext('login', { email, method: loginMethod });
+      Sentry.captureException(new Error(`Sentry test error after login: ${email}`));
     });
   }
 }
