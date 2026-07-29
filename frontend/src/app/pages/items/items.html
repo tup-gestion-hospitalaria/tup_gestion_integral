@@ -1,30 +1,49 @@
 <section class="items-page">
   <div class="filters-bar">
     <mat-form-field appearance="outline" class="search-field">
-      <mat-label>Buscar</mat-label>
+      <mat-label>{{ 'ITEMS.SEARCH' | translate }}</mat-label>
+
       <input
         matInput
         [(ngModel)]="filterText"
         (input)="onFilterChange()"
-        placeholder="Paciente, email, ciudad o país"
+        [placeholder]="'ITEMS.SEARCH_PLACEHOLDER' | translate"
       />
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="filter-field">
-      <mat-label>Ordenar por</mat-label>
+      <mat-label>{{ 'ITEMS.SORT_BY' | translate }}</mat-label>
+
       <mat-select [(ngModel)]="sortField" (selectionChange)="sortPatients()">
-        <mat-option value="fullName">Nombre</mat-option>
-        <mat-option value="email">Email</mat-option>
-        <mat-option value="city">Ciudad</mat-option>
-        <mat-option value="country">País</mat-option>
+        <mat-option value="fullName">
+          {{ 'ITEMS.NAME' | translate }}
+        </mat-option>
+
+        <mat-option value="email">
+          {{ 'ITEMS.EMAIL' | translate }}
+        </mat-option>
+
+        <mat-option value="city">
+          {{ 'ITEMS.CITY' | translate }}
+        </mat-option>
+
+        <mat-option value="country">
+          {{ 'ITEMS.COUNTRY' | translate }}
+        </mat-option>
       </mat-select>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="filter-field">
-      <mat-label>Dirección</mat-label>
+      <mat-label>{{ 'ITEMS.DIRECTION' | translate }}</mat-label>
+
       <mat-select [(ngModel)]="sortDirection" (selectionChange)="sortPatients()">
-        <mat-option value="asc">Ascendente</mat-option>
-        <mat-option value="desc">Descendente</mat-option>
+        <mat-option value="asc">
+          {{ 'ITEMS.ASC' | translate }}
+        </mat-option>
+
+        <mat-option value="desc">
+          {{ 'ITEMS.DESC' | translate }}
+        </mat-option>
       </mat-select>
     </mat-form-field>
   </div>
@@ -34,16 +53,12 @@
   </div>
 
   <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage }}
+    {{ errorMessage | translate }}
   </div>
 
   <div *ngIf="!isLoading && !errorMessage" class="items-list">
     <mat-card *ngFor="let patient of filteredPatients" class="item-card">
-      <img
-        [src]="patient.picture"
-        [alt]="patient.fullName"
-        class="patient-image"
-      />
+      <img [src]="patient.picture" [alt]="patient.fullName" class="patient-image" />
 
       <div class="patient-info">
         <mat-card-title>{{ patient.fullName }}</mat-card-title>
@@ -55,7 +70,7 @@
 
         <mat-card-actions>
           <button type="button" (click)="referPatient(patient)">
-            Derivar
+            {{ 'ITEMS.REFER' | translate }}
           </button>
         </mat-card-actions>
       </div>

@@ -6,7 +6,7 @@ import { environment } from '../../environments/environment';
 import { Patient } from '../models/patient';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PatientService {
   private readonly http = inject(HttpClient);

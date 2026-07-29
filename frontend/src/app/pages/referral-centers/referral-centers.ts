@@ -10,6 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { Patient } from '../../models/patient';
 import { Healthsite } from '../../models/healthsite';
 import { ItemsService } from '../../services/items.service';
+import { TranslateModule } from '@ngx-translate/core';
 import { AnalyticsService } from '../../services/analytics.service';
 
 @Component({
@@ -21,6 +22,7 @@ import { AnalyticsService } from '../../services/analytics.service';
     MatProgressSpinnerModule,
     MatInputModule,
     MatSelectModule,
+    TranslateModule,
   ],
   templateUrl: './referral-centers.html',
   styleUrl: './referral-centers.css',

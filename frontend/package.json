@@ -1,12 +1,16 @@
 {
   "name": "frontend",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --port 4201",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "lint": "ng lint",
+    "lint:staged": "lint-staged",
+    "format": "prettier --write .",
+    "prepare": "cd .. && husky",
     "report:lighthouse": "npm run build && lhci autorun",
     "report:stats": "ng build --configuration production --stats-json",
     "report:bundle": "npm run report:stats && esbuild-visualizer --metadata dist/frontend/stats.json --filename reports/bundle-analysis.html",
@@ -23,6 +27,8 @@
     "@angular/material": "^21.2.7",
     "@angular/platform-browser": "^21.2.0",
     "@angular/router": "^21.2.0",
+    "@ngx-translate/core": "^17.0.0",
+    "@ngx-translate/http-loader": "^17.0.0",
     "@sentry/angular": "^10.62.0",
     "firebase": "^12.13.0",
     "rxjs": "~7.8.0",
@@ -33,10 +39,24 @@
     "@angular/build": "^21.2.7",
     "@angular/cli": "^21.2.7",
     "@angular/compiler-cli": "^21.2.0",
-    "@lhci/cli": "^0.15.1",
+    "@eslint/js": "^10.0.1",
     "@types/node": "^20.17.19",
+    "angular-eslint": "21.4.0",
+    "eslint": "^10.3.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.6",
+    "husky": "^9.1.7",
+    "@lhci/cli": "^0.15.1",
     "esbuild-visualizer": "^0.7.0",
-    "prettier": "^3.8.1",
-    "typescript": "~5.9.2"
+    "lint-staged": "^17.0.7",
+    "prettier": "^3.8.3",
+    "typescript": "~5.9.2",
+    "typescript-eslint": "8.59.2"
+  },
+  "lint-staged": {
+    "*.{ts,html,css,json}": [
+      "prettier --write",
+      "eslint --fix"
+    ]
   }
 }
