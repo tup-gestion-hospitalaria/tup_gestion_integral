@@ -1,120 +1,80 @@
 <div class="login-page">
-
   <section class="login-brand">
-
     <div class="brand-content">
+      <img src="/logo-proyect.png" alt="Logo Gestión Hospitalaria" class="brand-logo" />
 
-      <img
-        src="/logo-proyect.png"
-        alt="Logo Gestión Hospitalaria"
-        class="brand-logo"
-      />
-
-      <h1>Gestión Hospitalaria</h1>
+      <h1>{{ 'APP.TITLE' | translate }}</h1>
 
       <p>
-        Sistema de gestión integral para instituciones de salud
+        {{ 'LOGIN.SUBTITLE' | translate }}
       </p>
-
     </div>
-
   </section>
 
   <section class="login-panel">
-
     <form class="login-card" (ngSubmit)="loginWithEmail()">
-
       <button
         mat-stroked-button
         type="button"
         class="google-button"
         (click)="loginWithGoogle()"
-        [disabled]="loading">
-
+        [disabled]="loading"
+      >
         <span class="button-content">
-
-          <img
-            src="/google-icon.png"
-            alt=""
-            class="google-icon"
-          />
+          <img src="/google-icon.png" alt="" class="google-icon" />
 
           <span *ngIf="!loading">
-            Iniciar sesión con Google
+            {{ 'LOGIN.GOOGLE' | translate }}
           </span>
 
-          <mat-spinner
-            *ngIf="loading"
-            diameter="20"
-            strokeWidth="3">
-          </mat-spinner>
-
+          <mat-spinner *ngIf="loading" diameter="20" strokeWidth="3"></mat-spinner>
         </span>
-
       </button>
 
       <div class="divider" aria-hidden="true">
-
         <span></span>
 
-        <p>O</p>
+        <p>{{ 'LOGIN.OR' | translate }}</p>
 
         <span></span>
-
       </div>
 
       <label class="input-group">
-
         <mat-icon aria-hidden="true">mail</mat-icon>
 
         <input
           type="email"
           name="email"
-          placeholder="Correo electrónico"
+          [placeholder]="'LOGIN.EMAIL' | translate"
           autocomplete="email"
           [(ngModel)]="email"
           class="login-input"
         />
-
       </label>
 
       <label class="input-group">
-
         <mat-icon aria-hidden="true">lock</mat-icon>
 
         <input
           type="password"
           name="password"
-          placeholder="Contraseña"
+          [placeholder]="'LOGIN.PASSWORD' | translate"
           autocomplete="current-password"
           [(ngModel)]="password"
           class="login-input"
         />
-
       </label>
 
-      <button
-        mat-flat-button
-        type="submit"
-        class="email-button"
-        [disabled]="loading">
-
+      <button mat-flat-button type="submit" class="email-button" [disabled]="loading">
         <span class="button-content">
-
           <mat-icon aria-hidden="true">person</mat-icon>
 
           <span *ngIf="!loading">
-            Iniciar sesión con Email
+            {{ 'LOGIN.EMAIL_LOGIN' | translate }}
           </span>
 
-          <mat-spinner
-            *ngIf="loading"
-            diameter="20"
-            strokeWidth="3">
-          </mat-spinner>
-
+          <mat-spinner *ngIf="loading" diameter="20" strokeWidth="3"></mat-spinner>
         </span>
-
       </button>
 
       <button
@@ -122,20 +82,14 @@
         type="button"
         class="register-button"
         (click)="registerWithEmail()"
-        [disabled]="loading">
-
+        [disabled]="loading"
+      >
         <span class="button-content">
-
           <mat-icon aria-hidden="true">person_add</mat-icon>
 
-          Crear cuenta
-
+          {{ 'LOGIN.REGISTER' | translate }}
         </span>
-
       </button>
-
     </form>
-
   </section>
-
 </div>

@@ -11,13 +11,9 @@ import { updateProfile } from 'firebase/auth';
 @Component({
   selector: 'app-register-dialog',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    MatButtonModule
-  ],
+  imports: [CommonModule, FormsModule, MatButtonModule],
   templateUrl: './register-dialog.html',
-  styleUrl: './register-dialog.css'
+  styleUrl: './register-dialog.css',
 })
 export class RegisterDialog {
   email = '';
@@ -27,9 +23,7 @@ export class RegisterDialog {
   photoURL = '';
   errorMessage = '';
 
-  constructor(
-    private dialogRef: MatDialogRef<RegisterDialog>
-  ) {}
+  constructor(private dialogRef: MatDialogRef<RegisterDialog>) {}
 
   cancel(): void {
     this.dialogRef.close();
@@ -60,7 +54,7 @@ export class RegisterDialog {
       email: this.email.trim(),
       password: this.password,
       displayName: this.displayName.trim(),
-      photoURL: this.photoURL.trim()
+      photoURL: this.photoURL.trim(),
     });
   }
 }
