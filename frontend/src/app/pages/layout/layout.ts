@@ -5,6 +5,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-layout',
@@ -16,10 +17,11 @@ import { MatListModule } from '@angular/material/list';
     RouterLinkActive,
     MatToolbarModule,
     MatSidenavModule,
-    MatListModule
+    MatListModule,
+    TranslateModule,
   ],
   templateUrl: './layout.html',
-  styleUrl: './layout.css'
+  styleUrl: './layout.css',
 })
 export class Layout {
   isSmallScreen = false;

@@ -1,5 +1,6 @@
 export const environment = {
   production: false,
+  backendApiUrl: 'https://tup-gestion-integral.onrender.com/api',
 
   firebaseConfig: {
     apiKey: 'AIzaSyCafv5Un8ifToHe5-I40LM7KG-e9yReRB0',
@@ -7,6 +8,6 @@ export const environment = {
     projectId: 'tup-gestion-integral',
     storageBucket: 'tup-gestion-integral.firebasestorage.app',
     messagingSenderId: '579474454979',
-    appId: '1:579474454979:web:7314883f287536111c6576'
-  }
+    appId: '1:579474454979:web:7314883f287536111c6576',
+  },
 };
