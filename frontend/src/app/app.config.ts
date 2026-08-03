@@ -1,5 +1,6 @@
 import {
   ApplicationConfig,
+  isDevMode,
   ErrorHandler,
   inject,
   provideAppInitializer,
@@ -8,6 +9,7 @@ import {
 } from '@angular/core';
 
 import { provideHttpClient } from '@angular/common/http';
+import { provideServiceWorker } from '@angular/service-worker';
 import { provideRouter, Router } from '@angular/router';
 
 import { provideTranslateService } from '@ngx-translate/core';
@@ -40,6 +42,10 @@ export const appConfig: ApplicationConfig = {
     },
     provideAppInitializer(() => {
       inject(Sentry.TraceService);
+    }),
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
     }),
   ],
 };
