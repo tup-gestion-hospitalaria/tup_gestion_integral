@@ -31,12 +31,12 @@ export function createApp(store = new PatientStore()) {
     response.json({ status: 'ok' });
   });
 
-  app.get('/api/patients', (_request, response) => {
-    response.json(store.findAll());
+  app.get('/api/patients', async (_request, response) => {
+    response.json(await store.findAll());
   });
 
-  app.get('/api/patients/:id', (request, response) => {
-    const patient = store.findById(request.params.id);
+  app.get('/api/patients/:id', async (request, response) => {
+    const patient = await store.findById(request.params.id);
 
     if (!patient) {
       return response.status(404).json({ message: 'Paciente no encontrado.' });
@@ -45,24 +45,24 @@ export function createApp(store = new PatientStore()) {
     response.json(patient);
   });
 
-  app.post('/api/patients', (request, response) => {
+  app.post('/api/patients', async (request, response) => {
     const validationError = validatePatient(request.body);
 
     if (validationError) {
       return response.status(400).json({ message: validationError });
     }
 
-    response.status(201).json(store.create(request.body));
+    response.status(201).json(await store.create(request.body));
   });
 
-  app.put('/api/patients/:id', (request, response) => {
+  app.put('/api/patients/:id', async (request, response) => {
     const validationError = validatePatient(request.body);
 
     if (validationError) {
       return response.status(400).json({ message: validationError });
     }
 
-    const patient = store.replace(request.params.id, request.body);
+    const patient = await store.replace(request.params.id, request.body);
 
     if (!patient) {
       return response.status(404).json({ message: 'Paciente no encontrado.' });
@@ -71,14 +71,14 @@ export function createApp(store = new PatientStore()) {
     response.json(patient);
   });
 
-  app.patch('/api/patients/:id', (request, response) => {
+  app.patch('/api/patients/:id', async (request, response) => {
     const validationError = validatePatient(request.body, false);
 
     if (validationError) {
       return response.status(400).json({ message: validationError });
     }
 
-    const patient = store.update(request.params.id, request.body);
+    const patient = await store.update(request.params.id, request.body);
 
     if (!patient) {
       return response.status(404).json({ message: 'Paciente no encontrado.' });
@@ -87,8 +87,8 @@ export function createApp(store = new PatientStore()) {
     response.json(patient);
   });
 
-  app.delete('/api/patients/:id', (request, response) => {
-    if (!store.delete(request.params.id)) {
+  app.delete('/api/patients/:id', async (request, response) => {
+    if (!(await store.delete(request.params.id))) {
       return response.status(404).json({ message: 'Paciente no encontrado.' });
     }
 

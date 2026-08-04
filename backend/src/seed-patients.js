@@ -27,3 +27,22 @@ export async function fetchInitialPatients(
     active: true
   }));
 }
+
+export async function seedPatientsIfEmpty(db) {
+  const collection = db.collection('patients');
+  const existingPatients = await collection.limit(1).get();
+
+  if (!existingPatients.empty) {
+    return { inserted: 0, total: (await collection.count().get()).data().count };
+  }
+
+  const patients = await fetchInitialPatients();
+  const batch = db.batch();
+
+  for (const { id, ...data } of patients) {
+    batch.set(collection.doc(id), data);
+  }
+
+  await batch.commit();
+  return { inserted: patients.length, total: patients.length };
+}
