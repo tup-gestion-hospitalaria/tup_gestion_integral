@@ -41,15 +41,6 @@ export function createApp(store = new PatientStore(), options = {}) {
     response.json({ status: "ok" });
   });
 
-  app.get("/api/me", authenticateRequest, (request, response) => {
-    response.json({
-      uid: request.user.uid,
-      email: request.user.email ?? null,
-      name: request.user.name ?? null,
-      role: request.user.role,
-    });
-  });
-
   app.get(
     "/api/patients",
     authenticateRequest,

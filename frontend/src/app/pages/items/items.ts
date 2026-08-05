@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -52,8 +53,14 @@ export class Items implements OnInit {
         this.sortPatients();
         this.isLoading = false;
       },
-      error: () => {
-        this.errorMessage = 'ITEMS.LOAD_ERROR';
+      error: (error: HttpErrorResponse) => {
+        if (error.status === 401) {
+          this.errorMessage = 'ITEMS.AUTH_ERROR';
+        } else if (error.status === 403) {
+          this.errorMessage = 'ITEMS.PERMISSION_ERROR';
+        } else {
+          this.errorMessage = 'ITEMS.LOAD_ERROR';
+        }
         this.isLoading = false;
       },
     });

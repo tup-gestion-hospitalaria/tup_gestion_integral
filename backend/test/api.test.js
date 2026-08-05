@@ -30,10 +30,6 @@ const decodedTokens = {
     name: "Administrador de prueba",
     role: "admin",
   },
-  "no-role-token": {
-    uid: "user-2",
-    email: "new-user@example.com",
-  },
 };
 
 async function verifyIdToken(token) {
@@ -197,29 +193,6 @@ test("rechaza consultas sin token o con token inválido", async () => {
     headers: { Authorization: "Bearer invalid-token" },
   });
   assert.equal(invalidResponse.status, 401);
-});
-
-test("GET /api/me devuelve identidad y rol del token", async () => {
-  const response = await fetch(`${baseUrl}/api/me`, {
-    headers: authHeaders("user"),
-  });
-
-  assert.equal(response.status, 200);
-  assert.deepEqual(await response.json(), decodedTokens["user-token"]);
-});
-
-test("usuarios sin claim reciben el rol user por defecto", async () => {
-  const response = await fetch(`${baseUrl}/api/me`, {
-    headers: { Authorization: "Bearer no-role-token" },
-  });
-
-  assert.equal(response.status, 200);
-  assert.deepEqual(await response.json(), {
-    uid: "user-2",
-    email: "new-user@example.com",
-    name: null,
-    role: "user",
-  });
 });
 
 test("un usuario no puede crear ni eliminar pacientes", async () => {

@@ -20,8 +20,7 @@ Authorization: Bearer <firebase-id-token>
 ```
 
 Los usuarios con rol `user` pueden consultar pacientes. Las operaciones de
-creación, modificación y eliminación requieren el rol `admin`. Si una cuenta
-todavía no tiene un custom claim, recibe el rol de mínimo privilegio `user`.
+creación, modificación y eliminación requieren el rol `admin`.
 
 Para asignar un rol desde un entorno administrativo configurado con las
 credenciales de Firebase:
@@ -45,7 +44,6 @@ npm run dev:windows
 
 | Método | Ruta | Acción |
 | --- | --- | --- |
-| GET | `/api/me` | Obtener identidad y rol autenticados |
 | GET | `/api/patients` | Obtener todos (`user`, `admin`) |
 | GET | `/api/patients/:id` | Obtener uno (`user`, `admin`) |
 | POST | `/api/patients` | Crear (`admin`) |

@@ -16,10 +16,7 @@ export function authenticate(verifyIdToken) {
     try {
       const decodedToken = await verifyIdToken(match[1]);
 
-      request.user = {
-        ...decodedToken,
-        role: decodedToken.role ?? "user",
-      };
+      request.user = decodedToken;
 
       next();
     } catch (_error) {
