@@ -45,7 +45,9 @@
     "ASC": "Ascendente",
     "DESC": "Descendente",
     "REFER": "Derivar",
-    "LOAD_ERROR": "No se pudieron cargar los pacientes."
+    "LOAD_ERROR": "No se pudieron cargar los pacientes.",
+    "AUTH_ERROR": "El token no es válido o la sesión venció. Volvé a iniciar sesión.",
+    "PERMISSION_ERROR": "Tu rol no tiene permiso para consultar este recurso."
   },
   "REFERRAL_CENTERS": {
     "TITLE": "Centros de derivación",

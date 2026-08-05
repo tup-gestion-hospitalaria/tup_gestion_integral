@@ -13,6 +13,26 @@ npm run dev
 
 La API queda disponible en `http://localhost:3000`.
 
+Las rutas bajo `/api` requieren un ID token de Firebase en el encabezado:
+
+```http
+Authorization: Bearer <firebase-id-token>
+```
+
+Los usuarios con rol `user` pueden consultar pacientes. Las operaciones de
+creación, modificación y eliminación requieren el rol `admin`.
+
+Para asignar un rol desde un entorno administrativo configurado con las
+credenciales de Firebase:
+
+```bash
+npm run role:set -- usuario@example.com user
+npm run role:set -- administrador@example.com admin
+```
+
+Después de cambiar el rol, la persona debe renovar su token o volver a iniciar
+sesión para recibir el nuevo claim.
+
 Si Windows informa `unable to verify the first certificate`, ejecutar con el
 almacén de certificados del sistema:
 
@@ -24,12 +44,12 @@ npm run dev:windows
 
 | Método | Ruta | Acción |
 | --- | --- | --- |
-| GET | `/api/patients` | Obtener todos |
-| GET | `/api/patients/:id` | Obtener uno |
-| POST | `/api/patients` | Crear |
-| PUT | `/api/patients/:id` | Reemplazar completamente |
-| PATCH | `/api/patients/:id` | Modificar parcialmente |
-| DELETE | `/api/patients/:id` | Eliminar |
+| GET | `/api/patients` | Obtener todos (`user`, `admin`) |
+| GET | `/api/patients/:id` | Obtener uno (`user`, `admin`) |
+| POST | `/api/patients` | Crear (`admin`) |
+| PUT | `/api/patients/:id` | Reemplazar completamente (`admin`) |
+| PATCH | `/api/patients/:id` | Modificar parcialmente (`admin`) |
+| DELETE | `/api/patients/:id` | Eliminar (`admin`) |
 | GET | `/health` | Comprobar el estado del servicio |
 
 Ejemplos completos para probar cada operación:
