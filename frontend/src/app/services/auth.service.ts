@@ -14,19 +14,24 @@ import {
 
 import { auth } from '../firebase';
 
+export type UserRole = 'user' | 'admin';
+
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   user: User | null = null;
+  role: UserRole | null = null;
 
   constructor(private router: Router) {
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       this.user = user;
 
       if (user) {
+        await this.loadRole(user);
         this.router.navigate(['/items']);
       } else {
+        this.role = null;
         this.router.navigate(['/login']);
       }
     });
@@ -35,6 +40,10 @@ export class AuthService {
   async waitForAuthState(): Promise<void> {
     await auth.authStateReady();
     this.user = auth.currentUser;
+
+    if (this.user) {
+      await this.loadRole(this.user);
+    }
   }
 
   async loginWithGoogle(): Promise<void> {
@@ -70,6 +79,7 @@ export class AuthService {
   async logout(): Promise<void> {
     await signOut(auth);
     this.user = null;
+    this.role = null;
   }
 
   isAuthenticated(): boolean {
@@ -78,5 +88,24 @@ export class AuthService {
 
   getCurrentUser(): User | null {
     return auth.currentUser;
+  }
+
+  isAdmin(): boolean {
+    return this.role === 'admin';
+  }
+
+  async refreshTokenAndRole(): Promise<void> {
+    const user = auth.currentUser;
+
+    if (user) {
+      await this.loadRole(user, true);
+    }
+  }
+
+  private async loadRole(user: User, forceRefresh = false): Promise<void> {
+    const tokenResult = await user.getIdTokenResult(forceRefresh);
+    const role = tokenResult.claims['role'];
+
+    this.role = role === 'admin' ? 'admin' : 'user';
   }
 }

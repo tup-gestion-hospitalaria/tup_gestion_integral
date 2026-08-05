@@ -11,7 +11,8 @@
     "dev:windows": "node --use-system-ca --watch src/server.js",
     "start": "node src/server.js",
     "start:windows": "node --use-system-ca src/server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "role:set": "node scripts/set-user-role.js"
   },
   "dependencies": {
     "dotenv": "17.4.2",
