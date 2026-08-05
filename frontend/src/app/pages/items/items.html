@@ -1,21 +1,4 @@
 <section class="items-page">
-  <div class="page-heading">
-    <div>
-      <h2>Pacientes</h2>
-      <span class="role-badge">Rol: {{ authService.isAdmin() ? 'Administrador' : 'Usuario' }}</span>
-    </div>
-
-    <button
-      *ngIf="authService.isAdmin()"
-      mat-raised-button
-      color="primary"
-      type="button"
-      (click)="createPatient()"
-    >
-      Nuevo paciente
-    </button>
-  </div>
-
   <div class="filters-bar">
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>{{ 'ITEMS.SEARCH' | translate }}</mat-label>
@@ -70,10 +53,8 @@
   </div>
 
   <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage.startsWith('ITEMS.') ? (errorMessage | translate) : errorMessage }}
+    {{ errorMessage | translate }}
   </div>
-
-  <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>
 
   <div *ngIf="!isLoading && !errorMessage" class="items-list">
     <mat-card *ngFor="let patient of filteredPatients" class="item-card">
@@ -88,16 +69,9 @@
         </mat-card-content>
 
         <mat-card-actions>
-          <button mat-button type="button" (click)="referPatient(patient)">
+          <button type="button" (click)="referPatient(patient)">
             {{ 'ITEMS.REFER' | translate }}
           </button>
-
-          <ng-container *ngIf="authService.isAdmin()">
-            <button mat-button type="button" (click)="editPatient(patient)">Editar</button>
-            <button mat-button color="warn" type="button" (click)="deletePatient(patient)">
-              Eliminar
-            </button>
-          </ng-container>
         </mat-card-actions>
       </div>
     </mat-card>

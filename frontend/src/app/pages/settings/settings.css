@@ -54,13 +54,6 @@
   line-height: 1.4;
 }
 
-.role-badge {
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
-  background-color: var(--background-item-color);
-  font-weight: 600;
-}
-
 button {
   margin-top: 1rem;
 }

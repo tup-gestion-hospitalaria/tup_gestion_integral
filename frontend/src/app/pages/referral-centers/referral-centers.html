@@ -10,10 +10,6 @@
     <strong>{{ selectedPatient.fullName }}</strong>
   </p>
 
-  <p *ngIf="selectedPatient && !authService.isAdmin()" class="permission-message">
-    Solo un administrador puede confirmar una derivación.
-  </p>
-
   <div class="filters-bar">
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>{{ 'REFERRAL_CENTERS.SEARCH' | translate }}</mat-label>
@@ -91,11 +87,7 @@
       </mat-card-content>
 
       <mat-card-actions>
-        <button
-          *ngIf="selectedPatient && authService.isAdmin()"
-          type="button"
-          (click)="referToHealthsite(healthsite)"
-        >
+        <button *ngIf="selectedPatient" type="button" (click)="referToHealthsite(healthsite)">
           {{ 'REFERRAL_CENTERS.REFER_HERE' | translate }}
         </button>
 

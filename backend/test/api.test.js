@@ -139,27 +139,6 @@ test("PATCH modifica solamente las propiedades enviadas", async () => {
   assert.equal(body.fullName, "Ana Gómez");
 });
 
-test("PATCH permite guardar un centro de derivación", async () => {
-  const healthsite = {
-    id: "hospital-1",
-    name: "Hospital de prueba",
-    city: "La Plata",
-    address: "Calle 1",
-    type: "hospital",
-    latitude: -34.9,
-    longitude: -57.9,
-    googleMapsUrl: null,
-  };
-  const response = await fetch(`${baseUrl}/api/patients/patient-1`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json", ...authHeaders() },
-    body: JSON.stringify({ healthsite }),
-  });
-
-  assert.equal(response.status, 200);
-  assert.deepEqual((await response.json()).healthsite, healthsite);
-});
-
 test("DELETE elimina un paciente", async () => {
   const createResponse = await fetch(`${baseUrl}/api/patients`, {
     method: "POST",

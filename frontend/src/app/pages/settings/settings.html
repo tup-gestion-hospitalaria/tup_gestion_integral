@@ -13,8 +13,6 @@
 
     <p>{{ user.email || 'Email no disponible' }}</p>
 
-    <p class="role-badge">Rol: {{ authService.isAdmin() ? 'Administrador' : 'Usuario' }}</p>
-
     <p>
       Usuario autenticado con
       {{ user.providerData[0].providerId === 'google.com' ? 'Google' : 'Email y contraseña' }}
