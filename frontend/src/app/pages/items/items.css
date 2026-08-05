@@ -4,6 +4,27 @@
   min-height: calc(100vh - 4.5rem);
 }
 
+.page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.page-heading h2 {
+  margin: 0 0 0.25rem;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: var(--background-item-color);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
 .filters-bar {
   display: flex;
   align-items: center;
@@ -28,6 +49,12 @@
 .error-message {
   color: var(--error-color);
   margin-top: 1rem;
+  text-align: center;
+}
+
+.success-message {
+  color: #1b5e20;
+  margin: 1rem 0;
   text-align: center;
 }
 
@@ -85,6 +112,11 @@
   .filters-bar {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .page-heading {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .search-field,

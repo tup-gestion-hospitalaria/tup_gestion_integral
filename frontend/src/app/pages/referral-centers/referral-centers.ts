@@ -12,6 +12,9 @@ import { Healthsite } from '../../models/healthsite';
 import { ItemsService } from '../../services/items.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { AnalyticsService } from '../../services/analytics.service';
+import { AuthService } from '../../services/auth.service';
+import { PatientService } from '../../services/patient.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-referral-centers',
@@ -30,6 +33,8 @@ import { AnalyticsService } from '../../services/analytics.service';
 export class ReferralCenters implements OnInit, OnDestroy {
   private readonly itemsService = inject(ItemsService);
   private readonly analyticsService = inject(AnalyticsService);
+  private readonly patientService = inject(PatientService);
+  readonly authService = inject(AuthService);
   private featureStartTime = 0;
 
   selectedPatient: Patient | null = null;
@@ -107,9 +112,20 @@ export class ReferralCenters implements OnInit, OnDestroy {
       return;
     }
 
-    this.selectedPatient.healthsite = healthsite;
+    this.patientService.updatePatient(this.selectedPatient.id, { healthsite }).subscribe({
+      next: (patient) => {
+        this.selectedPatient = patient;
+        alert(`${patient.fullName} fue derivado a ${healthsite.name}`);
+      },
+      error: (error: HttpErrorResponse) => {
+        if (error.status === 403) {
+          this.errorMessage = 'No tenés permisos para derivar pacientes.';
+          return;
+        }
 
-    alert(`${this.selectedPatient.fullName} fue derivado a ${healthsite.name}`);
+        this.errorMessage = 'No se pudo guardar la derivación.';
+      },
+    });
   }
 
   translateType(type: string): string {

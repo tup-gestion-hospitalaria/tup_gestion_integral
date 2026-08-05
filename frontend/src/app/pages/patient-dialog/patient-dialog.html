@@ -1,0 +1,45 @@
+<h2 mat-dialog-title>{{ data ? 'Editar paciente' : 'Nuevo paciente' }}</h2>
+
+<mat-dialog-content>
+  <form class="patient-form" (ngSubmit)="save()">
+    <mat-form-field appearance="outline">
+      <mat-label>Nombre completo</mat-label>
+      <input matInput name="fullName" [(ngModel)]="patient.fullName" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Correo electrónico</mat-label>
+      <input matInput type="email" name="email" [(ngModel)]="patient.email" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Ciudad</mat-label>
+      <input matInput name="city" [(ngModel)]="patient.city" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>País</mat-label>
+      <input matInput name="country" [(ngModel)]="patient.country" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>URL de la fotografía</mat-label>
+      <input matInput name="picture" [(ngModel)]="patient.picture" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Estado</mat-label>
+      <mat-select name="active" [(ngModel)]="patient.active">
+        <mat-option [value]="true">Activo</mat-option>
+        <mat-option [value]="false">Inactivo</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <p *ngIf="errorMessage" class="dialog-error">{{ errorMessage }}</p>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" [mat-dialog-close]="undefined">Cancelar</button>
+  <button mat-raised-button color="primary" type="button" (click)="save()">Guardar</button>
+</mat-dialog-actions>

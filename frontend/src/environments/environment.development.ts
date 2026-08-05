@@ -1,6 +1,6 @@
 export const environment = {
-  production: true,
-  backendApiUrl: 'https://tup-gestion-integral.onrender.com/api',
+  production: false,
+  backendApiUrl: 'http://localhost:3000/api',
 
   firebaseConfig: {
     apiKey: 'AIzaSyCafv5Un8ifToHe5-I40LM7KG-e9yReRB0',

@@ -1,12 +1,17 @@
-import { randomUUID } from 'node:crypto';
+import { randomUUID } from "node:crypto";
 
+export const PATIENT_REQUIRED_FIELDS = [
+  "fullName",
+  "email",
+  "city",
+  "country",
+  "picture",
+  "active",
+];
+export const PATIENT_OPTIONAL_FIELDS = ["healthsite"];
 export const PATIENT_FIELDS = [
-  'fullName',
-  'email',
-  'city',
-  'country',
-  'picture',
-  'active'
+  ...PATIENT_REQUIRED_FIELDS,
+  ...PATIENT_OPTIONAL_FIELDS,
 ];
 
 export class PatientStore {
@@ -61,13 +66,13 @@ export class PatientStore {
 }
 
 export function validatePatient(data, requireAllFields = true) {
-  if (!data || typeof data !== 'object' || Array.isArray(data)) {
-    return 'El cuerpo debe ser un objeto JSON.';
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    return "El cuerpo debe ser un objeto JSON.";
   }
 
   const suppliedFields = Object.keys(data);
   const unknownField = suppliedFields.find(
-    (field) => !PATIENT_FIELDS.includes(field)
+    (field) => !PATIENT_FIELDS.includes(field),
   );
 
   if (unknownField) {
@@ -75,30 +80,41 @@ export function validatePatient(data, requireAllFields = true) {
   }
 
   if (requireAllFields) {
-    const missingField = PATIENT_FIELDS.find(
-      (field) => data[field] === undefined
+    const missingField = PATIENT_REQUIRED_FIELDS.find(
+      (field) => data[field] === undefined,
     );
 
     if (missingField) {
       return `La propiedad "${missingField}" es obligatoria.`;
     }
   } else if (suppliedFields.length === 0) {
-    return 'Se debe enviar al menos una propiedad.';
+    return "Se debe enviar al menos una propiedad.";
   }
 
-  const stringFields = PATIENT_FIELDS.filter((field) => field !== 'active');
+  const stringFields = PATIENT_REQUIRED_FIELDS.filter(
+    (field) => field !== "active",
+  );
   const invalidString = stringFields.find(
     (field) =>
       data[field] !== undefined &&
-      (typeof data[field] !== 'string' || data[field].trim() === '')
+      (typeof data[field] !== "string" || data[field].trim() === ""),
   );
 
   if (invalidString) {
     return `La propiedad "${invalidString}" debe ser un texto no vacío.`;
   }
 
-  if (data.active !== undefined && typeof data.active !== 'boolean') {
+  if (data.active !== undefined && typeof data.active !== "boolean") {
     return 'La propiedad "active" debe ser booleana.';
+  }
+
+  if (
+    data.healthsite !== undefined &&
+    (!data.healthsite ||
+      typeof data.healthsite !== "object" ||
+      Array.isArray(data.healthsite))
+  ) {
+    return 'La propiedad "healthsite" debe ser un objeto.';
   }
 
   return null;

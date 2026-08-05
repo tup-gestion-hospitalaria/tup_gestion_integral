@@ -2,15 +2,20 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { Patient } from '../../models/patient';
 import { PatientService } from '../../services/patient.service';
 import { TranslateModule } from '@ngx-translate/core';
+import { AuthService } from '../../services/auth.service';
+import { PatientDialog, PatientFormData } from '../patient-dialog/patient-dialog';
 
 @Component({
   selector: 'app-items',
@@ -21,6 +26,8 @@ import { TranslateModule } from '@ngx-translate/core';
     MatSelectModule,
     MatCardModule,
     MatProgressSpinnerModule,
+    MatButtonModule,
+    MatDialogModule,
     TranslateModule,
   ],
   templateUrl: './items.html',
@@ -29,6 +36,8 @@ import { TranslateModule } from '@ngx-translate/core';
 export class Items implements OnInit {
   private readonly patientService = inject(PatientService);
   private readonly router = inject(Router);
+  private readonly dialog = inject(MatDialog);
+  readonly authService = inject(AuthService);
 
   patients: Patient[] = [];
   filteredPatients: Patient[] = [];
@@ -39,12 +48,16 @@ export class Items implements OnInit {
 
   isLoading = true;
   errorMessage = '';
+  successMessage = '';
 
   ngOnInit(): void {
     this.loadPatients();
   }
 
   private loadPatients(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+
     this.patientService.getPatients().subscribe({
       next: (patients) => {
         this.patients = patients;
@@ -52,8 +65,8 @@ export class Items implements OnInit {
         this.sortPatients();
         this.isLoading = false;
       },
-      error: () => {
-        this.errorMessage = 'ITEMS.LOAD_ERROR';
+      error: (error: HttpErrorResponse) => {
+        this.errorMessage = this.getErrorMessage(error);
         this.isLoading = false;
       },
     });
@@ -89,6 +102,89 @@ export class Items implements OnInit {
     this.router.navigate(['/centros-derivacion'], {
       state: { patient },
     });
+  }
+
+  createPatient(): void {
+    this.dialog
+      .open<PatientDialog, Patient | null, PatientFormData>(PatientDialog, {
+        width: '42rem',
+        maxWidth: '95vw',
+        data: null,
+      })
+      .afterClosed()
+      .subscribe((patient) => {
+        if (!patient) {
+          return;
+        }
+
+        this.patientService.createPatient(patient).subscribe({
+          next: () => {
+            this.successMessage = 'Paciente creado correctamente.';
+            this.loadPatients();
+          },
+          error: (error: HttpErrorResponse) => {
+            this.errorMessage = this.getErrorMessage(error);
+          },
+        });
+      });
+  }
+
+  editPatient(patient: Patient): void {
+    this.dialog
+      .open<PatientDialog, Patient, PatientFormData>(PatientDialog, {
+        width: '42rem',
+        maxWidth: '95vw',
+        data: patient,
+      })
+      .afterClosed()
+      .subscribe((changes) => {
+        if (!changes) {
+          return;
+        }
+
+        this.patientService
+          .replacePatient(patient.id, {
+            ...changes,
+            ...(patient.healthsite ? { healthsite: patient.healthsite } : {}),
+          })
+          .subscribe({
+            next: () => {
+              this.successMessage = 'Paciente actualizado correctamente.';
+              this.loadPatients();
+            },
+            error: (error: HttpErrorResponse) => {
+              this.errorMessage = this.getErrorMessage(error);
+            },
+          });
+      });
+  }
+
+  deletePatient(patient: Patient): void {
+    if (!confirm(`¿Eliminar a ${patient.fullName}?`)) {
+      return;
+    }
+
+    this.patientService.deletePatient(patient.id).subscribe({
+      next: () => {
+        this.successMessage = 'Paciente eliminado correctamente.';
+        this.loadPatients();
+      },
+      error: (error: HttpErrorResponse) => {
+        this.errorMessage = this.getErrorMessage(error);
+      },
+    });
+  }
+
+  private getErrorMessage(error: HttpErrorResponse): string {
+    if (error.status === 401) {
+      return 'Tu sesión venció. Volvé a iniciar sesión.';
+    }
+
+    if (error.status === 403) {
+      return 'No tenés permisos para realizar esta operación.';
+    }
+
+    return error.error?.message ?? 'No se pudo completar la operación.';
   }
 
   private getSortValue(patient: Patient): string {
