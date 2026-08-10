@@ -2,12 +2,15 @@ import { createApp } from './app.js';
 import { auth, db } from './firebase.js';
 import { FirestorePatientStore } from './firestore-patient-store.js';
 import { seedPatientsIfEmpty } from './seed-patients.js';
+import { getHealthsitesCache } from './seed-healthsites.js';
 
 const port = Number(process.env.PORT ?? 3000);
 const host = process.env.HOST ?? '0.0.0.0';
 
 try {
   const seedResult = await seedPatientsIfEmpty(db);
+  // Pre-cargar healthsites en caché
+  await getHealthsitesCache();
   const app = createApp(new FirestorePatientStore(db), {
     verifyIdToken: (token) => auth.verifyIdToken(token)
   });
