@@ -8,6 +8,7 @@ import {
 } from 'firebase-admin/app';
 
 import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
 
 function getCredential() {
   const projectId = process.env.FIREBASE_PROJECT_ID;
@@ -43,8 +44,7 @@ if (process.env.FIREBASE_PROJECT_ID) {
   options.projectId = process.env.FIREBASE_PROJECT_ID;
 }
 
-const firebaseApp =
-  getApps()[0] ??
-  initializeApp(options);
+const firebaseApp = getApps()[0] ?? initializeApp(options);
 
 export const db = getFirestore(firebaseApp);
+export const auth = getAuth(firebaseApp);

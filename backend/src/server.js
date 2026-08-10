@@ -1,5 +1,5 @@
 import { createApp } from './app.js';
-import { db } from './firebase.js';
+import { auth, db } from './firebase.js';
 import { FirestorePatientStore } from './firestore-patient-store.js';
 import { seedPatientsIfEmpty } from './seed-patients.js';
 
@@ -8,7 +8,9 @@ const host = process.env.HOST ?? '0.0.0.0';
 
 try {
   const seedResult = await seedPatientsIfEmpty(db);
-  const app = createApp(new FirestorePatientStore(db));
+  const app = createApp(new FirestorePatientStore(db), {
+    verifyIdToken: (token) => auth.verifyIdToken(token)
+  });
 
   app.listen(port, host, () => {
     console.log(
