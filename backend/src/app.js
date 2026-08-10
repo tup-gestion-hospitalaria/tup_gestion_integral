@@ -1,57 +1,57 @@
-import express from "express";
+import express from 'express';
 
-import { PatientStore, validatePatient } from "./patient-store.js";
-import { authenticate } from "./middleware/authenticate.js";
-import { authorizeRoles } from "./middleware/authorize-roles.js";
+import { PatientStore, validatePatient } from './patient-store.js';
+import { authenticate } from './middleware/authenticate.js';
+import { authorizeRoles } from './middleware/authorize-roles.js';
 
 export function createApp(store = new PatientStore(), options = {}) {
   const app = express();
   const verifyIdToken =
     options.verifyIdToken ??
     (async () => {
-      throw new Error("El verificador de tokens no está configurado.");
+      throw new Error('El verificador de tokens no está configurado.');
     });
   const authenticateRequest = authenticate(verifyIdToken);
-  const allowAuthenticatedUsers = authorizeRoles("user", "admin");
-  const allowAdmins = authorizeRoles("admin");
+  const allowAuthenticatedUsers = authorizeRoles('user', 'admin');
+  const allowAdmins = authorizeRoles('admin');
 
   app.use(express.json());
   app.use((request, response, next) => {
     response.setHeader(
-      "Access-Control-Allow-Origin",
-      process.env.CORS_ORIGIN ?? "*",
+      'Access-Control-Allow-Origin',
+      process.env.CORS_ORIGIN ?? '*'
     );
     response.setHeader(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization",
+      'Access-Control-Allow-Headers',
+      'Content-Type, Authorization'
     );
     response.setHeader(
-      "Access-Control-Allow-Methods",
-      "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+      'Access-Control-Allow-Methods',
+      'GET, POST, PUT, PATCH, DELETE, OPTIONS'
     );
 
-    if (request.method === "OPTIONS") {
+    if (request.method === 'OPTIONS') {
       return response.sendStatus(204);
     }
 
     next();
   });
 
-  app.get("/health", (_request, response) => {
-    response.json({ status: "ok" });
+  app.get('/health', (_request, response) => {
+    response.json({ status: 'ok' });
   });
 
   app.get(
-    "/api/patients",
+    '/api/patients',
     authenticateRequest,
     allowAuthenticatedUsers,
     async (_request, response) => {
       response.json(await store.findAll());
-    },
+    }
   );
 
   app.get(
-    "/api/patients/:id",
+    '/api/patients/:id',
     authenticateRequest,
     allowAuthenticatedUsers,
     async (request, response) => {
@@ -60,15 +60,15 @@ export function createApp(store = new PatientStore(), options = {}) {
       if (!patient) {
         return response
           .status(404)
-          .json({ message: "Paciente no encontrado." });
+          .json({ message: 'Paciente no encontrado.' });
       }
 
       response.json(patient);
-    },
+    }
   );
 
   app.post(
-    "/api/patients",
+    '/api/patients',
     authenticateRequest,
     allowAdmins,
     async (request, response) => {
@@ -79,11 +79,11 @@ export function createApp(store = new PatientStore(), options = {}) {
       }
 
       response.status(201).json(await store.create(request.body));
-    },
+    }
   );
 
   app.put(
-    "/api/patients/:id",
+    '/api/patients/:id',
     authenticateRequest,
     allowAdmins,
     async (request, response) => {
@@ -98,15 +98,15 @@ export function createApp(store = new PatientStore(), options = {}) {
       if (!patient) {
         return response
           .status(404)
-          .json({ message: "Paciente no encontrado." });
+          .json({ message: 'Paciente no encontrado.' });
       }
 
       response.json(patient);
-    },
+    }
   );
 
   app.patch(
-    "/api/patients/:id",
+    '/api/patients/:id',
     authenticateRequest,
     allowAdmins,
     async (request, response) => {
@@ -121,35 +121,35 @@ export function createApp(store = new PatientStore(), options = {}) {
       if (!patient) {
         return response
           .status(404)
-          .json({ message: "Paciente no encontrado." });
+          .json({ message: 'Paciente no encontrado.' });
       }
 
       response.json(patient);
-    },
+    }
   );
 
   app.delete(
-    "/api/patients/:id",
+    '/api/patients/:id',
     authenticateRequest,
     allowAdmins,
     async (request, response) => {
       if (!(await store.delete(request.params.id))) {
         return response
           .status(404)
-          .json({ message: "Paciente no encontrado." });
+          .json({ message: 'Paciente no encontrado.' });
       }
 
       response.sendStatus(204);
-    },
+    }
   );
 
   app.use((_request, response) => {
-    response.status(404).json({ message: "Ruta no encontrada." });
+    response.status(404).json({ message: 'Ruta no encontrada.' });
   });
 
   app.use((error, _request, response, _next) => {
     console.error(error);
-    response.status(500).json({ message: "Error interno del servidor." });
+    response.status(500).json({ message: 'Error interno del servidor.' });
   });
 
   return app;

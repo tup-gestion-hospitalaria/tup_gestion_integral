@@ -1,6 +1,6 @@
 export function authenticate(verifyIdToken) {
-  if (typeof verifyIdToken !== "function") {
-    throw new TypeError("Se requiere una función para verificar tokens.");
+  if (typeof verifyIdToken !== 'function') {
+    throw new TypeError('Se requiere una función para verificar tokens.');
   }
 
   return async function authenticateRequest(request, response, next) {
@@ -9,7 +9,7 @@ export function authenticate(verifyIdToken) {
 
     if (!match) {
       return response.status(401).json({
-        message: "Se requiere un token de autenticación.",
+        message: 'Se requiere un token de autenticación.'
       });
     }
 
@@ -21,7 +21,7 @@ export function authenticate(verifyIdToken) {
       next();
     } catch (_error) {
       return response.status(401).json({
-        message: "El token de autenticación no es válido o expiró.",
+        message: 'El token de autenticación no es válido o expiró.'
       });
     }
   };
