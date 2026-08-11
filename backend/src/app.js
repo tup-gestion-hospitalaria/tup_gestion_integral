@@ -3,6 +3,8 @@ import express from 'express';
 import { PatientStore, validatePatient } from './patient-store.js';
 import { authenticate } from './middleware/authenticate.js';
 import { authorizeRoles } from './middleware/authorize-roles.js';
+import { fetchInitialPatients } from './seed-patients.js';
+import { getHealthsitesCache } from './seed-healthsites.js';
 
 export function createApp(store = new PatientStore(), options = {}) {
   const app = express();
@@ -46,7 +48,29 @@ export function createApp(store = new PatientStore(), options = {}) {
     authenticateRequest,
     allowAuthenticatedUsers,
     async (_request, response) => {
-      response.json(await store.findAll());
+      let patients = await store.findAll();
+      if (patients.length === 0) {
+        try {
+          const initialPatients = await fetchInitialPatients();
+          for (const { id, ...data } of initialPatients) {
+            await store.replace(id, data);
+          }
+          patients = await store.findAll();
+        } catch (error) {
+          console.error('Error al auto-cargar pacientes:', error);
+        }
+      }
+      response.json(patients);
+    }
+  );
+
+  app.get(
+    '/api/healthsites',
+    authenticateRequest,
+    allowAuthenticatedUsers,
+    async (_request, response) => {
+      const healthsites = await getHealthsitesCache();
+      response.json(healthsites);
     }
   );
 
