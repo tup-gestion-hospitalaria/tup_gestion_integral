@@ -7,7 +7,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
-import { AnalyticsService } from '../../services/analytics.service';
 import { RegisterDialog } from '../register-dialog/register-dialog';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -37,7 +36,6 @@ export class Login {
     private dialog: MatDialog,
     private cdr: ChangeDetectorRef,
     private translate: TranslateService,
-    private analyticsService: AnalyticsService,
   ) {}
 
   private setLoading(value: boolean): void {
@@ -50,11 +48,7 @@ export class Login {
       this.setLoading(true);
 
       await this.authService.loginWithGoogle();
-
-      const email = this.authService.getCurrentUser()?.email ?? 'email-no-disponible';
-      this.analyticsService.login(email, 'google');
-    } catch (error) {
-      console.error(error);
+    } catch {
       this.translate.get('LOGIN.GOOGLE_ERROR').subscribe((res: string) => alert(res));
     } finally {
       this.setLoading(false);
@@ -71,12 +65,7 @@ export class Login {
       this.setLoading(true);
 
       await this.authService.loginWithEmail(this.email.trim(), this.password);
-
-      const email = this.authService.getCurrentUser()?.email ?? this.email.trim();
-      this.analyticsService.login(email, 'email_password');
     } catch (error: any) {
-      console.error(error);
-
       if (error.code === 'auth/invalid-email') {
         this.translate.get('LOGIN.INVALID_EMAIL').subscribe((res: string) => alert(res));
       } else if (error.code === 'auth/invalid-credential') {
@@ -111,8 +100,6 @@ export class Login {
           result.photoURL,
         );
       } catch (error: any) {
-        console.error(error);
-
         if (error.code === 'auth/email-already-in-use') {
           this.translate.get('LOGIN.EMAIL_ALREADY_IN_USE').subscribe((res: string) => alert(res));
         } else if (error.code === 'auth/invalid-email') {
