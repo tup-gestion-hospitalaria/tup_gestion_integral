@@ -20,15 +20,26 @@ En desarrollo (Trabajo Práctico - Programación)
 - Lautaro Esposito
 
 ## Estructura del repositorio
-- /docs: documentación del proyecto  
-- /src: código fuente  
-- /tests: pruebas  
+- /docs: documentación del proyecto
+- /frontend: aplicación Angular y pruebas unitarias (`*.spec.ts`)
+- /backend: API
 
 ## Tecnologías
-- Frontend: Angular  
-- Lenguajes: TypeScript, HTML, CSS  
-- Base de Datos: MySQL  
-- Control de versiones: Git y GitHub  
+- Frontend: Angular
+- Lenguajes: TypeScript, HTML, CSS
+- Base de Datos: MySQL
+- Control de versiones: Git y GitHub
+
+## Pruebas frontend
+Desde un clon limpio, las pruebas unitarias de guards, interceptor y servicios se ejecutan con Vitest:
+
+```bash
+cd frontend
+npm install
+npm test -- --watch=false
+```
+
+La corrida debe terminar en verde. No requiere Firebase, backend ni navegador.
 
 ## Objetivo
 - Registrar y administrar diferentes entidades (usuarios, clientes, registros, etc.).  
