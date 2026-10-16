@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { MatCardModule } from '@angular/material/card';
@@ -11,7 +11,6 @@ import { Patient } from '../../models/patient';
 import { Healthsite } from '../../models/healthsite';
 import { ItemsService } from '../../services/items.service';
 import { TranslateModule } from '@ngx-translate/core';
-import { AnalyticsService } from '../../services/analytics.service';
 
 @Component({
   selector: 'app-referral-centers',
@@ -27,10 +26,8 @@ import { AnalyticsService } from '../../services/analytics.service';
   templateUrl: './referral-centers.html',
   styleUrl: './referral-centers.css',
 })
-export class ReferralCenters implements OnInit, OnDestroy {
+export class ReferralCenters implements OnInit {
   private readonly itemsService = inject(ItemsService);
-  private readonly analyticsService = inject(AnalyticsService);
-  private featureStartTime = 0;
 
   selectedPatient: Patient | null = null;
 
@@ -48,17 +45,9 @@ export class ReferralCenters implements OnInit, OnDestroy {
   errorMessage = '';
 
   ngOnInit(): void {
-    this.featureStartTime = performance.now();
-    this.analyticsService.featureOpened('centros_derivacion');
-
     this.selectedPatient = history.state.patient ?? null;
 
     this.loadHealthsites();
-  }
-
-  ngOnDestroy(): void {
-    const durationSeconds = Math.round((performance.now() - this.featureStartTime) / 1000);
-    this.analyticsService.featureTimeSpent('centros_derivacion', durationSeconds);
   }
 
   private loadHealthsites(): void {
