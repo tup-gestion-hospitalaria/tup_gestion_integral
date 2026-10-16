@@ -10,6 +10,18 @@ import {
 import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 
+const emulatorHosts = [
+  process.env.FIRESTORE_EMULATOR_HOST,
+  process.env.FIREBASE_AUTH_EMULATOR_HOST
+];
+const usesEmulators = emulatorHosts.every(Boolean);
+
+if (emulatorHosts.some(Boolean) && !usesEmulators) {
+  throw new Error(
+    'La configuración local requiere los emuladores de Firestore y Authentication.'
+  );
+}
+
 function getCredential() {
   const projectId = process.env.FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
@@ -36,12 +48,13 @@ function getCredential() {
   return applicationDefault();
 }
 
-const options = {
-  credential: getCredential()
-};
+const options = usesEmulators ? {} : { credential: getCredential() };
 
-if (process.env.FIREBASE_PROJECT_ID) {
-  options.projectId = process.env.FIREBASE_PROJECT_ID;
+const projectId =
+  process.env.GCLOUD_PROJECT ?? process.env.FIREBASE_PROJECT_ID;
+
+if (projectId) {
+  options.projectId = projectId;
 }
 
 const firebaseApp = getApps()[0] ?? initializeApp(options);
