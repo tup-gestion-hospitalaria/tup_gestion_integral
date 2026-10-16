@@ -1,6 +1,7 @@
 import { createApp } from './app.js';
 import { auth, db } from './firebase.js';
 import { FirestorePatientStore } from './firestore-patient-store.js';
+import { FirestoreUserStore } from './firestore-user-store.js';
 import { seedPatientsIfEmpty } from './seed-patients.js';
 import { getHealthsitesCache } from './seed-healthsites.js';
 
@@ -12,7 +13,10 @@ try {
   // Pre-cargar healthsites en caché
   await getHealthsitesCache();
   const app = createApp(new FirestorePatientStore(db), {
-    verifyIdToken: (token) => auth.verifyIdToken(token)
+    userStore: new FirestoreUserStore(db),
+    verifyIdToken: (token) => auth.verifyIdToken(token),
+    setCustomUserClaims: (uid, claims) => auth.setCustomUserClaims(uid, claims),
+    revokeRefreshTokens: (uid) => auth.revokeRefreshTokens(uid)
   });
 
   app.listen(port, host, () => {
