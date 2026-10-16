@@ -116,5 +116,3 @@ export function validateUserStatusUpdate(data) {
 
   return null;
 }
-
-

@@ -3,8 +3,7 @@ import express from 'express';
 import { PatientStore, validatePatient } from './patient-store.js';
 import { UserStore, validateUserStatusUpdate } from './user-store.js';
 import { authenticate } from './middleware/authenticate.js';
-import { authorizeRoles, authorizeUser } from './middleware/authorize-user.js';
-import { fetchInitialPatients } from './seed-patients.js';
+import { authorizeUser } from './middleware/authorize-user.js';
 import { getHealthsitesCache } from './seed-healthsites.js';
 
 export function createApp(store = new PatientStore(), options = {}) {
@@ -49,7 +48,7 @@ export function createApp(store = new PatientStore(), options = {}) {
         ...request.user,
         status: profile.status,
         active: profile.active,
-        role: profile.role || request.user.role || null
+        role: profile.role ?? null
       };
       request.userProfile = profile;
       next();
@@ -113,8 +112,8 @@ export function createApp(store = new PatientStore(), options = {}) {
     const updated = await userStore.update(request.user.uid, changes, request.user.uid);
     response.json(updated);
   };
-  app.patch('/api/v1/users/me', allowAuthenticatedUsers, patchMeHandler);
-  app.patch('/api/users/me', allowAuthenticatedUsers, patchMeHandler);
+  app.patch('/api/v1/users/me', authenticatedChain, patchMeHandler);
+  app.patch('/api/users/me', authenticatedChain, patchMeHandler);
 
   // Listar usuarios (solo administradores)
   const listUsersHandler = async (_request, response) => {
@@ -175,19 +174,7 @@ export function createApp(store = new PatientStore(), options = {}) {
 
   // Rutas de Pacientes
   const getPatientsHandler = async (_request, response) => {
-    let patients = await store.findAll();
-    if (patients.length === 0) {
-      try {
-        const initialPatients = await fetchInitialPatients();
-        for (const { id, ...data } of initialPatients) {
-          await store.replace(id, data);
-        }
-        patients = await store.findAll();
-      } catch (error) {
-        console.error('Error al auto-cargar pacientes:', error);
-      }
-    }
-    response.json(patients);
+    response.json(await store.findAll());
   };
   app.get('/api/patients', allowAuthenticatedUsers, getPatientsHandler);
   app.get('/api/v1/patients', allowAuthenticatedUsers, getPatientsHandler);

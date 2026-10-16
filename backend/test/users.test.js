@@ -147,6 +147,23 @@ test('2. Un usuario con cuenta pending recibe 403 al acceder a recursos protegid
   assert.match(body.message, /pendiente de aprobación/i);
 });
 
+test('un usuario pending puede actualizar los datos de su propio perfil', async () => {
+  const response = await fetch(`${baseUrl}/api/v1/users/me`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...authHeader('pending-user-token')
+    },
+    body: JSON.stringify({ displayName: 'Nombre actualizado' })
+  });
+
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  assert.equal(body.displayName, 'Nombre actualizado');
+  assert.equal(body.status, 'pending');
+  assert.equal(body.active, false);
+});
+
 test('3. Un usuario deshabilitado recibe 403 al acceder al sistema', async () => {
   const response = await fetch(`${baseUrl}/api/v1/patients`, {
     headers: authHeader('disabled-user-token')
@@ -227,3 +244,28 @@ test('8. Un administrador puede deshabilitar un usuario y revocar sus tokens', a
   assert.ok(revokedTokens.includes('user-approved-1'));
 });
 
+test('un rol eliminado no se recupera desde un token anterior', async () => {
+  const removeRoleResponse = await fetch(
+    `${baseUrl}/api/v1/users/admin-1/role`,
+    {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeader('admin-token')
+      },
+      body: JSON.stringify({ role: null })
+    }
+  );
+
+  assert.equal(removeRoleResponse.status, 200);
+  assert.equal((await removeRoleResponse.json()).role, null);
+  assert.deepEqual(assignedClaims['admin-1'], { role: null });
+  assert.ok(revokedTokens.includes('admin-1'));
+
+  const oldTokenResponse = await fetch(`${baseUrl}/api/v1/users`, {
+    headers: authHeader('admin-token')
+  });
+
+  assert.equal(oldTokenResponse.status, 403);
+  assert.equal((await oldTokenResponse.json()).code, 'NO_ROLE');
+});

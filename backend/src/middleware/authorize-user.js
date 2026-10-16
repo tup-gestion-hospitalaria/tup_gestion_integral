@@ -54,4 +54,3 @@ export function authorizeUser({ allowedRoles = [], requireApproved = true } = {}
 export function authorizeRoles(...allowedRoles) {
   return authorizeUser({ allowedRoles, requireApproved: true });
 }
-

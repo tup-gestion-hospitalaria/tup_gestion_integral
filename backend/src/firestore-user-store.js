@@ -1,5 +1,19 @@
 import { FieldValue } from 'firebase-admin/firestore';
 
+function serializeTimestamp(value) {
+  return typeof value?.toDate === 'function'
+    ? value.toDate().toISOString()
+    : value;
+}
+function toUser(uid, data) {
+  return {
+    uid,
+    ...data,
+    createdAt: serializeTimestamp(data.createdAt),
+    updatedAt: serializeTimestamp(data.updatedAt)
+  };
+}
+
 export class FirestoreUserStore {
   constructor(db) {
     this.collection = db.collection('users');
@@ -7,22 +21,19 @@ export class FirestoreUserStore {
 
   async findAll() {
     const snapshot = await this.collection.get();
-    return snapshot.docs.map((doc) => ({
-      uid: doc.id,
-      ...doc.data()
-    }));
+    return snapshot.docs.map((doc) => toUser(doc.id, doc.data()));
   }
 
   async findById(uid) {
     const doc = await this.collection.doc(uid).get();
-    return doc.exists ? { uid: doc.id, ...doc.data() } : null;
+    return doc.exists ? toUser(doc.id, doc.data()) : null;
   }
 
   async create(uid, data) {
     const docRef = this.collection.doc(uid);
     const existing = await docRef.get();
     if (existing.exists) {
-      return { uid, ...existing.data() };
+      return toUser(uid, existing.data());
     }
 
     const userData = {
@@ -39,7 +50,8 @@ export class FirestoreUserStore {
     };
 
     await docRef.set(userData);
-    return { uid, ...userData };
+    const created = await docRef.get();
+    return toUser(uid, created.data());
   }
 
   async update(uid, changes, updatedBy = uid) {
@@ -62,7 +74,7 @@ export class FirestoreUserStore {
 
     await docRef.update(payload);
     const updated = await docRef.get();
-    return { uid, ...updated.data() };
+    return toUser(uid, updated.data());
   }
 
   async delete(uid) {
@@ -77,4 +89,3 @@ export class FirestoreUserStore {
     return true;
   }
 }
-
