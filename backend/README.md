@@ -1,9 +1,14 @@
 # API REST - Gestión Hospitalaria
 
-Backend Express de Gestión Integral. Usa Firebase Authentication para validar
-identidades y Cloud Firestore para persistir pacientes. El arranque no carga
-datos externos: los datos locales se crean con un comando explícito y
-reproducible.
+Backend Express de Gestión Integral Hospitalaria. Usa Firebase Authentication
+para validar identidades y Cloud Firestore para persistir pacientes. El
+arranque no carga datos externos: los datos locales se crean con un comando
+explícito y reproducible.
+
+El contrato objetivo versionado de GI-01 está documentado en
+[`docs/GI-01-alcance-roles-firestore-api.md`](../docs/GI-01-alcance-roles-firestore-api.md).
+La implementación actual conserva temporalmente el prefijo `/api` hasta que se
+realice la migración a `/api/v1`.
 
 ## Ejecutar
 
@@ -51,28 +56,35 @@ npm run dev:windows
 | PUT | `/api/patients/:id` | Reemplazar completamente (`admin`) |
 | PATCH | `/api/patients/:id` | Modificar parcialmente (`admin`) |
 | DELETE | `/api/patients/:id` | Eliminar (`admin`) |
+| GET | `/api/healthsites` | Consultar centros (`user`, `admin`) |
 | GET | `/health` | Comprobar el estado del servicio |
 
 Ejemplos completos para probar cada operación:
 
 ```bash
-curl http://localhost:3000/api/patients
+curl http://localhost:3000/api/patients \
+  -H "Authorization: Bearer $FIREBASE_ID_TOKEN"
 
-curl http://localhost:3000/api/patients/ID
+curl http://localhost:3000/api/patients/ID \
+  -H "Authorization: Bearer $FIREBASE_ID_TOKEN"
 
 curl -X POST http://localhost:3000/api/patients \
+  -H "Authorization: Bearer $FIREBASE_ID_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"fullName":"Ana Pérez","email":"ana@example.com","city":"La Plata","country":"Argentina","picture":"https://example.com/ana.jpg","active":true}'
 
 curl -X PUT http://localhost:3000/api/patients/ID \
+  -H "Authorization: Bearer $FIREBASE_ID_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"fullName":"Ana Gómez","email":"ana.gomez@example.com","city":"Berisso","country":"Argentina","picture":"https://example.com/ana.jpg","active":false}'
 
 curl -X PATCH http://localhost:3000/api/patients/ID \
+  -H "Authorization: Bearer $FIREBASE_ID_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"active":false}'
 
-curl -X DELETE http://localhost:3000/api/patients/ID
+curl -X DELETE http://localhost:3000/api/patients/ID \
+  -H "Authorization: Bearer $FIREBASE_ID_TOKEN"
 ```
 
 ## Pruebas
