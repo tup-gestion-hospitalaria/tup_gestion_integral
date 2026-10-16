@@ -1,44 +1,69 @@
-## Nombre del proyecto
-Gestión Integral
+# Gestión Integral Hospitalaria
 
-## Tópico elegido
-Sistema de gestión de información orientado a la administración de entidades, registros y operaciones dentro de una organización.
+Sistema para centralizar la gestión de pacientes y derivaciones de una institución de salud.
 
-## Descripción
-El presente proyecto, denominado “Gestión Integral”, consiste en el desarrollo de un sistema orientado a la administración y organización de información dentro de una organización.
+## Estado y alcance
 
-La aplicación permitirá centralizar la gestión de entidades, registros y operaciones en una única plataforma, facilitando el acceso y control de la información.
+El proyecto se encuentra en desarrollo como trabajo práctico de Programación. El MVP incluye autenticación, gestión de pacientes y el circuito básico de derivaciones para una única institución y sede.
 
-El sistema tiene como finalidad optimizar los procesos administrativos, mejorar la organización interna y reducir errores en la gestión de datos.
+La definición funcional y técnica se encuentra en [GI-01 — Alcance, roles y modelo Firestore](docs/GI-01-alcance-roles-firestore-api.md).
 
-## Estado del proyecto
-En desarrollo (Trabajo Práctico - Programación)
+## Plataformas de entrega
+
+- Web responsive.
+- PWA instalable.
+
+Android mediante Capacitor y escritorio mediante Tauri se mantienen como prototipos técnicos y no forman parte de la entrega comprometida del MVP.
 
 ## Miembros del proyecto
+
 - Lucas Lautaro Luciano
-- Ailen Ferreira
+- Julian Tesoreiro
 - Lautaro Esposito
 
+## Tecnologías oficiales
+
+- Frontend: Angular y TypeScript.
+- Backend: Node.js y Express.
+- Autenticación: Firebase Authentication.
+- Base de datos: Cloud Firestore.
+- Hosting web: Firebase Hosting.
+- Hosting de API: Render.
+- Control de versiones: Git y GitHub.
+
+## Ramas
+
+- `main`: rama estable y de entrega.
+- `develop`: rama de integración previa a `main`.
+
+Las ramas de funcionalidad parten de `develop` y vuelven mediante un pull request revisado. La versión entregable debe quedar integrada en `main`.
+
 ## Estructura del repositorio
-- /docs: documentación del proyecto  
-- /src: código fuente  
-- /tests: pruebas  
 
-## Tecnologías
-- Frontend: Angular  
-- Lenguajes: TypeScript, HTML, CSS  
-- Base de Datos: MySQL  
-- Control de versiones: Git y GitHub  
+- `frontend/`: aplicación Angular, PWA y prototipos de empaquetado.
+- `backend/`: API REST y acceso administrativo a Firebase.
+- `docs/`: alcance, arquitectura y contratos.
 
-## Objetivo
-- Registrar y administrar diferentes entidades (usuarios, clientes, registros, etc.).  
-- Gestionar información de manera estructurada.  
-- Permitir la carga, modificación y consulta de datos.  
-- Centralizar la información en una única plataforma.  
-- Facilitar la organización y el acceso a los datos.  
+## Ejecución local
 
-## Aplicación de gestión de proyecto
-Se utilizará Trello como herramienta de gestión de tareas bajo metodología Kanban.
+Frontend:
 
-URL del tablero:
-https://trello.com/b/YHN2p26F/
+```bash
+cd frontend
+npm install
+npm start
+```
+
+Backend:
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+La configuración y los endpoints implementados actualmente se detallan en [backend/README.md](backend/README.md).
+
+## Gestión del proyecto
+
+Se utiliza [Trello](https://trello.com/b/YHN2p26F/) con metodología Kanban.
