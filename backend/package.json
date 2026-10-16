@@ -12,11 +12,19 @@
     "start": "node src/server.js",
     "start:windows": "node --use-system-ca src/server.js",
     "test": "node --test",
+    "lint": "eslint .",
+    "build": "node scripts/check-syntax.mjs",
+    "smoke": "node scripts/smoke-health.mjs",
     "role:set": "node scripts/set-user-role.js"
   },
   "dependencies": {
     "dotenv": "17.4.2",
     "express": "^5.1.0",
     "firebase-admin": "^14.2.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.3.0",
+    "globals": "^16.0.0"
   }
 }

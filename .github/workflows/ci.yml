@@ -1,0 +1,196 @@
+# Para exigir este check antes de mergear:
+# Settings → Branches → Branch protection rules → Require status checks → jobs de este workflow.
+
+name: CI
+
+on:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  HUSKY: '0'
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare report directory
+        run: mkdir -p ci-reports
+
+      - name: Dependency audit
+        run: |
+          set -o pipefail
+          npm audit --json > ci-reports/audit.json || true
+          npm audit --audit-level=high 2>&1 | tee ci-reports/audit.log
+
+      - name: Lint
+        run: |
+          set -o pipefail
+          npm run lint 2>&1 | tee ci-reports/lint.log
+
+      - name: Test
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee ci-reports/test.log
+
+      - name: Build
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee ci-reports/build.log
+
+      - name: Smoke
+        run: |
+          set -o pipefail
+          npm run smoke 2>&1 | tee ci-reports/smoke.log
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-reports-backend
+          path: backend/ci-reports/
+          if-no-files-found: warn
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Enable npm from packageManager
+        run: corepack enable && corepack prepare npm@11.11.0 --activate
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare report directory
+        run: mkdir -p ci-reports
+
+      - name: Dependency audit
+        run: |
+          set -o pipefail
+          npm audit --json > ci-reports/audit.json || true
+          npm audit --audit-level=high 2>&1 | tee ci-reports/audit.log
+
+      - name: Lint
+        run: |
+          set -o pipefail
+          npm run lint 2>&1 | tee ci-reports/lint.log
+
+      - name: Test
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee ci-reports/test.log
+
+      - name: Build
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee ci-reports/build.log
+
+      - name: Smoke
+        run: |
+          set -o pipefail
+          npm run smoke 2>&1 | tee ci-reports/smoke.log
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-reports-frontend
+          path: frontend/ci-reports/
+          if-no-files-found: warn
+
+  integration:
+    name: Integration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect integration or E2E scripts
+        id: detect
+        run: |
+          if node -e "const s=require('./backend/package.json').scripts||{}; process.exit(s['test:emulator']?0:1)"; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "cwd=backend" >> "$GITHUB_OUTPUT"
+            echo "script=test:emulator" >> "$GITHUB_OUTPUT"
+          elif node -e "const s=require('./backend/package.json').scripts||{}; process.exit(s['test:e2e']?0:1)"; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "cwd=backend" >> "$GITHUB_OUTPUT"
+            echo "script=test:e2e" >> "$GITHUB_OUTPUT"
+          elif node -e "const s=require('./frontend/package.json').scripts||{}; process.exit(s['test:emulator']?0:1)"; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "cwd=frontend" >> "$GITHUB_OUTPUT"
+            echo "script=test:emulator" >> "$GITHUB_OUTPUT"
+          elif node -e "const s=require('./frontend/package.json').scripts||{}; process.exit(s['test:e2e']?0:1)"; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "cwd=frontend" >> "$GITHUB_OUTPUT"
+            echo "script=test:e2e" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "No test:emulator or test:e2e scripts yet. Slot reserved for GI-17 and future E2E suites."
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.detect.outputs.run == 'true'
+        with:
+          node-version: '20'
+
+      - uses: actions/setup-java@v4
+        if: steps.detect.outputs.run == 'true' && steps.detect.outputs.script == 'test:emulator'
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Enable npm from packageManager
+        if: steps.detect.outputs.run == 'true' && steps.detect.outputs.cwd == 'frontend'
+        working-directory: frontend
+        run: corepack enable && corepack prepare npm@11.11.0 --activate
+
+      - name: Install dependencies
+        if: steps.detect.outputs.run == 'true'
+        working-directory: ${{ steps.detect.outputs.cwd }}
+        run: |
+          npm ci
+          mkdir -p ci-reports
+
+      - name: Run integration tests
+        if: steps.detect.outputs.run == 'true'
+        working-directory: ${{ steps.detect.outputs.cwd }}
+        run: |
+          set -o pipefail
+          npm run ${{ steps.detect.outputs.script }} 2>&1 | tee ci-reports/integration.log
+
+      - name: Upload evidence
+        if: always() && steps.detect.outputs.run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-reports-integration
+          path: ${{ steps.detect.outputs.cwd }}/ci-reports/
+          if-no-files-found: warn

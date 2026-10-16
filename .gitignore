@@ -1,4 +1,5 @@
 .firebase/
+ci-reports/
 
 # Notas personales de referencia (no versionar)
 docs/resumen-aplicacion.md
