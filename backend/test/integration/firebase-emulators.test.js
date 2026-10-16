@@ -101,6 +101,17 @@ test('el store usa Firestore Emulator con fixtures deterministas', async () => {
 });
 
 test('el backend arranca y valida tokens y roles con Auth Emulator', async () => {
+  const profileResponse = await fetch(`${baseUrl}/api/v1/users/me`, {
+    headers: headersFor('user')
+  });
+  assert.equal(profileResponse.status, 200);
+
+  const profile = await profileResponse.json();
+  assert.equal(profile.status, 'approved');
+  assert.equal(profile.active, true);
+  assert.match(profile.createdAt, /^\d{4}-\d{2}-\d{2}T/);
+  assert.match(profile.updatedAt, /^\d{4}-\d{2}-\d{2}T/);
+
   const readResponse = await fetch(`${baseUrl}/api/patients`, {
     headers: headersFor('user')
   });
