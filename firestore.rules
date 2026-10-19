@@ -1,0 +1,11 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Firestore es privado para los clientes. La API valida el token y el rol,
+    // y accede mediante Admin SDK, que no queda sujeto a estas reglas.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
