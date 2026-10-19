@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "scripts": {
     "dev": "node --watch src/server.js",
@@ -17,6 +17,9 @@
     "emulators:start": "firebase emulators:start --config ../firebase.json --project demo-tup-gestion-integral --only auth,firestore",
     "emulators:seed": "node scripts/seed-emulators.js",
     "emulators:dev": "firebase emulators:exec --config ../firebase.json --project demo-tup-gestion-integral --only auth,firestore --ui \"npm run emulators:seed && npm run dev\"",
+    "lint": "eslint .",
+    "build": "node scripts/check-syntax.mjs",
+    "smoke": "node scripts/smoke-health.mjs",
     "role:set": "node scripts/set-user-role.js"
   },
   "dependencies": {
@@ -26,7 +29,10 @@
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^6.0.0",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.3.0",
     "firebase": "^13.0.0",
-    "firebase-tools": "^15.34.0"
+    "firebase-tools": "^15.34.0",
+    "globals": "^16.0.0"
   }
 }

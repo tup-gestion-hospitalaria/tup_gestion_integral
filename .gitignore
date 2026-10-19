@@ -1,2 +1,6 @@
 .firebase/
+ci-reports/
 *-debug.log
+
+# Notas personales de referencia (no versionar)
+docs/resumen-aplicacion.md
