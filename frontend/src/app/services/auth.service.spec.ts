@@ -9,7 +9,7 @@ import { AuthService } from './auth.service';
 const authHarness = vi.hoisted(() => ({
   currentUser: null as User | null,
   authStateCallback: undefined as ((user: User | null) => void) | undefined,
-  authStateReady: vi.fn(async () => {}),
+  authStateReady: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('firebase/app', () => ({
@@ -27,7 +27,7 @@ vi.mock('firebase/auth', () => ({
     authHarness.authStateCallback = callback;
     return vi.fn();
   }),
-  signOut: vi.fn(async () => {}),
+  signOut: vi.fn().mockResolvedValue(undefined),
   GoogleAuthProvider: vi.fn().mockImplementation(() => ({
     setCustomParameters: vi.fn(),
   })),

@@ -31,9 +31,7 @@ describe('authInterceptor', () => {
 
   async function runInterceptor(url: string) {
     const request = new HttpRequest('GET', url);
-    await TestBed.runInInjectionContext(() =>
-      firstValueFrom(authInterceptor(request, next)),
-    );
+    await TestBed.runInInjectionContext(() => firstValueFrom(authInterceptor(request, next)));
   }
 
   it('does not add Authorization for non-API URLs', async () => {

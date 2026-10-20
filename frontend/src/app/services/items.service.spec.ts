@@ -67,20 +67,14 @@ describe('ItemsService', () => {
     });
 
     expect(itemsApiService.getHealthsites).toHaveBeenCalled();
-    expect(storageService.setItem).toHaveBeenCalledWith(
-      cacheKey,
-      sampleHealthsites,
-      5,
-    );
+    expect(storageService.setItem).toHaveBeenCalledWith(cacheKey, sampleHealthsites, 5);
     expect(result).toEqual(sampleHealthsites);
   });
 
   it('returns empty array when API fails', async () => {
     storageService.getItem.mockReturnValue(null);
-    itemsApiService.getHealthsites.mockReturnValue(
-      throwError(() => new Error('network')),
-    );
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    itemsApiService.getHealthsites.mockReturnValue(throwError(() => new Error('network')));
+    const consoleError = vi.spyOn(console, 'error').mockReturnValue();
 
     const result = await new Promise<Healthsite[]>((resolve) => {
       service.getHealthsites().subscribe(resolve);

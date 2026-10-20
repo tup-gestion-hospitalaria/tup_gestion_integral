@@ -1,0 +1,256 @@
+# Para exigir este check antes de mergear:
+# Settings → Branches → Branch protection rules → Require status checks → jobs de este workflow.
+
+name: CI
+
+on:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  HUSKY: '0'
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Prepare report directory
+        run: mkdir -p ci-reports
+
+      - name: Install dependencies
+        run: |
+          set -o pipefail
+          npm ci 2>&1 | tee ci-reports/install.log
+
+      - name: Dependency audit
+        run: |
+          set -o pipefail
+          npm audit --json > ci-reports/audit.json || true
+          npm audit --omit=dev --audit-level=high 2>&1 | tee ci-reports/audit.log
+
+      - name: Lint
+        run: |
+          set -o pipefail
+          npm run lint 2>&1 | tee ci-reports/lint.log
+
+      - name: Test
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee ci-reports/test.log
+
+      - name: Build
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee ci-reports/build.log
+
+      - name: Smoke
+        run: |
+          set -o pipefail
+          npm run smoke 2>&1 | tee ci-reports/smoke.log
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-reports-backend
+          path: backend/ci-reports/
+          if-no-files-found: warn
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Enable npm from packageManager
+        run: corepack enable && corepack prepare npm@11.11.0 --activate
+
+      - name: Prepare report directory
+        run: mkdir -p ci-reports
+
+      - name: Install dependencies
+        run: |
+          set -o pipefail
+          npm ci 2>&1 | tee ci-reports/install.log
+
+      - name: Dependency audit
+        run: |
+          set -o pipefail
+          npm audit --json > ci-reports/audit.json || true
+          npm audit --audit-level=high 2>&1 | tee ci-reports/audit.log
+
+      - name: Lint
+        run: |
+          set -o pipefail
+          npm run lint 2>&1 | tee ci-reports/lint.log
+
+      - name: Test
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee ci-reports/test.log
+
+      - name: Build
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee ci-reports/build.log
+
+      - name: Smoke
+        run: |
+          set -o pipefail
+          npm run smoke 2>&1 | tee ci-reports/smoke.log
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-reports-frontend
+          path: frontend/ci-reports/
+          if-no-files-found: warn
+
+  integration:
+    name: Integration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect integration or E2E scripts
+        id: detect
+        run: |
+          has_script() {
+            node -e "const s=require('./' + process.argv[1] + '/package.json').scripts || {}; process.exit(s[process.argv[2]] ? 0 : 1)" "$1" "$2"
+          }
+
+          backend_emulator=""
+          frontend_emulator=""
+
+          if has_script backend test:emulators; then
+            backend_emulator="test:emulators"
+          elif has_script backend test:emulator; then
+            backend_emulator="test:emulator"
+          fi
+
+          if has_script frontend test:emulators; then
+            frontend_emulator="test:emulators"
+          elif has_script frontend test:emulator; then
+            frontend_emulator="test:emulator"
+          fi
+
+          backend_e2e=false
+          frontend_e2e=false
+          has_script backend test:e2e && backend_e2e=true
+          has_script frontend test:e2e && frontend_e2e=true
+
+          any=false
+          if [[ -n "$backend_emulator" || -n "$frontend_emulator" || "$backend_e2e" == true || "$frontend_e2e" == true ]]; then
+            any=true
+          fi
+
+          echo "any=$any" >> "$GITHUB_OUTPUT"
+          echo "backend_emulator=$backend_emulator" >> "$GITHUB_OUTPUT"
+          echo "frontend_emulator=$frontend_emulator" >> "$GITHUB_OUTPUT"
+          echo "backend_e2e=$backend_e2e" >> "$GITHUB_OUTPUT"
+          echo "frontend_e2e=$frontend_e2e" >> "$GITHUB_OUTPUT"
+
+          if [[ "$any" == false ]]; then
+            echo "No integration or E2E scripts found. Slot reserved for future suites."
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.detect.outputs.any == 'true'
+        with:
+          node-version: '22'
+
+      - uses: actions/setup-java@v4
+        if: steps.detect.outputs.backend_emulator != '' || steps.detect.outputs.frontend_emulator != ''
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Enable npm from packageManager
+        if: steps.detect.outputs.frontend_emulator != '' || steps.detect.outputs.frontend_e2e == 'true'
+        working-directory: frontend
+        run: corepack enable && corepack prepare npm@11.11.0 --activate
+
+      - name: Install backend dependencies
+        if: steps.detect.outputs.backend_emulator != '' || steps.detect.outputs.backend_e2e == 'true'
+        working-directory: backend
+        run: |
+          mkdir -p ci-reports
+          set -o pipefail
+          npm ci 2>&1 | tee ci-reports/install.log
+
+      - name: Install frontend dependencies
+        if: steps.detect.outputs.frontend_emulator != '' || steps.detect.outputs.frontend_e2e == 'true'
+        working-directory: frontend
+        run: |
+          mkdir -p ci-reports
+          set -o pipefail
+          npm ci 2>&1 | tee ci-reports/install.log
+
+      - name: Run backend emulator tests
+        if: steps.detect.outputs.backend_emulator != ''
+        working-directory: backend
+        run: |
+          set -o pipefail
+          npm run ${{ steps.detect.outputs.backend_emulator }} 2>&1 | tee ci-reports/integration-emulator.log
+
+      - name: Run backend E2E tests
+        if: steps.detect.outputs.backend_e2e == 'true'
+        working-directory: backend
+        run: |
+          set -o pipefail
+          npm run test:e2e 2>&1 | tee ci-reports/e2e.log
+
+      - name: Run frontend emulator tests
+        if: steps.detect.outputs.frontend_emulator != ''
+        working-directory: frontend
+        run: |
+          set -o pipefail
+          npm run ${{ steps.detect.outputs.frontend_emulator }} 2>&1 | tee ci-reports/integration-emulator.log
+
+      - name: Run frontend E2E tests
+        if: steps.detect.outputs.frontend_e2e == 'true'
+        working-directory: frontend
+        run: |
+          set -o pipefail
+          npm run test:e2e 2>&1 | tee ci-reports/e2e.log
+
+      - name: Upload backend evidence
+        if: always() && (steps.detect.outputs.backend_emulator != '' || steps.detect.outputs.backend_e2e == 'true')
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-reports-integration-backend
+          path: backend/ci-reports/
+          if-no-files-found: warn
+
+      - name: Upload frontend evidence
+        if: always() && (steps.detect.outputs.frontend_emulator != '' || steps.detect.outputs.frontend_e2e == 'true')
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-reports-integration-frontend
+          path: frontend/ci-reports/
+          if-no-files-found: warn
