@@ -4,3 +4,8 @@ ci-reports/
 
 # Notas personales de referencia (no versionar)
 docs/resumen-aplicacion.md
+
+# Integración local Antigravity y Trello
+AGENTS.md
+scripts/
+.env.trello
