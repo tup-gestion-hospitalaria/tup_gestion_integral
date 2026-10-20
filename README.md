@@ -40,7 +40,7 @@ Las ramas de funcionalidad parten de `develop` y vuelven mediante un pull reques
 
 ## Estructura del repositorio
 
-- `frontend/`: aplicación Angular, PWA y prototipos de empaquetado.
+- `frontend/`: aplicación Angular, PWA, pruebas unitarias (`*.spec.ts`) y prototipos de empaquetado.
 - `backend/`: API REST y acceso administrativo a Firebase.
 - `docs/`: alcance, arquitectura y contratos.
 
@@ -63,6 +63,18 @@ npm run dev
 ```
 
 La configuración y los endpoints implementados actualmente se detallan en [backend/README.md](backend/README.md).
+
+## Pruebas frontend
+
+Desde un clon limpio, las pruebas unitarias de guards, interceptores y servicios se ejecutan con Vitest vía Angular CLI:
+
+```bash
+cd frontend
+npm install
+npm test -- --watch=false
+```
+
+La corrida debe terminar en verde. No requiere Firebase, backend ni navegador.
 
 ## Gestión del proyecto
 
