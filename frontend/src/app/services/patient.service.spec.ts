@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../../environments/environment';
-import { Patient } from '../models/patient';
+import { PatientPage } from '../models/patient';
 import { PatientService } from './patient.service';
 
 describe('PatientService', () => {
@@ -24,25 +24,41 @@ describe('PatientService', () => {
     httpMock.verify();
   });
 
-  it('fetches patients from the backend API', async () => {
-    const patients: Patient[] = [
-      {
-        id: '1',
-        fullName: 'Jane Doe',
-        email: 'jane@example.com',
-        city: 'La Plata',
-        country: 'AR',
-        picture: '',
-        active: true,
-      },
-    ];
+  it('fetches paginated patients from the backend API', async () => {
+    const page: PatientPage = {
+      items: [
+        {
+          id: '1',
+          fullName: 'Jane Doe',
+          email: 'jane@example.com',
+          city: 'La Plata',
+          country: 'AR',
+          picture: '',
+          active: true,
+        },
+      ],
+      page: 1,
+      limit: 20,
+      total: 1,
+      totalPages: 1,
+    };
 
-    const resultPromise = firstValueFrom(service.getPatients());
+    const resultPromise = firstValueFrom(
+      service.getPatients({ page: 1, q: 'jane', sort: 'fullName', order: 'asc' }),
+    );
 
-    const req = httpMock.expectOne(`${environment.backendApiUrl}/patients`);
+    const req = httpMock.expectOne((request) => {
+      return (
+        request.url === `${environment.backendApiUrl}/patients` &&
+        request.params.get('page') === '1' &&
+        request.params.get('q') === 'jane' &&
+        request.params.get('sort') === 'fullName' &&
+        request.params.get('order') === 'asc'
+      );
+    });
     expect(req.request.method).toBe('GET');
-    req.flush(patients);
+    req.flush(page);
 
-    expect(await resultPromise).toEqual(patients);
+    expect(await resultPromise).toEqual(page);
   });
 });

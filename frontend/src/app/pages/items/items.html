@@ -6,15 +6,25 @@
       <input
         matInput
         [(ngModel)]="filterText"
-        (input)="onFilterChange()"
+        (input)="onSearchInput()"
         [placeholder]="'ITEMS.SEARCH_PLACEHOLDER' | translate"
       />
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>{{ 'ITEMS.STATUS' | translate }}</mat-label>
+
+      <mat-select [(ngModel)]="activeFilter" (selectionChange)="onActiveFilterChange()">
+        <mat-option value="all">{{ 'ITEMS.STATUS_ALL' | translate }}</mat-option>
+        <mat-option value="active">{{ 'ITEMS.STATUS_ACTIVE' | translate }}</mat-option>
+        <mat-option value="inactive">{{ 'ITEMS.STATUS_INACTIVE' | translate }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
       <mat-label>{{ 'ITEMS.SORT_BY' | translate }}</mat-label>
 
-      <mat-select [(ngModel)]="sortField" (selectionChange)="sortPatients()">
+      <mat-select [(ngModel)]="sortField" (selectionChange)="onSortChange()">
         <mat-option value="fullName">
           {{ 'ITEMS.NAME' | translate }}
         </mat-option>
@@ -36,7 +46,7 @@
     <mat-form-field appearance="outline" class="filter-field">
       <mat-label>{{ 'ITEMS.DIRECTION' | translate }}</mat-label>
 
-      <mat-select [(ngModel)]="sortDirection" (selectionChange)="sortPatients()">
+      <mat-select [(ngModel)]="sortDirection" (selectionChange)="onSortChange()">
         <mat-option value="asc">
           {{ 'ITEMS.ASC' | translate }}
         </mat-option>
@@ -57,7 +67,7 @@
   </div>
 
   <div *ngIf="!isLoading && !errorMessage" class="items-list">
-    <mat-card *ngFor="let patient of filteredPatients" class="item-card">
+    <mat-card *ngFor="let patient of patients" class="item-card">
       <img [src]="patient.picture" [alt]="patient.fullName" class="patient-image" />
 
       <div class="patient-info">
@@ -66,6 +76,13 @@
         <mat-card-content>
           <p>{{ patient.email }}</p>
           <p>{{ patient.city }}, {{ patient.country }}</p>
+          <p class="status-line">
+            {{
+              patient.active
+                ? ('ITEMS.STATUS_ACTIVE' | translate)
+                : ('ITEMS.STATUS_INACTIVE' | translate)
+            }}
+          </p>
         </mat-card-content>
 
         <mat-card-actions>
@@ -75,5 +92,23 @@
         </mat-card-actions>
       </div>
     </mat-card>
+
+    <div class="pagination-bar" *ngIf="totalPages > 0">
+      <button mat-button type="button" (click)="goToPreviousPage()" [disabled]="page <= 1">
+        {{ 'ITEMS.PREV_PAGE' | translate }}
+      </button>
+
+      <span class="pagination-summary">
+        {{ 'ITEMS.PAGE_SUMMARY' | translate: { page, totalPages, total } }}
+      </span>
+
+      <button mat-button type="button" (click)="goToNextPage()" [disabled]="page >= totalPages">
+        {{ 'ITEMS.NEXT_PAGE' | translate }}
+      </button>
+    </div>
+
+    <p *ngIf="patients.length === 0" class="empty-message">
+      {{ 'ITEMS.NO_RESULTS' | translate }}
+    </p>
   </div>
 </section>
