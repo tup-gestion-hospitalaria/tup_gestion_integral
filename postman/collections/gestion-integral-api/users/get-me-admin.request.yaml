@@ -1,0 +1,18 @@
+$kind: http-request
+name: GET /users/me (admin)
+method: GET
+url: '{{base_url}}/api/v1/users/me'
+order: 3100
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('200 perfil propio', function () {
+        pm.response.to.have.status(200);
+      });
+      const body = pm.response.json();
+      pm.test('usuario aprobado admin', function () {
+        pm.expect(body.status).to.eql('approved');
+        pm.expect(body.active).to.eql(true);
+        pm.expect(body.role).to.eql('admin');
+      });

@@ -1,0 +1,4 @@
+$kind: collection
+name: Flujo admin (CRUD paciente)
+description: Ejecutar en orden. Crea un paciente, lo modifica, baja lógica y restaura.
+order: 7000

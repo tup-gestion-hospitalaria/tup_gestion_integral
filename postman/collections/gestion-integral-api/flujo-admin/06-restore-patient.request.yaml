@@ -1,0 +1,31 @@
+$kind: http-request
+name: 06 POST restore
+method: POST
+url: '{{base_url}}/api/v1/patients/{{patient_id}}/restore'
+order: 7600
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "version": 4
+    }
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      const version = Number(pm.collectionVariables.get('patient_version'));
+      pm.request.body.update(JSON.stringify({ version }));
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('200 restaurado', function () {
+        pm.response.to.have.status(200);
+      });
+      const body = pm.response.json();
+      pm.test('sin deletedAt', function () {
+        pm.expect(body.deletedAt).to.eql(null);
+      });
+      pm.collectionVariables.set('patient_version', String(body.version));

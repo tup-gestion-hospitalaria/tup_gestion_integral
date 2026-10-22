@@ -1,0 +1,22 @@
+$kind: http-request
+name: GET /users/me (user)
+method: GET
+url: '{{base_url}}/api/v1/users/me'
+order: 3200
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{user_id_token}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('200 perfil user', function () {
+        pm.response.to.have.status(200);
+      });
+      const body = pm.response.json();
+      pm.test('rol user aprobado', function () {
+        pm.expect(body.role).to.eql('user');
+        pm.expect(body.status).to.eql('approved');
+      });

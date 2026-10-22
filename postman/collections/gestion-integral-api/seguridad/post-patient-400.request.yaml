@@ -1,0 +1,24 @@
+$kind: http-request
+name: POST /patients cuerpo incompleto (400)
+method: POST
+url: '{{base_url}}/api/v1/patients'
+order: 6300
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "fullName": "Solo nombre"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('400 validación', function () {
+        pm.response.to.have.status(400);
+      });
+      pm.test('message presente', function () {
+        pm.expect(pm.response.json().message).to.be.a('string');
+      });

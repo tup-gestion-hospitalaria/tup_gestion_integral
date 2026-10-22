@@ -1,0 +1,5 @@
+localResources:
+  collections:
+    - path: postman/collections/gestion-integral-api
+  environments:
+    - path: postman/environments/local-emulators.environment.yaml

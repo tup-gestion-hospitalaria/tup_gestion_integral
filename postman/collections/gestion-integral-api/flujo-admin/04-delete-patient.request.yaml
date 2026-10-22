@@ -1,0 +1,17 @@
+$kind: http-request
+name: 04 DELETE baja lógica
+method: DELETE
+url: '{{base_url}}/api/v1/patients/{{patient_id}}'
+order: 7400
+queryParams:
+  - key: version
+    value: '{{patient_version}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('204 eliminado', function () {
+        pm.response.to.have.status(204);
+      });
+      const version = Number(pm.collectionVariables.get('patient_version'));
+      pm.collectionVariables.set('patient_version', String(version + 1));

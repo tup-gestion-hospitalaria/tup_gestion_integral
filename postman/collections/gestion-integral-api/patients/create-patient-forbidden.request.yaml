@@ -1,0 +1,31 @@
+$kind: http-request
+name: POST /patients (user → 403)
+method: POST
+url: '{{base_url}}/api/v1/patients'
+order: 4500
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{user_id_token}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "fullName": "No Autorizado",
+      "email": "no@example.test",
+      "city": "La Plata",
+      "country": "Argentina",
+      "picture": "https://example.test/x.jpg",
+      "active": true
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('403 rol user no crea', function () {
+        pm.response.to.have.status(403);
+      });

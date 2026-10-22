@@ -1,0 +1,25 @@
+$kind: http-request
+name: GET /patients (filtros)
+method: GET
+url: '{{base_url}}/api/v1/patients'
+order: 4200
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{user_id_token}}'
+queryParams:
+  - key: active
+    value: 'true'
+  - key: q
+    value: ana
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('200 con filtros', function () {
+        pm.response.to.have.status(200);
+      });
+      pm.test('items array', function () {
+        pm.expect(pm.response.json().items).to.be.an('array');
+      });

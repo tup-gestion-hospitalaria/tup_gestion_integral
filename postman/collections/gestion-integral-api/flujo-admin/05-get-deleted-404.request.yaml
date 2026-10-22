@@ -1,0 +1,17 @@
+$kind: http-request
+name: 05 GET tras baja (404)
+method: GET
+url: '{{base_url}}/api/v1/patients/{{patient_id}}'
+order: 7500
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{user_id_token}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('404 no listado tras baja', function () {
+        pm.response.to.have.status(404);
+      });

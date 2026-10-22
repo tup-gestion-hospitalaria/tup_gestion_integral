@@ -1,0 +1,17 @@
+$kind: http-request
+name: GET /patients token inválido (401)
+method: GET
+url: '{{base_url}}/api/v1/patients'
+order: 6200
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: token-invalido-postman
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('401 token inválido', function () {
+        pm.response.to.have.status(401);
+      });

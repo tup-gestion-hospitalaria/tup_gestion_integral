@@ -1,0 +1,17 @@
+$kind: http-request
+name: GET /patients/:id (404)
+method: GET
+url: '{{base_url}}/api/v1/patients/patient-inexistente'
+order: 4400
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{user_id_token}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('404 inexistente', function () {
+        pm.response.to.have.status(404);
+      });

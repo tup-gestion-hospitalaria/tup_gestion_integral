@@ -1,0 +1,30 @@
+$kind: http-request
+name: 03 PATCH parcial
+method: PATCH
+url: '{{base_url}}/api/v1/patients/{{patient_id}}'
+order: 7300
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "active": true,
+      "version": 2
+    }
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      const version = Number(pm.collectionVariables.get('patient_version'));
+      pm.request.body.update(JSON.stringify({ active: true, version }));
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('200 patch', function () {
+        pm.response.to.have.status(200);
+        const body = pm.response.json();
+        pm.collectionVariables.set('patient_version', String(body.version));
+        pm.expect(body.active).to.eql(true);
+      });

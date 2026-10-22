@@ -1,0 +1,43 @@
+name: Local emulators
+values:
+  - key: base_url
+    value: 'http://localhost:3000'
+    enabled: true
+    type: default
+    description: API Express (npm run dev o emulators:dev)
+  - key: auth_emulator_base
+    value: 'http://127.0.0.1:9099'
+    enabled: true
+    type: default
+    description: Firebase Auth Emulator (firebase.json)
+  - key: admin_email
+    value: 'admin@example.test'
+    enabled: true
+    type: default
+  - key: admin_password
+    value: 'Admin1234!'
+    enabled: true
+    type: secret
+  - key: user_email
+    value: 'user@example.test'
+    enabled: true
+    type: default
+  - key: user_password
+    value: 'User1234!'
+    enabled: true
+    type: secret
+  - key: admin_id_token
+    value: ''
+    enabled: true
+    type: secret
+    description: Se completa con Setup / Sign in admin
+  - key: user_id_token
+    value: ''
+    enabled: true
+    type: secret
+    description: Se completa con Setup / Sign in user
+  - key: seed_patient_id
+    value: 'patient-1'
+    enabled: true
+    type: default
+    description: ID de fixture en emuladores (seed)

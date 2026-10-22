@@ -1,0 +1,29 @@
+$kind: http-request
+name: PATCH /users/me (user)
+method: PATCH
+url: '{{base_url}}/api/v1/users/me'
+order: 3300
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{user_id_token}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "displayName": "Usuario Postman"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('200 actualiza perfil', function () {
+        pm.response.to.have.status(200);
+      });
+      pm.test('displayName actualizado', function () {
+        pm.expect(pm.response.json().displayName).to.eql('Usuario Postman');
+      });

@@ -1,0 +1,20 @@
+$kind: http-request
+name: GET /users (user → 403)
+method: GET
+url: '{{base_url}}/api/v1/users'
+order: 3500
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{user_id_token}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('403 sin permiso admin', function () {
+        pm.response.to.have.status(403);
+      });
+      pm.test('mensaje legible', function () {
+        pm.expect(pm.response.json().message).to.be.a('string');
+      });

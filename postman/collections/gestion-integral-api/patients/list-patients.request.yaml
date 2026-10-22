@@ -1,0 +1,33 @@
+$kind: http-request
+name: GET /patients (paginado)
+method: GET
+url: '{{base_url}}/api/v1/patients'
+order: 4100
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{user_id_token}}'
+queryParams:
+  - key: page
+    value: '1'
+  - key: limit
+    value: '20'
+  - key: sort
+    value: fullName
+  - key: order
+    value: asc
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('200 listado', function () {
+        pm.response.to.have.status(200);
+      });
+      const body = pm.response.json();
+      pm.test('forma paginada', function () {
+        pm.expect(body.page).to.eql(1);
+        pm.expect(body.limit).to.eql(20);
+        pm.expect(body.items).to.be.an('array');
+        pm.expect(body.total).to.be.at.least(1);
+      });

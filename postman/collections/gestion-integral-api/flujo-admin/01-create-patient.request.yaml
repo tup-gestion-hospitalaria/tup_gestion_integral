@@ -1,0 +1,46 @@
+$kind: http-request
+name: 01 POST crear paciente
+method: POST
+url: '{{base_url}}/api/v1/patients'
+order: 7100
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "fullName": "  Paciente Postman  ",
+      "email": "postman-flow@example.test",
+      "city": "La Plata",
+      "country": "Argentina",
+      "picture": "https://example.test/postman.jpg",
+      "active": true
+    }
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      const unique = `postman-${Date.now()}@example.test`;
+      pm.request.body.update(JSON.stringify({
+        fullName: '  Paciente Postman  ',
+        email: unique,
+        city: 'La Plata',
+        country: 'Argentina',
+        picture: 'https://example.test/postman.jpg',
+        active: true
+      }));
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('201 creado', function () {
+        pm.response.to.have.status(201);
+      });
+      const body = pm.response.json();
+      pm.test('normalización nombre y email', function () {
+        pm.expect(body.fullName).to.eql('Paciente Postman');
+        pm.expect(body.email).to.match(/@example\.test$/);
+        pm.expect(body.version).to.eql(1);
+      });
+      pm.collectionVariables.set('patient_id', body.id);
+      pm.collectionVariables.set('patient_version', String(body.version));

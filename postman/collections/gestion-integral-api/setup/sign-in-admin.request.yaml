@@ -1,0 +1,30 @@
+$kind: http-request
+name: Sign in admin (Auth Emulator)
+method: POST
+url: '{{auth_emulator_base}}/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=demo-key'
+order: 1100
+auth:
+  type: noauth
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "{{admin_email}}",
+      "password": "{{admin_password}}",
+      "returnSecureToken": true
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Login admin exitoso', function () {
+        pm.response.to.have.status(200);
+      });
+      const body = pm.response.json();
+      pm.test('idToken presente', function () {
+        pm.expect(body.idToken).to.be.a('string').and.not.empty;
+      });
+      pm.environment.set('admin_id_token', body.idToken);

@@ -76,6 +76,10 @@ npm test -- --watch=false
 
 La corrida debe terminar en verde. No requiere Firebase, backend ni navegador.
 
+## Pruebas API (Postman)
+
+Colección y entornos en [`postman/`](postman/README.md). Con emuladores y backend local (`cd backend && npm run emulators:dev`), ejecutar primero la carpeta **Setup** y luego el resto de la colección **Gestión Integral API**.
+
 ## Gestión del proyecto
 
 Se utiliza [Trello](https://trello.com/b/YHN2p26F/) con metodología Kanban.

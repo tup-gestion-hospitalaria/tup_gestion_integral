@@ -1,0 +1,19 @@
+$kind: http-request
+method: GET
+url: '{{base_url}}/api/v1/healthsites'
+order: 5100
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{user_id_token}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('200 catálogo', function () {
+        pm.response.to.have.status(200);
+      });
+      pm.test('respuesta es array', function () {
+        pm.expect(pm.response.json()).to.be.an('array');
+      });

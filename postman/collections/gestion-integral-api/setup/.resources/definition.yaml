@@ -1,0 +1,4 @@
+$kind: collection
+name: Setup
+description: Obtiene ID tokens del Auth Emulator (fixtures seed-emulators).
+order: 1000

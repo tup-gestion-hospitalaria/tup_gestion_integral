@@ -1,0 +1,45 @@
+$kind: http-request
+name: 02 PUT reemplazar paciente
+method: PUT
+url: '{{base_url}}/api/v1/patients/{{patient_id}}'
+order: 7200
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "fullName": "Paciente Postman Actualizado",
+      "email": "postman-put@example.test",
+      "city": "Berisso",
+      "country": "Argentina",
+      "picture": "https://example.test/postman-put.jpg",
+      "active": false,
+      "version": 1
+    }
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      const version = Number(pm.collectionVariables.get('patient_version') || 1);
+      pm.request.body.update(JSON.stringify({
+        fullName: 'Paciente Postman Actualizado',
+        email: `postman-put-${Date.now()}@example.test`,
+        city: 'Berisso',
+        country: 'Argentina',
+        picture: 'https://example.test/postman-put.jpg',
+        active: false,
+        version
+      }));
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('200 reemplazo', function () {
+        pm.response.to.have.status(200);
+      });
+      const body = pm.response.json();
+      pm.collectionVariables.set('patient_version', String(body.version));
+      pm.test('versión incrementada', function () {
+        pm.expect(body.version).to.eql(2);
+      });

@@ -1,0 +1,20 @@
+$kind: collection
+name: Gestión Integral API
+description: |-
+  Pruebas de contrato para la API REST del MVP (pacientes, usuarios, healthsites).
+  Rutas bajo /api/v1. Requiere Authorization Bearer con Firebase ID token.
+
+  Local con emuladores: desde backend ejecutar `npm run emulators:dev`, elegir
+  entorno "Local emulators" y correr primero la carpeta Setup.
+variables:
+  - key: patient_id
+    value: ''
+    description: Paciente creado en el flujo admin
+  - key: patient_version
+    value: ''
+    description: Versión actual del paciente en flujo admin
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{admin_id_token}}'

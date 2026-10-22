@@ -1,0 +1,20 @@
+$kind: http-request
+name: GET /patients page=0 (400)
+method: GET
+url: '{{base_url}}/api/v1/patients'
+order: 6400
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{user_id_token}}'
+queryParams:
+  - key: page
+    value: '0'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('400 página inválida', function () {
+        pm.response.to.have.status(400);
+      });

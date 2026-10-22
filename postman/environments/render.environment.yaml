@@ -1,0 +1,17 @@
+name: Render (producción)
+values:
+  - key: base_url
+    value: 'https://REPLACE-WITH-RENDER-URL'
+    enabled: true
+    type: default
+    description: Sin /api al final; ej. https://mi-servicio.onrender.com
+  - key: admin_id_token
+    value: ''
+    enabled: true
+    type: secret
+    description: Firebase ID token (admin aprobado)
+  - key: user_id_token
+    value: ''
+    enabled: true
+    type: secret
+    description: Firebase ID token (rol user)

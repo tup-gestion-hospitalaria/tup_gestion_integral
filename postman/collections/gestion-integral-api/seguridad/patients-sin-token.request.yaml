@@ -1,0 +1,14 @@
+$kind: http-request
+name: GET /patients sin token (401)
+method: GET
+url: '{{base_url}}/api/v1/patients'
+order: 6100
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('401 sin autenticación', function () {
+        pm.response.to.have.status(401);
+      });

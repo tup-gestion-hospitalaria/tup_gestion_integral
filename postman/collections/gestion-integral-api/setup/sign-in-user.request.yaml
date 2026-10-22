@@ -1,0 +1,27 @@
+$kind: http-request
+name: Sign in user (Auth Emulator)
+method: POST
+url: '{{auth_emulator_base}}/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=demo-key'
+order: 1200
+auth:
+  type: noauth
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "{{user_email}}",
+      "password": "{{user_password}}",
+      "returnSecureToken": true
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Login user exitoso', function () {
+        pm.response.to.have.status(200);
+      });
+      const body = pm.response.json();
+      pm.environment.set('user_id_token', body.idToken);
