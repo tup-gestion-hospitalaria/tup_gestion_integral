@@ -80,24 +80,26 @@ after(async () => {
 
 test('el store usa Firestore Emulator con fixtures deterministas', async () => {
   const store = new FirestorePatientStore(db);
-  const patients = await store.findAll();
+  const patients = await store.listAll();
 
   assert.deepEqual(
     patients.sort((left, right) => left.id.localeCompare(right.id)),
     emulatorPatients
   );
 
-  const created = await store.create({
+  const tempId = 'patient-temp';
+  const payload = {
     fullName: 'Paciente temporal',
     email: 'temporal@example.test',
     city: 'Ensenada',
     country: 'Argentina',
     picture: 'https://example.test/temporal.jpg',
     active: true
-  });
+  };
 
-  assert.deepEqual(await store.findById(created.id), created);
-  assert.equal(await store.delete(created.id), true);
+  await store.insert(tempId, { id: tempId, ...payload });
+  assert.deepEqual(await store.findById(tempId), { id: tempId, ...payload });
+  await db.collection('patients').doc(tempId).delete();
 });
 
 test('el backend arranca y valida tokens y roles con Auth Emulator', async () => {
@@ -116,7 +118,9 @@ test('el backend arranca y valida tokens y roles con Auth Emulator', async () =>
     headers: headersFor('user')
   });
   assert.equal(readResponse.status, 200);
-  assert.equal((await readResponse.json()).length, emulatorPatients.length);
+  const patientsPage = await readResponse.json();
+  assert.equal(patientsPage.total, emulatorPatients.length);
+  assert.equal(patientsPage.items.length, emulatorPatients.length);
 
   const deniedResponse = await fetch(`${baseUrl}/api/patients`, {
     method: 'POST',

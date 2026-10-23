@@ -3,7 +3,7 @@ export class FirestorePatientStore {
     this.collection = db.collection('patients');
   }
 
-  async findAll() {
+  async listAll() {
     const snapshot = await this.collection.get();
     return snapshot.docs.map((document) => ({
       id: document.id,
@@ -16,13 +16,14 @@ export class FirestorePatientStore {
     return document.exists ? { id: document.id, ...document.data() } : null;
   }
 
-  async create(data) {
-    const reference = this.collection.doc();
-    await reference.set(data);
-    return { id: reference.id, ...data };
+  async insert(id, data) {
+    const reference = this.collection.doc(id);
+    const { id: _ignored, ...payload } = data;
+    await reference.set(payload);
+    return { id, ...payload };
   }
 
-  async replace(id, data) {
+  async save(id, data) {
     const reference = this.collection.doc(id);
     const document = await reference.get();
 
@@ -30,31 +31,8 @@ export class FirestorePatientStore {
       return null;
     }
 
-    await reference.set(data);
-    return { id, ...data };
-  }
-
-  async update(id, changes) {
-    const reference = this.collection.doc(id);
-    const document = await reference.get();
-
-    if (!document.exists) {
-      return null;
-    }
-
-    await reference.update(changes);
-    return { id, ...document.data(), ...changes };
-  }
-
-  async delete(id) {
-    const reference = this.collection.doc(id);
-    const document = await reference.get();
-
-    if (!document.exists) {
-      return false;
-    }
-
-    await reference.delete();
-    return true;
+    const { id: _ignored, ...payload } = data;
+    await reference.set(payload);
+    return { id, ...payload };
   }
 }
