@@ -99,6 +99,7 @@ test('el store usa Firestore Emulator con fixtures deterministas', async () => {
 
   await store.insert(tempId, { id: tempId, ...payload });
   assert.deepEqual(await store.findById(tempId), { id: tempId, ...payload });
+  await db.collection('patients').doc(tempId).delete();
 });
 
 test('el backend arranca y valida tokens y roles con Auth Emulator', async () => {
