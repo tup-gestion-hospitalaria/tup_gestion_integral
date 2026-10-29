@@ -119,7 +119,6 @@ async function fetchPage({
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  timeout.unref?.();
 
   let response;
   try {
