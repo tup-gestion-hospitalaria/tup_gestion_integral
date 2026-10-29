@@ -9,3 +9,11 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 20
+      - key: HEALTHSITES_API_KEY
+        sync: false
+      - key: HEALTHSITES_TIMEOUT_MS
+        value: "5000"
+      - key: HEALTHSITES_CACHE_TTL_MS
+        value: "300000"
+      - key: HEALTHSITES_PAGE_COUNT
+        value: "3"

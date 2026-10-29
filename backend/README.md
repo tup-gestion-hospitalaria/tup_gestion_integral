@@ -19,6 +19,15 @@ npm run dev
 
 La API queda disponible en `http://localhost:3000`.
 
+Copiar `.env.example` a `.env` y configurar, como mínimo, las credenciales de
+Firebase y `HEALTHSITES_API_KEY`. La credencial de Healthsites es exclusiva del
+backend y no debe incluirse en ningún archivo del frontend.
+
+El proxy de Healthsites cancela cada consulta al proveedor después de
+`HEALTHSITES_TIMEOUT_MS` (5 segundos por defecto) y conserva la respuesta
+normalizada durante `HEALTHSITES_CACHE_TTL_MS` (5 minutos por defecto). También
+se puede ajustar la cantidad de páginas con `HEALTHSITES_PAGE_COUNT`.
+
 Las rutas bajo `/api` requieren un ID token de Firebase en el encabezado:
 
 ```http
@@ -57,7 +66,8 @@ npm run dev:windows
 | PATCH | `/api/patients/:id` | Modificar parcialmente con `version` (`admin`) |
 | DELETE | `/api/patients/:id?version=` | Baja lógica (`admin`) |
 | POST | `/api/patients/:id/restore` | Restaurar baja con `{ "version" }` (`admin`) |
-| GET | `/api/healthsites` | Consultar centros (`user`, `admin`) |
+| GET | `/api/v1/healthsites` | Obtener centros normalizados (`user`, `admin`) |
+| GET | `/api/healthsites` | Alias temporal de compatibilidad (`user`, `admin`) |
 | GET | `/health` | Comprobar el estado del servicio |
 
 Ejemplos completos para probar cada operación:
