@@ -71,10 +71,29 @@
   font-size: 0.95rem;
 }
 
-.healthsite-line {
+.healthsite-line,
+.status-line {
   margin-top: 0.35rem;
   color: var(--healthsite-text-color);
   font-size: 0.95rem;
+}
+
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.pagination-summary {
+  font-size: 0.95rem;
+}
+
+.empty-message {
+  text-align: center;
+  margin-top: 1rem;
+  color: var(--healthsite-text-color);
 }
 
 @media (max-width: 768px) {

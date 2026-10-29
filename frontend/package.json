@@ -45,8 +45,8 @@
     "zone.js": "^0.16.1"
   },
   "devDependencies": {
-    "@angular/build": "21.2.27",
-    "@angular/cli": "21.2.27",
+    "@angular/build": "21.2.28",
+    "@angular/cli": "21.2.28",
     "@angular/compiler-cli": "21.2.25",
     "@capacitor/cli": "^8.4.2",
     "@tauri-apps/cli": "^2.11.4",
@@ -69,7 +69,7 @@
   "overrides": {
     "@grpc/grpc-js": "1.14.6",
     "piscina": "5.3.2",
-    "uuid": "11.1.0"
+    "uuid": "11.1.1"
   },
   "lint-staged": {
     "*.{ts,html,css,json}": [
