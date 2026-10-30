@@ -66,6 +66,16 @@ function validateBusinessField(field, value) {
   }
 
   const trimmed = value.trim();
+  if (field === 'picture') {
+    if (trimmed.length === 0) {
+      return null;
+    }
+    if (trimmed.length > 500 || !URL_PATTERN.test(trimmed)) {
+      return 'La propiedad "picture" debe ser una URL http o https válida.';
+    }
+    return null;
+  }
+
   if (trimmed.length === 0) {
     return `La propiedad "${field}" debe ser un texto no vacío.`;
   }
@@ -89,13 +99,6 @@ function validateBusinessField(field, value) {
   if (field === 'city' || field === 'country') {
     if (trimmed.length < 2 || trimmed.length > 80) {
       return `La propiedad "${field}" debe tener entre 2 y 80 caracteres.`;
-    }
-    return null;
-  }
-
-  if (field === 'picture') {
-    if (trimmed.length > 500 || !URL_PATTERN.test(trimmed)) {
-      return 'La propiedad "picture" debe ser una URL http o https válida.';
     }
     return null;
   }

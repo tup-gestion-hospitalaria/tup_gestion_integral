@@ -12,6 +12,7 @@ import { MatButtonModule } from '@angular/material/button';
 
 import { Patient } from '../../models/patient';
 import { PatientService } from '../../services/patient.service';
+import { UserService } from '../../services/user.service';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
@@ -31,9 +32,11 @@ import { TranslateModule } from '@ngx-translate/core';
 })
 export class Items implements OnInit, OnDestroy {
   private readonly patientService = inject(PatientService);
+  private readonly userService = inject(UserService);
   private readonly router = inject(Router);
 
   patients: Patient[] = [];
+  isAdmin = false;
 
   filterText = '';
   sortField: 'fullName' | 'email' | 'city' | 'country' = 'fullName';
@@ -51,6 +54,14 @@ export class Items implements OnInit, OnDestroy {
   private searchDebounceId: ReturnType<typeof setTimeout> | null = null;
 
   ngOnInit(): void {
+    this.userService.getMe().subscribe({
+      next: (profile) => {
+        this.isAdmin = profile.role === 'admin';
+      },
+      error: () => {
+        this.isAdmin = false;
+      },
+    });
     this.loadPatients();
   }
 
@@ -132,9 +143,18 @@ export class Items implements OnInit, OnDestroy {
     });
   }
 
-  referPatient(patient: Patient): void {
+  referPatient(patient: Patient, event: Event): void {
+    event.stopPropagation();
     this.router.navigate(['/centros-derivacion'], {
       state: { patient },
     });
+  }
+
+  openPatient(patient: Patient): void {
+    this.router.navigate(['/items', patient.id]);
+  }
+
+  createPatient(): void {
+    this.router.navigate(['/items/nuevo']);
   }
 }

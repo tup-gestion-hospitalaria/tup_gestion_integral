@@ -18,6 +18,19 @@ export interface Patient {
   healthsite?: Healthsite;
 }
 
+export interface PatientWritePayload {
+  fullName: string;
+  email: string;
+  city: string;
+  country: string;
+  picture: string;
+  active: boolean;
+}
+
+export interface PatientReplacePayload extends PatientWritePayload {
+  version: number;
+}
+
 export interface PatientListParams {
   page?: number;
   limit?: number;
@@ -25,6 +38,7 @@ export interface PatientListParams {
   sort?: 'fullName' | 'email' | 'city' | 'country' | 'createdAt';
   order?: 'asc' | 'desc';
   active?: boolean;
+  includeDeleted?: boolean;
 }
 
 export interface PatientPage {

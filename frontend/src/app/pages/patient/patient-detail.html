@@ -1,0 +1,105 @@
+<section class="patient-ficha-page">
+  <header class="ficha-top">
+    <a routerLink="/items" class="back-link">{{ 'PATIENT.BACK_LIST' | translate }}</a>
+    <h1>{{ 'NAV.PATIENTS' | translate }}</h1>
+  </header>
+
+  <div *ngIf="isLoading" class="ficha-spinner">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <p *ngIf="errorMessageKey && !isLoading" class="ficha-error-banner">
+    {{ errorMessageKey | translate }}
+  </p>
+
+  <div *ngIf="patient && !isLoading && !errorMessageKey" class="ficha-layout">
+    <div class="intro">
+      <h2>{{ patient.fullName }}</h2>
+      <p>{{ 'PATIENT.SUBTITLE_DETAIL' | translate }}</p>
+    </div>
+
+    <section class="block">
+      <header class="block-head">
+        <h3>{{ 'PATIENT.SECTION_IDENT' | translate }}</h3>
+        <p>{{ 'PATIENT.SECTION_IDENT_DESC' | translate }}</p>
+      </header>
+
+      <div class="fields">
+        <div class="field wide field-readonly">
+          <span>{{ 'PATIENT.FIELD_PICTURE' | translate }}</span>
+          <img
+            [src]="patient.picture || '/foto-perfil.png'"
+            [alt]="patient.fullName"
+            class="detail-photo"
+          />
+        </div>
+
+        <div class="field field-readonly">
+          <span>{{ 'PATIENT.FIELD_FULL_NAME' | translate }}</span>
+          <div class="value">{{ patient.fullName }}</div>
+        </div>
+
+        <div class="field field-readonly">
+          <span>{{ 'PATIENT.FIELD_ACTIVE' | translate }}</span>
+          <div class="value">
+            {{
+              patient.active
+                ? ('ITEMS.STATUS_ACTIVE' | translate)
+                : ('ITEMS.STATUS_INACTIVE' | translate)
+            }}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <header class="block-head">
+        <h3>{{ 'PATIENT.SECTION_CONTACT' | translate }}</h3>
+        <p>{{ 'PATIENT.SECTION_CONTACT_DESC' | translate }}</p>
+      </header>
+
+      <div class="fields">
+        <div class="field wide field-readonly">
+          <span>{{ 'ITEMS.EMAIL' | translate }}</span>
+          <div class="value">{{ patient.email }}</div>
+        </div>
+
+        <div class="field field-readonly">
+          <span>{{ 'ITEMS.CITY' | translate }}</span>
+          <div class="value">{{ patient.city }}</div>
+        </div>
+
+        <div class="field field-readonly">
+          <span>{{ 'ITEMS.COUNTRY' | translate }}</span>
+          <div class="value">{{ patient.country }}</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="ficha-bar" *ngIf="patient && !isLoading && !errorMessageKey">
+    <p class="status-text">{{ 'PATIENT.STATUS_DETAIL' | translate }}</p>
+
+    <div class="acts">
+      <button type="button" class="btn" (click)="referPatient()">
+        {{ 'ITEMS.REFER' | translate }}
+      </button>
+
+      <button *ngIf="isAdmin" type="button" class="btn" (click)="editPatient()">
+        {{ 'PATIENT.EDIT' | translate }}
+      </button>
+
+      <button
+        *ngIf="isAdmin"
+        type="button"
+        class="btn danger"
+        (click)="deactivatePatient()"
+        [disabled]="isDeleting"
+      >
+        {{ 'PATIENT.DEACTIVATE' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <app-patient-toast></app-patient-toast>
+</section>

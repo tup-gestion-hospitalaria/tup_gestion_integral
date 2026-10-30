@@ -5,6 +5,8 @@ import { Login } from './pages/login/login';
 import { Layout } from './pages/layout/layout';
 import { Items } from './pages/items/items';
 import { Settings } from './pages/settings/settings';
+import { PatientDetail } from './pages/patient/patient-detail';
+import { PatientFormPage } from './pages/patient/patient-form-page';
 import { authGuard } from './core/guards/auth-guard';
 import { autoLoginGuard } from './core/guards/auto-login-guard';
 
@@ -27,6 +29,20 @@ export const routes: Routes = [
       {
         path: 'items',
         component: Items,
+      },
+      {
+        path: 'items/nuevo',
+        component: PatientFormPage,
+        data: { mode: 'create' },
+      },
+      {
+        path: 'items/:id/editar',
+        component: PatientFormPage,
+        data: { mode: 'edit' },
+      },
+      {
+        path: 'items/:id',
+        component: PatientDetail,
       },
       {
         path: 'centros-derivacion',

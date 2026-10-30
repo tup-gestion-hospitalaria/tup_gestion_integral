@@ -1,0 +1,188 @@
+<section class="patient-ficha-page">
+  <header class="ficha-top">
+    <a routerLink="/items" class="back-link">{{ 'PATIENT.BACK_LIST' | translate }}</a>
+    <h1>{{ 'NAV.PATIENTS' | translate }}</h1>
+  </header>
+
+  <div *ngIf="isLoading" class="ficha-spinner">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <p *ngIf="loadErrorKey && !isLoading" class="ficha-error-banner">
+    {{ loadErrorKey | translate }}
+  </p>
+
+  <div *ngIf="!isLoading && !loadErrorKey" class="ficha-layout">
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="intro">
+        <h2>
+          {{
+            mode === 'create'
+              ? ('PATIENT.TITLE_CREATE' | translate)
+              : ('PATIENT.TITLE_EDIT' | translate)
+          }}
+        </h2>
+        <p>
+          {{
+            mode === 'create'
+              ? ('PATIENT.SUBTITLE_CREATE' | translate)
+              : ('PATIENT.SUBTITLE_EDIT' | translate)
+          }}
+        </p>
+      </div>
+
+      <section class="block" aria-labelledby="ident-heading">
+        <header class="block-head">
+          <h3 id="ident-heading">{{ 'PATIENT.SECTION_IDENT' | translate }}</h3>
+          <p>{{ 'PATIENT.SECTION_IDENT_DESC' | translate }}</p>
+        </header>
+
+        <div class="fields">
+          <div
+            class="field wide"
+            [class.error]="showFieldError('fullName')"
+            [class.changed]="isChanged('fullName')"
+          >
+            <label for="fullName">{{ 'PATIENT.FIELD_FULL_NAME' | translate }}</label>
+            <input
+              class="inp"
+              id="fullName"
+              type="text"
+              formControlName="fullName"
+              autocomplete="name"
+              (blur)="onBlur('fullName')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('fullName') as errKey">{{ errKey | translate }}</p>
+          </div>
+
+          <div
+            class="field wide"
+            [class.error]="showFieldError('picture')"
+            [class.changed]="isChanged('picture')"
+          >
+            <label for="picture">{{ 'PATIENT.FIELD_PICTURE' | translate }}</label>
+            <input
+              class="inp"
+              id="picture"
+              type="url"
+              formControlName="picture"
+              placeholder="https://"
+              (blur)="onBlur('picture')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('picture') as errKey">{{ errKey | translate }}</p>
+          </div>
+
+          <div class="field wide" [class.changed]="isChanged('active')">
+            <span id="active-label">{{ 'PATIENT.FIELD_ACTIVE' | translate }}</span>
+            <div class="seg" role="group" aria-labelledby="active-label">
+              <button
+                type="button"
+                [attr.aria-pressed]="form.controls['active'].value === true"
+                (click)="setActive(true)"
+              >
+                {{ 'ITEMS.STATUS_ACTIVE' | translate }}
+              </button>
+              <button
+                type="button"
+                [attr.aria-pressed]="form.controls['active'].value === false"
+                (click)="setActive(false)"
+              >
+                {{ 'ITEMS.STATUS_INACTIVE' | translate }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="block" aria-labelledby="contact-heading">
+        <header class="block-head">
+          <h3 id="contact-heading">{{ 'PATIENT.SECTION_CONTACT' | translate }}</h3>
+          <p>{{ 'PATIENT.SECTION_CONTACT_DESC' | translate }}</p>
+        </header>
+
+        <div class="fields">
+          <div
+            class="field wide"
+            [class.error]="showFieldError('email')"
+            [class.changed]="isChanged('email')"
+          >
+            <label for="email">{{ 'ITEMS.EMAIL' | translate }}</label>
+            <input
+              class="inp"
+              id="email"
+              type="email"
+              formControlName="email"
+              autocomplete="email"
+              (blur)="onBlur('email')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('email') as errKey">{{ errKey | translate }}</p>
+          </div>
+
+          <div
+            class="field"
+            [class.error]="showFieldError('city')"
+            [class.changed]="isChanged('city')"
+          >
+            <label for="city">{{ 'ITEMS.CITY' | translate }}</label>
+            <input
+              class="inp"
+              id="city"
+              type="text"
+              formControlName="city"
+              autocomplete="address-level2"
+              (blur)="onBlur('city')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('city') as errKey">{{ errKey | translate }}</p>
+          </div>
+
+          <div
+            class="field"
+            [class.error]="showFieldError('country')"
+            [class.changed]="isChanged('country')"
+          >
+            <label for="country">{{ 'ITEMS.COUNTRY' | translate }}</label>
+            <input
+              class="inp"
+              id="country"
+              type="text"
+              formControlName="country"
+              autocomplete="country-name"
+              (blur)="onBlur('country')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('country') as errKey">{{ errKey | translate }}</p>
+          </div>
+        </div>
+      </section>
+    </form>
+  </div>
+
+  <div class="ficha-bar" *ngIf="!isLoading && !loadErrorKey">
+    <p class="status-text">
+      <ng-container *ngIf="mode === 'edit'; else createStatus">
+        {{
+          changedFieldCount() === 0
+            ? ('PATIENT.STATUS_NO_CHANGES' | translate)
+            : changedFieldCount() === 1
+              ? ('PATIENT.STATUS_CHANGES_ONE' | translate)
+              : ('PATIENT.STATUS_CHANGES_MANY' | translate: { count: changedFieldCount() })
+        }}
+      </ng-container>
+      <ng-template #createStatus>{{ 'PATIENT.STATUS_CREATE' | translate }}</ng-template>
+    </p>
+
+    <div class="acts">
+      <button type="button" class="btn" (click)="discard()" [disabled]="isSaving">
+        {{ 'PATIENT.DISCARD' | translate }}
+      </button>
+      <button type="button" class="btn primary" (click)="submit()" [disabled]="isSaving">
+        {{
+          mode === 'create'
+            ? ('PATIENT.SUBMIT_CREATE' | translate)
+            : ('PATIENT.SUBMIT_EDIT' | translate)
+        }}
+      </button>
+    </div>
+  </div>
+
+  <app-patient-toast></app-patient-toast>
+</section>

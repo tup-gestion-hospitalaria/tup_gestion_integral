@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+# Cursor may inject agent attribution after prepare-commit-msg; strip it here.
+tmp="${1}.cursor-strip"
+grep -viE '^(co-authored-by: cursor|made-with: cursor|made with cursor)' "$1" \
+  | grep -viE '^co-authored-by:.*cursoragent@cursor\.com' > "$tmp"
+mv "$tmp" "$1"

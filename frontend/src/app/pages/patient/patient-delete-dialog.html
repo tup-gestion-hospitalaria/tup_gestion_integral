@@ -1,0 +1,17 @@
+<div class="patient-delete-dialog">
+  <h2>{{ 'PATIENT.DELETE_TITLE' | translate }}</h2>
+
+  <p>
+    {{ 'PATIENT.DELETE_MESSAGE' | translate: { name: data.fullName } }}
+  </p>
+
+  <div class="dialog-acts">
+    <button type="button" class="btn" (click)="cancel()">
+      {{ 'PATIENT.CANCEL' | translate }}
+    </button>
+
+    <button type="button" class="btn primary" (click)="confirm()">
+      {{ 'PATIENT.DELETE_CONFIRM' | translate }}
+    </button>
+  </div>
+</div>
