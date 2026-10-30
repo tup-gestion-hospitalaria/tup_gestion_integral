@@ -47,10 +47,11 @@ export class AuthService {
 
       if (user) {
         void this.refreshAccountProfile();
-        this.router.navigate(['/items']);
       } else {
         this.accountProfile = null;
-        this.router.navigate(['/login']);
+        if (!this.router.url.includes('/login')) {
+          this.router.navigate(['/login']);
+        }
       }
     });
   }
@@ -112,7 +113,7 @@ export class AuthService {
 
       this.accountProfile = profile;
       return profile;
-    } catch (error) {
+    } catch {
       this.accountProfile = null;
       return null;
     }
@@ -126,6 +127,10 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     return auth.currentUser !== null;
+  }
+
+  isApproved(): boolean {
+    return this.accountProfile?.status === 'approved';
   }
 
   isAdmin(): boolean {

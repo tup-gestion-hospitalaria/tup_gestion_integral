@@ -54,6 +54,11 @@
   line-height: 1.4;
 }
 
+.user-email {
+  color: rgba(0, 0, 0, 0.65);
+  margin-bottom: 0.5rem !important;
+}
+
 .account-summary {
   width: 100%;
   display: flex;
@@ -110,48 +115,41 @@
   color: #464d55;
 }
 
-.permissions-panel {
+.status-notice {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
   text-align: left;
+  box-sizing: border-box;
 }
 
-.permissions-panel h3 {
+.status-notice p {
   margin: 0;
-  font-size: 1rem;
 }
 
-.permissions-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 0.5rem;
+.status-notice.warning {
+  background: rgba(255, 193, 7, 0.15);
+  border-left: 4px solid #d39e00;
+  color: #725000;
 }
 
-.permissions-list li {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
+.status-notice.error {
+  background: rgba(220, 53, 69, 0.15);
+  border-left: 4px solid #dc3545;
+  color: #841521;
 }
 
-.permission-indicator {
-  width: 0.8rem;
-  height: 0.8rem;
-  border-radius: 50%;
-  background: rgba(220, 53, 69, 0.45);
-  display: inline-block;
-}
-
-.permission-indicator.enabled {
-  background: rgba(40, 167, 69, 0.7);
+.status-notice.info {
+  background: rgba(13, 110, 253, 0.15);
+  border-left: 4px solid #0d6efd;
+  color: #084298;
 }
 
 button {
-  margin-top: 1rem;
+  margin-top: 1.25rem;
 }
 
 .user-agent {

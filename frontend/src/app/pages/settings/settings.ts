@@ -48,39 +48,32 @@ export class Settings {
     }
   }
 
-  get accountPermissions(): { label: string; enabled: boolean }[] {
+  get statusNotice(): { text: string; type: 'info' | 'warning' | 'error' } | null {
     const status = this.authService.accountProfile?.status;
-    const role = this.authService.accountProfile?.role;
 
-    if (status !== 'approved') {
-      return [
-        { label: `Cuenta ${this.accountStatusLabel.toLowerCase()}. Los permisos se habilitan cuando la cuenta es aprobada.`, enabled: false },
-      ];
+    if (!status || status === 'approved') {
+      return null;
     }
 
-    if (role === 'admin') {
-      return [
-        { label: 'Consultar pacientes', enabled: true },
-        { label: 'Administrar pacientes', enabled: true },
-        { label: 'Gestionar derivaciones', enabled: true },
-        { label: 'Administrar usuarios', enabled: true },
-        { label: 'Consultar auditoría', enabled: true },
-      ];
+    switch (status) {
+      case 'pending':
+        return {
+          text: 'Tu cuenta se encuentra pendiente de aprobación. Un administrador debe autorizar tu acceso para poder operar en el sistema.',
+          type: 'warning',
+        };
+      case 'rejected':
+        return {
+          text: 'Tu solicitud de acceso fue rechazada. Si considerás que se trata de un error, comunicate con el equipo de soporte o administración.',
+          type: 'error',
+        };
+      case 'disabled':
+        return {
+          text: 'Esta cuenta ha sido deshabilitada. Comunicate con el administrador para más información.',
+          type: 'error',
+        };
+      default:
+        return null;
     }
-
-    if (role === 'user') {
-      return [
-        { label: 'Consultar pacientes', enabled: true },
-        { label: 'Crear derivaciones', enabled: true },
-        { label: 'Editar mis derivaciones', enabled: true },
-        { label: 'Administrar usuarios', enabled: false },
-        { label: 'Consultar auditoría', enabled: false },
-      ];
-    }
-
-    return [
-      { label: 'Sin permisos asignados', enabled: false },
-    ];
   }
 
   async logout(): Promise<void> {

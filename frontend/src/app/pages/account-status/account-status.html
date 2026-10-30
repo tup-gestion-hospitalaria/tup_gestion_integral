@@ -1,0 +1,49 @@
+<div class="status-page-container">
+  <mat-card class="status-card" [ngClass]="status">
+    <div class="status-icon-wrapper" [ngClass]="status">
+      <span *ngIf="status === 'pending'" class="status-symbol">⏳</span>
+      <span *ngIf="status === 'rejected'" class="status-symbol">🚫</span>
+      <span *ngIf="status === 'disabled'" class="status-symbol">🔒</span>
+      <span *ngIf="status === 'approved'" class="status-symbol">✅</span>
+    </div>
+
+    <h1>{{ statusTitle }}</h1>
+
+    <div class="badge-wrapper">
+      <span class="status-badge" [ngClass]="status">
+        {{ status | uppercase }}
+      </span>
+      <span class="role-badge" *ngIf="authService.accountProfile?.role">
+        Rol: {{ authService.accountProfile?.role === 'admin' ? 'Administrador' : 'Usuario' }}
+      </span>
+    </div>
+
+    <p class="status-desc">{{ statusDescription }}</p>
+
+    <div class="user-info-box" *ngIf="authService.user as user">
+      <span class="user-name">{{ user.displayName || 'Usuario' }}</span>
+      <span class="user-email">{{ user.email }}</span>
+    </div>
+
+    <p class="feedback-msg" *ngIf="message">{{ message }}</p>
+
+    <div class="actions">
+      <button
+        mat-flat-button
+        color="primary"
+        type="button"
+        (click)="checkStatus()"
+        [disabled]="checking"
+      >
+        <span *ngIf="!checking">Verificar estado actual</span>
+        <span *ngIf="checking">Comprobando...</span>
+      </button>
+
+      <button mat-stroked-button type="button" routerLink="/configuracion">
+        Mi Perfil / Configuración
+      </button>
+
+      <button mat-button color="warn" type="button" (click)="logout()">Cerrar sesión</button>
+    </div>
+  </mat-card>
+</div>

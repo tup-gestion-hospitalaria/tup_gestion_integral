@@ -11,49 +11,24 @@
 
     <h2>{{ user.displayName || 'Usuario sin nombre' }}</h2>
 
-    <p>{{ user.email || 'Email no disponible' }}</p>
+    <p class="user-email">{{ user.email || 'Email no disponible' }}</p>
 
     <div class="account-summary">
       <div class="summary-row">
-        <span class="summary-label">Estado</span>
+        <span class="summary-label">Estado de la cuenta</span>
         <span class="status-badge" [ngClass]="authService.accountProfile?.status ?? 'pending'">
           {{ accountStatusLabel }}
         </span>
       </div>
 
       <div class="summary-row">
-        <span class="summary-label">Rol</span>
+        <span class="summary-label">Rol en el sistema</span>
         <strong>{{ accountRoleLabel }}</strong>
       </div>
-
-      <div class="summary-row">
-        <span class="summary-label">Acceso</span>
-        <span>
-          {{ user.providerData[0]?.providerId === 'google.com' ? 'Google' : 'Email y contraseña' }}
-        </span>
-      </div>
     </div>
 
-    <div class="permissions-panel" *ngIf="authService.accountProfile as profile">
-      <h3>Permisos</h3>
-
-      <ul class="permissions-list">
-        <li *ngFor="let permission of accountPermissions">
-          <span class="permission-indicator" [class.enabled]="permission.enabled"></span>
-          {{ permission.label }}
-        </li>
-      </ul>
-    </div>
-
-    <div class="permissions-panel" *ngIf="!authService.accountProfile">
-      <h3>Permisos</h3>
-
-      <ul class="permissions-list">
-        <li>
-          <span class="permission-indicator"></span>
-          Cargando permisos del usuario...
-        </li>
-      </ul>
+    <div class="status-notice" *ngIf="statusNotice as notice" [ngClass]="notice.type">
+      <p>{{ notice.text }}</p>
     </div>
 
     <button mat-raised-button color="warn" type="button" (click)="logout()">
