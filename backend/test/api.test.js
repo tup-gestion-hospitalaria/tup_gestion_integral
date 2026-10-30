@@ -25,6 +25,19 @@ const initialPatient = {
   ...auditFields
 };
 
+const healthsites = [
+  {
+    id: 'healthsite-1',
+    name: 'Hospital de prueba',
+    city: 'La Plata',
+    address: 'Calle 1',
+    type: 'hospital',
+    latitude: -34.9,
+    longitude: -57.95,
+    googleMapsUrl: 'https://www.google.com/maps?q=-34.9,-57.95'
+  }
+];
+
 let baseUrl;
 let server;
 
@@ -58,7 +71,12 @@ function authHeaders(role = 'admin') {
 }
 
 before(async () => {
-  const app = createApp(new PatientStore([initialPatient]), { verifyIdToken });
+  const app = createApp(new PatientStore([initialPatient]), {
+    verifyIdToken,
+    healthsitesService: {
+      getHealthsites: async () => healthsites
+    }
+  });
   server = app.listen(0);
   await new Promise((resolve) => server.once('listening', resolve));
   const address = server.address();
@@ -298,6 +316,21 @@ test('health permanece público', async () => {
 
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), { status: 'ok' });
+});
+
+test('GET /api/v1/healthsites devuelve centros normalizados', async () => {
+  const response = await fetch(`${baseUrl}/api/v1/healthsites`, {
+    headers: authHeaders('user')
+  });
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), healthsites);
+});
+
+test('GET /api/v1/healthsites requiere autenticación', async () => {
+  const response = await fetch(`${baseUrl}/api/v1/healthsites`);
+
+  assert.equal(response.status, 401);
 });
 
 test('rechaza consultas sin token o con token inválido', async () => {

@@ -1,5 +1,5 @@
 export const environment = {
-  production: false,
+  production: true,
   backendApiUrl: 'https://tup-gestion-integral.onrender.com/api',
 
   firebaseConfig: {

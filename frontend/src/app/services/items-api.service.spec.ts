@@ -40,7 +40,7 @@ describe('ItemsApiService', () => {
 
     const resultPromise = firstValueFrom(service.getHealthsites());
 
-    const req = httpMock.expectOne(`${environment.backendApiUrl}/healthsites`);
+    const req = httpMock.expectOne(`${environment.backendApiUrl}/v1/healthsites`);
     expect(req.request.method).toBe('GET');
     req.flush(healthsites);
 

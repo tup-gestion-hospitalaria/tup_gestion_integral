@@ -10,7 +10,10 @@ import {
 import { UserStore, validateUserStatusUpdate } from './user-store.js';
 import { authenticate } from './middleware/authenticate.js';
 import { authorizeUser } from './middleware/authorize-user.js';
-import { getHealthsitesCache } from './seed-healthsites.js';
+import {
+  createHealthsitesService,
+  HealthsitesError
+} from './healthsites-service.js';
 
 export function createApp(store = new PatientStore(), options = {}) {
   const app = express();
@@ -73,6 +76,8 @@ export function createApp(store = new PatientStore(), options = {}) {
     ...authenticatedChain,
     authorizeUser({ allowedRoles: ['admin'], requireApproved: true })
   ];
+  const healthsitesService =
+    options.healthsitesService ?? createHealthsitesService();
 
   app.use(express.json({ limit: '8kb' }));
   app.use((request, response, next) => {
@@ -213,7 +218,7 @@ export function createApp(store = new PatientStore(), options = {}) {
   app.get('/api/v1/patients', allowAuthenticatedUsers, getPatientsHandler);
 
   const getHealthsitesHandler = async (_request, response) => {
-    const healthsites = await getHealthsitesCache();
+    const healthsites = await healthsitesService.getHealthsites();
     response.json(healthsites);
   };
   app.get('/api/healthsites', allowAuthenticatedUsers, getHealthsitesHandler);
@@ -375,6 +380,13 @@ export function createApp(store = new PatientStore(), options = {}) {
   });
 
   app.use((error, _request, response, _next) => {
+    if (error instanceof HealthsitesError) {
+      return response.status(error.statusCode).json({
+        code: error.code,
+        message: error.message
+      });
+    }
+
     if (error?.type === 'entity.too.large') {
       return response.status(413).json({
         message: 'El cuerpo de la solicitud es demasiado grande.'

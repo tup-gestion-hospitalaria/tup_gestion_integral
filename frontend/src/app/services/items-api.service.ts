@@ -10,7 +10,7 @@ import { Healthsite } from '../models/healthsite';
 })
 export class ItemsApiService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.backendApiUrl}/healthsites`;
+  private readonly apiUrl = `${environment.backendApiUrl}/v1/healthsites`;
 
   getHealthsites(): Observable<Healthsite[]> {
     return this.http.get<Healthsite[]>(this.apiUrl);
