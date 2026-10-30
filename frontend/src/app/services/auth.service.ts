@@ -49,7 +49,7 @@ export class AuthService {
         void this.refreshAccountProfile();
       } else {
         this.accountProfile = null;
-        if (!this.router.url.includes('/login')) {
+        if (!this.router.url || !this.router.url.includes('/login')) {
           this.router.navigate(['/login']);
         }
       }
