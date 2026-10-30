@@ -1,3 +1,4 @@
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import type { User } from 'firebase/auth';
@@ -49,7 +50,7 @@ describe('AuthService', () => {
     router = { navigate: vi.fn() };
 
     TestBed.configureTestingModule({
-      providers: [AuthService, { provide: Router, useValue: router }],
+      providers: [AuthService, { provide: Router, useValue: router }, provideHttpClientTesting()],
     });
 
     service = TestBed.inject(AuthService);

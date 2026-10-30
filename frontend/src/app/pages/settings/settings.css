@@ -54,6 +54,102 @@
   line-height: 1.4;
 }
 
+.account-summary {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  text-align: left;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.summary-label {
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: rgba(0, 0, 0, 0.08);
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.status-badge.pending {
+  background: rgba(255, 193, 7, 0.18);
+  color: #8a6500;
+}
+
+.status-badge.approved {
+  background: rgba(40, 167, 69, 0.15);
+  color: #1c7c38;
+}
+
+.status-badge.rejected {
+  background: rgba(220, 53, 69, 0.15);
+  color: #a11b2b;
+}
+
+.status-badge.disabled {
+  background: rgba(108, 117, 125, 0.15);
+  color: #464d55;
+}
+
+.permissions-panel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  text-align: left;
+}
+
+.permissions-panel h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.permissions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.permissions-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.permission-indicator {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background: rgba(220, 53, 69, 0.45);
+  display: inline-block;
+}
+
+.permission-indicator.enabled {
+  background: rgba(40, 167, 69, 0.7);
+}
+
 button {
   margin-top: 1rem;
 }
