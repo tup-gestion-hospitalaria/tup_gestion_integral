@@ -419,6 +419,74 @@ test('DELETE solo borrador y bloquea enviados', async () => {
   assert.equal(deleteSubmitted.status, 409);
 });
 
+test('PATCH persiste cambios en borrador y agrega evento updated', async () => {
+  const createResponse = await fetch(`${baseUrl}/api/v1/referrals`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders('user') },
+    body: JSON.stringify(
+      referralPayload({
+        destination: {
+          healthsiteId: 'hs-patch',
+          name: 'Centro Patch',
+          address: 'Patch 1'
+        },
+        notes: 'inicial'
+      })
+    )
+  });
+  const created = await createResponse.json();
+
+  const patchResponse = await fetch(`${baseUrl}/api/v1/referrals/${created.id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders('user') },
+    body: JSON.stringify({
+      reason: 'Motivo revisado',
+      priority: 'urgent',
+      notes: 'actualizado'
+    })
+  });
+  assert.equal(patchResponse.status, 200);
+  const patched = await patchResponse.json();
+  assert.equal(patched.reason, 'Motivo revisado');
+  assert.equal(patched.priority, 'urgent');
+
+  const stored = await referralStore.findById(created.id);
+  assert.equal(stored.notes, 'actualizado');
+
+  const events = await referralStore.listEvents(created.id);
+  assert.equal(events.length, 2);
+  assert.equal(events[1].action, 'referral.updated');
+});
+
+test('PATCH rechaza edición fuera de borrador', async () => {
+  const createResponse = await fetch(`${baseUrl}/api/v1/referrals`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders('user') },
+    body: JSON.stringify(
+      referralPayload({
+        destination: {
+          healthsiteId: 'hs-patch-block',
+          name: 'Centro Bloqueado',
+          address: 'Block 1'
+        }
+      })
+    )
+  });
+  const created = await createResponse.json();
+  await fetch(`${baseUrl}/api/v1/referrals/${created.id}/transitions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders('user') },
+    body: JSON.stringify({ to: 'submitted' })
+  });
+
+  const patchResponse = await fetch(`${baseUrl}/api/v1/referrals/${created.id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders('user') },
+    body: JSON.stringify({ notes: 'tarde' })
+  });
+  assert.equal(patchResponse.status, 409);
+});
+
 test('cuenta pendiente no puede crear derivaciones', async () => {
   const app = createApp(new PatientStore([activePatient]), {
     verifyIdToken,

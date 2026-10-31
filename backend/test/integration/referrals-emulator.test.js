@@ -15,47 +15,19 @@ import {
   emulatorPatients
 } from '../fixtures/emulator-data.js';
 import { resetAndSeedEmulators } from '../support/emulators.js';
+import {
+  headersFor as buildHeaders,
+  referralBody,
+  signIn
+} from '../support/referral-emulator-helpers.js';
 
 let baseUrl;
 let server;
 let rulesEnvironment;
 const tokens = new Map();
 
-async function signIn(email, password) {
-  const host = process.env.FIREBASE_AUTH_EMULATOR_HOST;
-  const response = await fetch(
-    `http://${host}/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=demo-key`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, returnSecureToken: true })
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(
-      `Auth Emulator rechazó ${email} (${response.status}): ${await response.text()}`
-    );
-  }
-
-  return (await response.json()).idToken;
-}
-
 function headersFor(role, extra = {}) {
-  return { Authorization: `Bearer ${tokens.get(role)}`, ...extra };
-}
-
-function referralBody(patientId = 'patient-1') {
-  return {
-    patientId,
-    destination: {
-      healthsiteId: 'emulator-hs-1',
-      name: 'Hospital Emulator',
-      address: 'Calle Emulator 100'
-    },
-    reason: 'Consulta especializada',
-    notes: null
-  };
+  return buildHeaders(tokens, role, extra);
 }
 
 before(async () => {
