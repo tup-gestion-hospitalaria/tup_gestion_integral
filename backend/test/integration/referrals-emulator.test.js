@@ -17,6 +17,7 @@ import {
 import { resetAndSeedEmulators } from '../support/emulators.js';
 import {
   headersFor as buildHeaders,
+  listFirestoreEvents,
   referralBody,
   signIn
 } from '../support/referral-emulator-helpers.js';
@@ -99,12 +100,9 @@ test('agrega evento al enviar sin modificar el primero', async () => {
   assert.equal(createdResponse.status, 201);
   const created = await createdResponse.json();
 
-  const eventsBefore = await db
-    .collection('referrals')
-    .doc(created.id)
-    .collection('events')
-    .get();
-  const firstEvent = eventsBefore.docs[0].data();
+  const eventsBefore = await listFirestoreEvents(created.id);
+  assert.equal(eventsBefore.length, 1);
+  const firstEvent = eventsBefore[0];
 
   await fetch(`${baseUrl}/api/v1/referrals/${created.id}/transitions`, {
     method: 'POST',
@@ -115,14 +113,12 @@ test('agrega evento al enviar sin modificar el primero', async () => {
     body: JSON.stringify({ to: 'submitted' })
   });
 
-  const eventsAfter = await db
-    .collection('referrals')
-    .doc(created.id)
-    .collection('events')
-    .get();
-  assert.equal(eventsAfter.size, 2);
-  assert.deepEqual(eventsAfter.docs[0].data(), firstEvent);
-  assert.equal(eventsAfter.docs[1].data().action, 'referral.submitted');
+  const eventsAfter = await listFirestoreEvents(created.id);
+  assert.equal(eventsAfter.length, 2);
+  const { id: _firstId, ...firstEventData } = firstEvent;
+  const { id: _createdId, ...createdEventData } = eventsAfter[0];
+  assert.deepEqual(createdEventData, firstEventData);
+  assert.equal(eventsAfter[1].action, 'referral.submitted');
 });
 
 test('las reglas bloquean acceso directo a referrals', async () => {
