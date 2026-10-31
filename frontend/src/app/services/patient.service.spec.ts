@@ -13,13 +13,42 @@ describe('PatientService', () => {
 
   const samplePatient: Patient = {
     id: 'p-1',
-    fullName: 'Jane Doe',
+    fullName: 'Jane',
+    lastName: 'Doe',
+    documentNumber: '30123456',
+    birthDate: '15-03-1990',
     email: 'jane@example.com',
+    phone: '',
+    contactPreference: '',
+    contactHours: '',
     city: 'La Plata',
     country: 'Argentina',
+    privateCare: false,
+    insuranceName: 'OSDE',
+    affiliateNumber: '123456',
+    plan: '',
     picture: 'https://example.com/jane.jpg',
     active: true,
     version: 1,
+  };
+
+  const samplePayload = {
+    fullName: 'Jane',
+    lastName: 'Doe',
+    documentNumber: '30123456',
+    birthDate: '15-03-1990',
+    email: 'jane@example.com',
+    phone: '',
+    contactPreference: '',
+    contactHours: '',
+    city: 'La Plata',
+    country: 'Argentina',
+    privateCare: false,
+    insuranceName: 'OSDE',
+    affiliateNumber: '123456',
+    plan: '',
+    picture: 'https://example.com/jane.jpg',
+    active: true,
   };
 
   beforeEach(() => {
@@ -74,20 +103,11 @@ describe('PatientService', () => {
   });
 
   it('creates a patient', async () => {
-    const payload = {
-      fullName: 'Jane Doe',
-      email: 'jane@example.com',
-      city: 'La Plata',
-      country: 'Argentina',
-      picture: 'https://example.com/jane.jpg',
-      active: true,
-    };
-
-    const resultPromise = firstValueFrom(service.createPatient(payload));
+    const resultPromise = firstValueFrom(service.createPatient(samplePayload));
 
     const req = httpMock.expectOne(`${environment.backendApiUrl}/patients`);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual(payload);
+    expect(req.request.body).toEqual(samplePayload);
     req.flush(samplePatient);
 
     expect(await resultPromise).toEqual(samplePatient);
@@ -95,11 +115,7 @@ describe('PatientService', () => {
 
   it('replaces a patient', async () => {
     const payload = {
-      fullName: 'Jane Doe',
-      email: 'jane@example.com',
-      city: 'La Plata',
-      country: 'Argentina',
-      picture: 'https://example.com/jane.jpg',
+      ...samplePayload,
       active: false,
       version: 2,
     };
@@ -126,6 +142,6 @@ describe('PatientService', () => {
     expect(req.request.method).toBe('DELETE');
     req.flush(null);
 
-    await resultPromise;
+    expect(await resultPromise).toBeNull();
   });
 });

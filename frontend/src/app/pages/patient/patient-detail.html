@@ -14,7 +14,7 @@
 
   <div *ngIf="patient && !isLoading && !errorMessageKey" class="ficha-layout">
     <div class="intro">
-      <h2>{{ patient.fullName }}</h2>
+      <h2>{{ displayName(patient) }}</h2>
       <p>{{ 'PATIENT.SUBTITLE_DETAIL' | translate }}</p>
     </div>
 
@@ -29,14 +29,31 @@
           <span>{{ 'PATIENT.FIELD_PICTURE' | translate }}</span>
           <img
             [src]="patient.picture || '/foto-perfil.png'"
-            [alt]="patient.fullName"
+            [alt]="displayName(patient)"
             class="detail-photo"
           />
         </div>
 
         <div class="field field-readonly">
-          <span>{{ 'PATIENT.FIELD_FULL_NAME' | translate }}</span>
+          <span>{{ 'PATIENT.FIELD_FIRST_NAME' | translate }}</span>
           <div class="value">{{ patient.fullName }}</div>
+        </div>
+
+        <div class="field field-readonly">
+          <span>{{ 'PATIENT.FIELD_LAST_NAME' | translate }}</span>
+          <div class="value">{{ patient.lastName || ('PATIENT.EMPTY_OPTIONAL' | translate) }}</div>
+        </div>
+
+        <div class="field field-readonly">
+          <span>{{ 'PATIENT.FIELD_DOCUMENT' | translate }}</span>
+          <div class="value">
+            {{ patient.documentNumber || ('PATIENT.EMPTY_OPTIONAL' | translate) }}
+          </div>
+        </div>
+
+        <div class="field field-readonly">
+          <span>{{ 'PATIENT.FIELD_BIRTH_DATE' | translate }}</span>
+          <div class="value">{{ patient.birthDate || ('PATIENT.EMPTY_OPTIONAL' | translate) }}</div>
         </div>
 
         <div class="field field-readonly">
@@ -65,6 +82,25 @@
         </div>
 
         <div class="field field-readonly">
+          <span>{{ 'PATIENT.FIELD_PHONE' | translate }}</span>
+          <div class="value">{{ patient.phone || ('PATIENT.EMPTY_OPTIONAL' | translate) }}</div>
+        </div>
+
+        <div class="field field-readonly">
+          <span>{{ 'PATIENT.FIELD_CONTACT_PREFERENCE' | translate }}</span>
+          <div class="value">
+            {{ contactPreferenceLabel(patient.contactPreference) | translate }}
+          </div>
+        </div>
+
+        <div class="field wide field-readonly">
+          <span>{{ 'PATIENT.FIELD_CONTACT_HOURS' | translate }}</span>
+          <div class="value">
+            {{ patient.contactHours || ('PATIENT.EMPTY_OPTIONAL' | translate) }}
+          </div>
+        </div>
+
+        <div class="field field-readonly">
           <span>{{ 'ITEMS.CITY' | translate }}</span>
           <div class="value">{{ patient.city }}</div>
         </div>
@@ -73,6 +109,47 @@
           <span>{{ 'ITEMS.COUNTRY' | translate }}</span>
           <div class="value">{{ patient.country }}</div>
         </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <header class="block-head">
+        <h3>{{ 'PATIENT.SECTION_COVERAGE' | translate }}</h3>
+        <p>{{ 'PATIENT.SECTION_COVERAGE_DESC' | translate }}</p>
+      </header>
+
+      <div class="fields">
+        <div class="field wide field-readonly">
+          <span>{{ 'PATIENT.FIELD_PRIVATE_CARE' | translate }}</span>
+          <div class="value">
+            {{
+              patient.privateCare
+                ? ('PATIENT.COVERAGE_PRIVATE' | translate)
+                : ('PATIENT.EMPTY_OPTIONAL' | translate)
+            }}
+          </div>
+        </div>
+
+        <ng-container *ngIf="!patient.privateCare">
+          <div class="field wide field-readonly">
+            <span>{{ 'PATIENT.FIELD_INSURANCE' | translate }}</span>
+            <div class="value">
+              {{ patient.insuranceName || ('PATIENT.EMPTY_OPTIONAL' | translate) }}
+            </div>
+          </div>
+
+          <div class="field field-readonly">
+            <span>{{ 'PATIENT.FIELD_AFFILIATE' | translate }}</span>
+            <div class="value">
+              {{ patient.affiliateNumber || ('PATIENT.EMPTY_OPTIONAL' | translate) }}
+            </div>
+          </div>
+
+          <div class="field field-readonly">
+            <span>{{ 'PATIENT.FIELD_PLAN' | translate }}</span>
+            <div class="value">{{ patient.plan || ('PATIENT.EMPTY_OPTIONAL' | translate) }}</div>
+          </div>
+        </ng-container>
       </div>
     </section>
   </div>

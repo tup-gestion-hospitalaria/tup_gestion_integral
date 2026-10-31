@@ -6,6 +6,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
+import { patientDisplayName } from '../../core/validators/patient-validators';
 import { Patient } from '../../models/patient';
 import { PatientService } from '../../services/patient.service';
 import { UserService } from '../../services/user.service';
@@ -41,6 +42,23 @@ export class PatientDetail implements OnInit {
   isDeleting = false;
   errorMessageKey = '';
   isAdmin = false;
+
+  displayName(patient: Patient): string {
+    return patientDisplayName(patient.fullName, patient.lastName);
+  }
+
+  contactPreferenceLabel(value: string | null | undefined): string {
+    switch (value) {
+      case 'call':
+        return 'PATIENT.CONTACT_PREFERENCE_CALL';
+      case 'whatsapp':
+        return 'PATIENT.CONTACT_PREFERENCE_WHATSAPP';
+      case 'email':
+        return 'PATIENT.CONTACT_PREFERENCE_EMAIL';
+      default:
+        return 'PATIENT.CONTACT_PREFERENCE_NONE';
+    }
+  }
 
   ngOnInit(): void {
     this.userService.getMe().subscribe({
@@ -93,7 +111,7 @@ export class PatientDetail implements OnInit {
     }
 
     const dialogRef = this.dialog.open(PatientDeleteDialog, {
-      data: { fullName: this.patient.fullName } satisfies PatientDeleteDialogData,
+      data: { fullName: this.displayName(this.patient) } satisfies PatientDeleteDialogData,
       panelClass: 'patient-delete-dialog-panel',
     });
 

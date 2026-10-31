@@ -89,12 +89,12 @@
     >
       <img
         [src]="patient.picture || '/foto-perfil.png'"
-        [alt]="patient.fullName"
+        [alt]="displayName(patient)"
         class="patient-image"
       />
 
       <div class="patient-info">
-        <mat-card-title>{{ patient.fullName }}</mat-card-title>
+        <mat-card-title>{{ displayName(patient) }}</mat-card-title>
 
         <mat-card-content>
           <p>{{ patient.email }}</p>

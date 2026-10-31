@@ -132,9 +132,50 @@
   color: #8a938c;
 }
 
+.patient-ficha-page select.inp {
+  appearance: auto;
+}
+
+.patient-ficha-page .checkbox-field {
+  padding-top: 4px;
+}
+
+.patient-ficha-page .checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.patient-ficha-page .checkbox-label input[type='checkbox'] {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--ficha-accent);
+}
+
 .patient-ficha-page .field.error .inp {
   border-color: var(--ficha-danger);
   background: #fff8f7;
+}
+
+.patient-ficha-page .field.field-disabled label {
+  color: var(--ficha-muted);
+}
+
+.patient-ficha-page .inp:disabled {
+  color: var(--ficha-muted);
+  background: #eef0ed;
+  border-color: var(--ficha-line);
+  cursor: not-allowed;
+  opacity: 0.9;
+}
+
+.patient-ficha-page .field.field-disabled.field.error .inp:disabled {
+  border-color: var(--ficha-line);
+  background: #eef0ed;
 }
 
 .patient-ficha-page .err {

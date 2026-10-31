@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, ViewChild, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -8,9 +9,17 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import {
   normalizePatientFormValue,
+  patientAffiliateNumberValidator,
+  patientBirthDateValidator,
+  patientContactPreferenceValidator,
+  patientDocumentValidator,
   patientEmailValidator,
   patientFieldErrorKey,
   patientFullNameValidator,
+  patientInsuranceNameValidator,
+  patientLastNameValidator,
+  patientOptionalTextValidator,
+  patientPhoneValidator,
   patientPictureValidator,
   patientPlaceValidator,
 } from '../../core/validators/patient-validators';
@@ -40,6 +49,7 @@ export class PatientFormPage implements OnInit {
   private readonly router = inject(Router);
   private readonly patientService = inject(PatientService);
   private readonly translate = inject(TranslateService);
+  private readonly destroyRef = inject(DestroyRef);
 
   @ViewChild(PatientToast) toast!: PatientToast;
 
@@ -58,21 +68,36 @@ export class PatientFormPage implements OnInit {
   ngOnInit(): void {
     this.mode = this.route.snapshot.data['mode'] as FormMode;
 
+    this.form.controls['privateCare'].valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.syncInsuranceFields());
+
     if (this.mode === 'edit') {
       this.patientId = this.route.snapshot.paramMap.get('id') ?? '';
       this.loadPatient();
       return;
     }
 
+    this.syncInsuranceFields();
     this.originalSnapshot = this.snapshotForm();
   }
 
   private buildForm(active: boolean): FormGroup {
     return this.fb.group({
       fullName: ['', [patientFullNameValidator()]],
+      lastName: ['', [patientLastNameValidator()]],
+      documentNumber: ['', [patientDocumentValidator()]],
+      birthDate: ['', [patientBirthDateValidator()]],
       email: ['', [patientEmailValidator()]],
+      phone: ['', [patientPhoneValidator()]],
+      contactPreference: ['', [patientContactPreferenceValidator()]],
+      contactHours: ['', [patientOptionalTextValidator()]],
       city: ['', [patientPlaceValidator()]],
       country: ['', [patientPlaceValidator()]],
+      privateCare: [false],
+      insuranceName: ['', [patientInsuranceNameValidator()]],
+      affiliateNumber: ['', [patientAffiliateNumberValidator()]],
+      plan: ['', [patientOptionalTextValidator()]],
       picture: ['', [patientPictureValidator()]],
       active: [active],
     });
@@ -92,12 +117,23 @@ export class PatientFormPage implements OnInit {
         this.loadedPatient = patient;
         this.form.patchValue({
           fullName: patient.fullName,
+          lastName: patient.lastName ?? '',
+          documentNumber: patient.documentNumber ?? '',
+          birthDate: patient.birthDate ?? '',
           email: patient.email,
+          phone: patient.phone ?? '',
+          contactPreference: patient.contactPreference ?? '',
+          contactHours: patient.contactHours ?? '',
           city: patient.city,
           country: patient.country,
+          privateCare: patient.privateCare === true,
+          insuranceName: patient.insuranceName ?? '',
+          affiliateNumber: patient.affiliateNumber ?? '',
+          plan: patient.plan ?? '',
           picture: patient.picture,
           active: patient.active,
         });
+        this.syncInsuranceFields();
         this.originalSnapshot = this.snapshotForm();
         this.isLoading = false;
       },
@@ -114,6 +150,34 @@ export class PatientFormPage implements OnInit {
         }
       },
     });
+  }
+
+  get insuranceFieldsDisabled(): boolean {
+    return this.form.controls['privateCare'].value === true;
+  }
+
+  syncInsuranceFields(): void {
+    const privateCare = this.form.controls['privateCare'].value === true;
+    const insuranceName = this.form.controls['insuranceName'];
+    const affiliateNumber = this.form.controls['affiliateNumber'];
+    const plan = this.form.controls['plan'];
+
+    if (privateCare) {
+      insuranceName.setValue('', { emitEvent: false });
+      affiliateNumber.setValue('', { emitEvent: false });
+      plan.setValue('', { emitEvent: false });
+      insuranceName.disable({ emitEvent: false });
+      affiliateNumber.disable({ emitEvent: false });
+      plan.disable({ emitEvent: false });
+    } else {
+      insuranceName.enable({ emitEvent: false });
+      affiliateNumber.enable({ emitEvent: false });
+      plan.enable({ emitEvent: false });
+    }
+
+    insuranceName.updateValueAndValidity({ emitEvent: false });
+    affiliateNumber.updateValueAndValidity({ emitEvent: false });
+    plan.updateValueAndValidity({ emitEvent: false });
   }
 
   showFieldError(controlName: string): boolean {
@@ -162,17 +226,29 @@ export class PatientFormPage implements OnInit {
 
     this.form.reset({
       fullName: '',
+      lastName: '',
+      documentNumber: '',
+      birthDate: '',
       email: '',
+      phone: '',
+      contactPreference: '',
+      contactHours: '',
       city: '',
       country: '',
+      privateCare: false,
+      insuranceName: '',
+      affiliateNumber: '',
+      plan: '',
       picture: '',
       active: true,
     });
+    this.syncInsuranceFields();
     this.touchedFields.clear();
     this.toast.show(this.translate.instant('PATIENT.DISCARDED'), 'ok');
   }
 
   submit(): void {
+    this.syncInsuranceFields();
     this.markAllTouched();
 
     if (this.form.invalid) {

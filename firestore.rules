@@ -2,8 +2,85 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isNonEmptyString(value, minLen, maxLen) {
+      return value is string
+        && value.size() >= minLen
+        && value.size() <= maxLen;
+    }
+
+    function isOptionalString(value, maxLen) {
+      return value is string && value.size() <= maxLen;
+    }
+
+    function isValidBirthDate(value) {
+      return value is string && value.matches('^\\d{2}-\\d{2}-\\d{4}$');
+    }
+
+    function isValidContactPreference(value) {
+      return value == ''
+        || value == 'call'
+        || value == 'whatsapp'
+        || value == 'email';
+    }
+
+    function isValidCoverage(data) {
+      return data.privateCare is bool
+        && (
+          data.privateCare == true
+          || (
+            isNonEmptyString(data.insuranceName, 1, 80)
+            && isNonEmptyString(data.affiliateNumber, 1, 80)
+          )
+        );
+    }
+
+    function isValidPatient(data) {
+      return data.keys().hasAll([
+          'fullName',
+          'lastName',
+          'documentNumber',
+          'birthDate',
+          'email',
+          'phone',
+          'contactPreference',
+          'contactHours',
+          'city',
+          'country',
+          'privateCare',
+          'insuranceName',
+          'affiliateNumber',
+          'plan',
+          'picture',
+          'active'
+        ])
+        && isNonEmptyString(data.fullName, 2, 120)
+        && isNonEmptyString(data.lastName, 2, 120)
+        && isNonEmptyString(data.documentNumber, 7, 11)
+        && isValidBirthDate(data.birthDate)
+        && isNonEmptyString(data.email, 3, 254)
+        && isOptionalString(data.phone, 20)
+        && isValidContactPreference(data.contactPreference)
+        && isOptionalString(data.contactHours, 80)
+        && isNonEmptyString(data.city, 2, 80)
+        && isNonEmptyString(data.country, 2, 80)
+        && isOptionalString(data.insuranceName, 80)
+        && isOptionalString(data.affiliateNumber, 80)
+        && isOptionalString(data.plan, 80)
+        && isOptionalString(data.picture, 500)
+        && data.active is bool
+        && isValidCoverage(data);
+    }
+
     // Firestore es privado para los clientes. La API valida el token y el rol,
     // y accede mediante Admin SDK, que no queda sujeto a estas reglas.
+    match /patients/{patientId} {
+      allow read, write: if false;
+    }
+
+    match /patientDocuments/{documentId} {
+      allow read, write: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

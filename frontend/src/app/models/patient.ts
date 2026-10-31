@@ -3,9 +3,19 @@ import { Healthsite } from './healthsite';
 export interface Patient {
   id: string;
   fullName: string;
+  lastName: string;
+  documentNumber: string;
+  birthDate: string;
   email: string;
+  phone: string;
+  contactPreference: string;
+  contactHours: string;
   city: string;
   country: string;
+  privateCare: boolean;
+  insuranceName: string;
+  affiliateNumber: string;
+  plan: string;
   picture: string;
   active: boolean;
   version?: number;
@@ -20,9 +30,19 @@ export interface Patient {
 
 export interface PatientWritePayload {
   fullName: string;
+  lastName: string;
+  documentNumber: string;
+  birthDate: string;
   email: string;
+  phone: string;
+  contactPreference: string;
+  contactHours: string;
   city: string;
   country: string;
+  privateCare: boolean;
+  insuranceName: string;
+  affiliateNumber: string;
+  plan: string;
   picture: string;
   active: boolean;
 }

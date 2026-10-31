@@ -2,6 +2,8 @@ import express from 'express';
 
 import { PatientStore } from './patient-store.js';
 import { PatientService, PatientServiceError } from './patient-service.js';
+import { FirestorePatientStoreError } from './firestore-patient-store.js';
+import { PatientStoreError } from './patient-store.js';
 import {
   parseVersionQuery,
   validatePatientInput,
@@ -185,6 +187,18 @@ export function createApp(store = new PatientStore(), options = {}) {
         message: error.message,
         code: error.code
       });
+    }
+
+    if (error instanceof PatientStoreError || error instanceof FirestorePatientStoreError) {
+      const status = error.code === 'DUPLICATE_DOCUMENT' ? 409 : 400;
+      return response.status(status).json({
+        message: error.message,
+        code: error.code ?? 'INVALID_PATIENT'
+      });
+    }
+
+    if (error instanceof Error && error.message.startsWith('La propiedad')) {
+      return response.status(400).json({ message: error.message });
     }
 
     throw error;

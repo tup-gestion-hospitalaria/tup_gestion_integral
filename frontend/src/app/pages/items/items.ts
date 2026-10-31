@@ -10,6 +10,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 
+import { patientDisplayName } from '../../core/validators/patient-validators';
 import { Patient } from '../../models/patient';
 import { PatientService } from '../../services/patient.service';
 import { UserService } from '../../services/user.service';
@@ -152,6 +153,10 @@ export class Items implements OnInit, OnDestroy {
 
   openPatient(patient: Patient): void {
     this.router.navigate(['/items', patient.id]);
+  }
+
+  displayName(patient: Patient): string {
+    return patientDisplayName(patient.fullName, patient.lastName);
   }
 
   createPatient(): void {

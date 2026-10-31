@@ -39,20 +39,74 @@
 
         <div class="fields">
           <div
-            class="field wide"
+            class="field"
             [class.error]="showFieldError('fullName')"
             [class.changed]="isChanged('fullName')"
           >
-            <label for="fullName">{{ 'PATIENT.FIELD_FULL_NAME' | translate }}</label>
+            <label for="fullName">{{ 'PATIENT.FIELD_FIRST_NAME' | translate }}</label>
             <input
               class="inp"
               id="fullName"
               type="text"
               formControlName="fullName"
-              autocomplete="name"
+              autocomplete="given-name"
               (blur)="onBlur('fullName')"
             />
             <p class="err" *ngIf="fieldErrorKey('fullName') as errKey">{{ errKey | translate }}</p>
+          </div>
+
+          <div
+            class="field"
+            [class.error]="showFieldError('lastName')"
+            [class.changed]="isChanged('lastName')"
+          >
+            <label for="lastName">{{ 'PATIENT.FIELD_LAST_NAME' | translate }}</label>
+            <input
+              class="inp"
+              id="lastName"
+              type="text"
+              formControlName="lastName"
+              autocomplete="family-name"
+              (blur)="onBlur('lastName')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('lastName') as errKey">{{ errKey | translate }}</p>
+          </div>
+
+          <div
+            class="field"
+            [class.error]="showFieldError('documentNumber')"
+            [class.changed]="isChanged('documentNumber')"
+          >
+            <label for="documentNumber">{{ 'PATIENT.FIELD_DOCUMENT' | translate }}</label>
+            <input
+              class="inp"
+              id="documentNumber"
+              type="text"
+              formControlName="documentNumber"
+              inputmode="numeric"
+              (blur)="onBlur('documentNumber')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('documentNumber') as errKey">
+              {{ errKey | translate }}
+            </p>
+          </div>
+
+          <div
+            class="field"
+            [class.error]="showFieldError('birthDate')"
+            [class.changed]="isChanged('birthDate')"
+          >
+            <label for="birthDate">{{ 'PATIENT.FIELD_BIRTH_DATE' | translate }}</label>
+            <input
+              class="inp"
+              id="birthDate"
+              type="text"
+              formControlName="birthDate"
+              placeholder="DD-MM-YYYY"
+              autocomplete="bday"
+              (blur)="onBlur('birthDate')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('birthDate') as errKey">{{ errKey | translate }}</p>
           </div>
 
           <div
@@ -120,6 +174,67 @@
 
           <div
             class="field"
+            [class.error]="showFieldError('phone')"
+            [class.changed]="isChanged('phone')"
+          >
+            <label for="phone">{{ 'PATIENT.FIELD_PHONE' | translate }}</label>
+            <input
+              class="inp"
+              id="phone"
+              type="tel"
+              formControlName="phone"
+              autocomplete="tel"
+              (blur)="onBlur('phone')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('phone') as errKey">{{ errKey | translate }}</p>
+          </div>
+
+          <div
+            class="field"
+            [class.error]="showFieldError('contactPreference')"
+            [class.changed]="isChanged('contactPreference')"
+          >
+            <label for="contactPreference">{{
+              'PATIENT.FIELD_CONTACT_PREFERENCE' | translate
+            }}</label>
+            <select
+              class="inp"
+              id="contactPreference"
+              formControlName="contactPreference"
+              (blur)="onBlur('contactPreference')"
+            >
+              <option value="">{{ 'PATIENT.CONTACT_PREFERENCE_NONE' | translate }}</option>
+              <option value="call">{{ 'PATIENT.CONTACT_PREFERENCE_CALL' | translate }}</option>
+              <option value="whatsapp">
+                {{ 'PATIENT.CONTACT_PREFERENCE_WHATSAPP' | translate }}
+              </option>
+              <option value="email">{{ 'PATIENT.CONTACT_PREFERENCE_EMAIL' | translate }}</option>
+            </select>
+            <p class="err" *ngIf="fieldErrorKey('contactPreference') as errKey">
+              {{ errKey | translate }}
+            </p>
+          </div>
+
+          <div
+            class="field wide"
+            [class.error]="showFieldError('contactHours')"
+            [class.changed]="isChanged('contactHours')"
+          >
+            <label for="contactHours">{{ 'PATIENT.FIELD_CONTACT_HOURS' | translate }}</label>
+            <input
+              class="inp"
+              id="contactHours"
+              type="text"
+              formControlName="contactHours"
+              (blur)="onBlur('contactHours')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('contactHours') as errKey">
+              {{ errKey | translate }}
+            </p>
+          </div>
+
+          <div
+            class="field"
             [class.error]="showFieldError('city')"
             [class.changed]="isChanged('city')"
           >
@@ -150,6 +265,77 @@
               (blur)="onBlur('country')"
             />
             <p class="err" *ngIf="fieldErrorKey('country') as errKey">{{ errKey | translate }}</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="block" aria-labelledby="coverage-heading">
+        <header class="block-head">
+          <h3 id="coverage-heading">{{ 'PATIENT.SECTION_COVERAGE' | translate }}</h3>
+          <p>{{ 'PATIENT.SECTION_COVERAGE_DESC' | translate }}</p>
+        </header>
+
+        <div class="fields">
+          <div class="field wide checkbox-field" [class.changed]="isChanged('privateCare')">
+            <label class="checkbox-label" for="privateCare">
+              <input id="privateCare" type="checkbox" formControlName="privateCare" />
+              <span>{{ 'PATIENT.FIELD_PRIVATE_CARE' | translate }}</span>
+            </label>
+          </div>
+
+          <div
+            class="field wide"
+            [class.field-disabled]="insuranceFieldsDisabled"
+            [class.error]="showFieldError('insuranceName')"
+            [class.changed]="isChanged('insuranceName')"
+          >
+            <label for="insuranceName">{{ 'PATIENT.FIELD_INSURANCE' | translate }}</label>
+            <input
+              class="inp"
+              id="insuranceName"
+              type="text"
+              formControlName="insuranceName"
+              (blur)="onBlur('insuranceName')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('insuranceName') as errKey">
+              {{ errKey | translate }}
+            </p>
+          </div>
+
+          <div
+            class="field"
+            [class.field-disabled]="insuranceFieldsDisabled"
+            [class.error]="showFieldError('affiliateNumber')"
+            [class.changed]="isChanged('affiliateNumber')"
+          >
+            <label for="affiliateNumber">{{ 'PATIENT.FIELD_AFFILIATE' | translate }}</label>
+            <input
+              class="inp"
+              id="affiliateNumber"
+              type="text"
+              formControlName="affiliateNumber"
+              (blur)="onBlur('affiliateNumber')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('affiliateNumber') as errKey">
+              {{ errKey | translate }}
+            </p>
+          </div>
+
+          <div
+            class="field"
+            [class.field-disabled]="insuranceFieldsDisabled"
+            [class.error]="showFieldError('plan')"
+            [class.changed]="isChanged('plan')"
+          >
+            <label for="plan">{{ 'PATIENT.FIELD_PLAN' | translate }}</label>
+            <input
+              class="inp"
+              id="plan"
+              type="text"
+              formControlName="plan"
+              (blur)="onBlur('plan')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('plan') as errKey">{{ errKey | translate }}</p>
           </div>
         </div>
       </section>
