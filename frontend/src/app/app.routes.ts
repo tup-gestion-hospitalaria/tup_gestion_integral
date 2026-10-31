@@ -5,7 +5,9 @@ import { Login } from './pages/login/login';
 import { Layout } from './pages/layout/layout';
 import { Items } from './pages/items/items';
 import { Settings } from './pages/settings/settings';
+import { AccountStatus } from './pages/account-status/account-status';
 import { authGuard } from './core/guards/auth-guard';
+import { approvedAccountGuard } from './core/guards/approved-account-guard';
 import { autoLoginGuard } from './core/guards/auto-login-guard';
 
 export const routes: Routes = [
@@ -27,10 +29,16 @@ export const routes: Routes = [
       {
         path: 'items',
         component: Items,
+        canActivate: [approvedAccountGuard],
       },
       {
         path: 'centros-derivacion',
         component: ReferralCenters,
+        canActivate: [approvedAccountGuard],
+      },
+      {
+        path: 'cuenta-estado',
+        component: AccountStatus,
       },
       {
         path: 'configuracion',

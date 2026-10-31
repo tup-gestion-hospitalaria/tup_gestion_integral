@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -36,6 +37,8 @@ export class Login {
     private dialog: MatDialog,
     private cdr: ChangeDetectorRef,
     private translate: TranslateService,
+    private router: Router,
+    private route: ActivatedRoute,
   ) {}
 
   private setLoading(value: boolean): void {
@@ -43,11 +46,27 @@ export class Login {
     this.cdr.detectChanges();
   }
 
+  private redirectAfterLogin(): void {
+    const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+
+    if (!this.authService.isApproved()) {
+      this.router.navigate(['/cuenta-estado']);
+      return;
+    }
+
+    if (returnUrl) {
+      this.router.navigateByUrl(returnUrl);
+    } else {
+      this.router.navigate(['/items']);
+    }
+  }
+
   async loginWithGoogle(): Promise<void> {
     try {
       this.setLoading(true);
 
       await this.authService.loginWithGoogle();
+      this.redirectAfterLogin();
     } catch {
       this.translate.get('LOGIN.GOOGLE_ERROR').subscribe((res: string) => alert(res));
     } finally {
@@ -65,6 +84,7 @@ export class Login {
       this.setLoading(true);
 
       await this.authService.loginWithEmail(this.email.trim(), this.password);
+      this.redirectAfterLogin();
     } catch (error: any) {
       if (error.code === 'auth/invalid-email') {
         this.translate.get('LOGIN.INVALID_EMAIL').subscribe((res: string) => alert(res));
@@ -99,6 +119,7 @@ export class Login {
           result.displayName,
           result.photoURL,
         );
+        this.redirectAfterLogin();
       } catch (error: any) {
         if (error.code === 'auth/email-already-in-use') {
           this.translate.get('LOGIN.EMAIL_ALREADY_IN_USE').subscribe((res: string) => alert(res));
