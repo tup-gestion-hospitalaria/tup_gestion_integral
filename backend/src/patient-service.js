@@ -3,7 +3,9 @@ import { randomUUID } from 'node:crypto';
 import { filterAndPaginate, parseListQuery } from './patient-query.js';
 import {
   createAuditFields,
+  documentIndexId,
   isDeleted,
+  mergeAndNormalizePatientBusiness,
   normalizeStoredPatient,
   PATIENT_BUSINESS_FIELDS
 } from './patient-schema.js';
@@ -59,6 +61,20 @@ export class PatientService {
     );
   }
 
+  async findDuplicateDocument(documentNumber, excludeId = null) {
+    const normalized = documentIndexId(documentNumber);
+    if (!normalized) {
+      return null;
+    }
+
+    const patients = await this.listRaw();
+    return patients.find(
+      (patient) =>
+        patient.id !== excludeId &&
+        documentIndexId(patient.documentNumber ?? '') === normalized
+    );
+  }
+
   assertVersion(patient, expectedVersion) {
     const currentVersion = patient.version ?? 1;
     if (currentVersion !== expectedVersion) {
@@ -71,12 +87,21 @@ export class PatientService {
   }
 
   async create(businessData, actorId) {
-    const duplicate = await this.findDuplicateEmail(businessData.email);
-    if (duplicate) {
+    const duplicateEmail = await this.findDuplicateEmail(businessData.email);
+    if (duplicateEmail) {
       throw new PatientServiceError(
         409,
         'Ya existe un paciente con ese email.',
         'DUPLICATE_EMAIL'
+      );
+    }
+
+    const duplicateDocument = await this.findDuplicateDocument(businessData.documentNumber);
+    if (duplicateDocument) {
+      throw new PatientServiceError(
+        409,
+        'Ya existe un paciente con ese documento.',
+        'DUPLICATE_DOCUMENT'
       );
     }
 
@@ -100,12 +125,21 @@ export class PatientService {
 
     this.assertVersion(existing, input.version);
 
-    const duplicate = await this.findDuplicateEmail(input.email, id);
-    if (duplicate) {
+    const duplicateEmail = await this.findDuplicateEmail(input.email, id);
+    if (duplicateEmail) {
       throw new PatientServiceError(
         409,
         'Ya existe un paciente con ese email.',
         'DUPLICATE_EMAIL'
+      );
+    }
+
+    const duplicateDocument = await this.findDuplicateDocument(input.documentNumber, id);
+    if (duplicateDocument) {
+      throw new PatientServiceError(
+        409,
+        'Ya existe un paciente con ese documento.',
+        'DUPLICATE_DOCUMENT'
       );
     }
 
@@ -146,9 +180,14 @@ export class PatientService {
       }
     }
 
-    const nextEmail = business.email ?? existing.email;
-    const duplicate = await this.findDuplicateEmail(nextEmail, id);
-    if (duplicate) {
+    const merged = mergeAndNormalizePatientBusiness(existing, business);
+    if (!merged.ok) {
+      throw new PatientServiceError(400, merged.message, 'INVALID_INPUT');
+    }
+
+    const nextEmail = merged.value.email;
+    const duplicateEmail = await this.findDuplicateEmail(nextEmail, id);
+    if (duplicateEmail) {
       throw new PatientServiceError(
         409,
         'Ya existe un paciente con ese email.',
@@ -156,10 +195,19 @@ export class PatientService {
       );
     }
 
+    const duplicateDocument = await this.findDuplicateDocument(merged.value.documentNumber, id);
+    if (duplicateDocument) {
+      throw new PatientServiceError(
+        409,
+        'Ya existe un paciente con ese documento.',
+        'DUPLICATE_DOCUMENT'
+      );
+    }
+
     const now = new Date().toISOString();
     const patient = {
       ...existing,
-      ...business,
+      ...merged.value,
       id,
       version: existing.version + 1,
       updatedAt: now,

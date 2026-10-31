@@ -3,7 +3,13 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../environments/environment';
-import { PatientListParams, PatientPage } from '../models/patient';
+import {
+  Patient,
+  PatientListParams,
+  PatientPage,
+  PatientReplacePayload,
+  PatientWritePayload,
+} from '../models/patient';
 
 @Injectable({
   providedIn: 'root',
@@ -33,7 +39,27 @@ export class PatientService {
     if (params.active !== undefined) {
       httpParams = httpParams.set('active', String(params.active));
     }
+    if (params.includeDeleted) {
+      httpParams = httpParams.set('includeDeleted', 'true');
+    }
 
     return this.http.get<PatientPage>(this.apiUrl, { params: httpParams });
+  }
+
+  getPatient(id: string): Observable<Patient> {
+    return this.http.get<Patient>(`${this.apiUrl}/${id}`);
+  }
+
+  createPatient(payload: PatientWritePayload): Observable<Patient> {
+    return this.http.post<Patient>(this.apiUrl, payload);
+  }
+
+  replacePatient(id: string, payload: PatientReplacePayload): Observable<Patient> {
+    return this.http.put<Patient>(`${this.apiUrl}/${id}`, payload);
+  }
+
+  deactivatePatient(id: string, version: number): Observable<void> {
+    const params = new HttpParams().set('version', String(version));
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, { params });
   }
 }

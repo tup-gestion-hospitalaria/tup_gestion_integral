@@ -1,10 +1,5 @@
 import { Routes } from '@angular/router';
 
-import { ReferralCenters } from './pages/referral-centers/referral-centers';
-import { Login } from './pages/login/login';
-import { Layout } from './pages/layout/layout';
-import { Items } from './pages/items/items';
-import { Settings } from './pages/settings/settings';
 import { authGuard } from './core/guards/auth-guard';
 import { autoLoginGuard } from './core/guards/auto-login-guard';
 
@@ -16,25 +11,42 @@ export const routes: Routes = [
   },
   {
     path: 'login',
-    component: Login,
+    loadComponent: () => import('./pages/login/login').then((m) => m.Login),
     canActivate: [autoLoginGuard],
   },
   {
     path: '',
-    component: Layout,
+    loadComponent: () => import('./pages/layout/layout').then((m) => m.Layout),
     canActivate: [authGuard],
     children: [
       {
         path: 'items',
-        component: Items,
+        loadComponent: () => import('./pages/items/items').then((m) => m.Items),
+      },
+      {
+        path: 'items/nuevo',
+        loadComponent: () =>
+          import('./pages/patient/patient-form-page').then((m) => m.PatientFormPage),
+        data: { mode: 'create' },
+      },
+      {
+        path: 'items/:id/editar',
+        loadComponent: () =>
+          import('./pages/patient/patient-form-page').then((m) => m.PatientFormPage),
+        data: { mode: 'edit' },
+      },
+      {
+        path: 'items/:id',
+        loadComponent: () => import('./pages/patient/patient-detail').then((m) => m.PatientDetail),
       },
       {
         path: 'centros-derivacion',
-        component: ReferralCenters,
+        loadComponent: () =>
+          import('./pages/referral-centers/referral-centers').then((m) => m.ReferralCenters),
       },
       {
         path: 'configuracion',
-        component: Settings,
+        loadComponent: () => import('./pages/settings/settings').then((m) => m.Settings),
       },
     ],
   },

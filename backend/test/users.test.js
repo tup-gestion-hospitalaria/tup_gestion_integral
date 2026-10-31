@@ -4,6 +4,7 @@ import { after, before, test } from 'node:test';
 import { createApp } from '../src/app.js';
 import { PatientStore } from '../src/patient-store.js';
 import { UserStore } from '../src/user-store.js';
+import { buildPatientBusinessFields } from './fixtures/emulator-data.js';
 
 let baseUrl;
 let server;
@@ -93,12 +94,20 @@ before(async () => {
   const patientStore = new PatientStore([
     {
       id: 'patient-test',
-      fullName: 'Paciente Uno',
-      email: 'p1@test.com',
-      city: 'La Plata',
-      country: 'Argentina',
-      picture: 'https://example.com/p1.jpg',
-      active: true
+      ...buildPatientBusinessFields({
+        fullName: 'Paciente',
+        lastName: 'Uno',
+        documentNumber: '40111222',
+        email: 'p1@test.com',
+        picture: 'https://example.com/p1.jpg'
+      }),
+      version: 1,
+      createdAt: '2024-01-01T00:00:00.000Z',
+      updatedAt: '2024-01-01T00:00:00.000Z',
+      createdBy: 'system',
+      updatedBy: 'system',
+      deletedAt: null,
+      deletedBy: null
     }
   ]);
 

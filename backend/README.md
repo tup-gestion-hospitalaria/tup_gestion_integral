@@ -72,12 +72,12 @@ curl http://localhost:3000/api/patients/ID \
 curl -X POST http://localhost:3000/api/patients \
   -H "Authorization: Bearer $FIREBASE_ID_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"fullName":"Ana Pérez","email":"ana@example.com","city":"La Plata","country":"Argentina","picture":"https://example.com/ana.jpg","active":true}'
+  -d '{"fullName":"Ana","lastName":"Pérez","documentNumber":"30123456","birthDate":"15-03-1990","email":"ana@example.com","phone":"","contactPreference":"","contactHours":"","city":"La Plata","country":"Argentina","privateCare":false,"insuranceName":"OSDE","affiliateNumber":"123456","plan":"","picture":"https://example.com/ana.jpg","active":true}'
 
 curl -X PUT http://localhost:3000/api/patients/ID \
   -H "Authorization: Bearer $FIREBASE_ID_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"fullName":"Ana Gómez","email":"ana.gomez@example.com","city":"Berisso","country":"Argentina","picture":"https://example.com/ana.jpg","active":false,"version":1}'
+  -d '{"fullName":"Ana","lastName":"Gómez","documentNumber":"30123456","birthDate":"15-03-1990","email":"ana.gomez@example.com","phone":"","contactPreference":"","contactHours":"","city":"Berisso","country":"Argentina","privateCare":false,"insuranceName":"OSDE","affiliateNumber":"123456","plan":"","picture":"https://example.com/ana.jpg","active":false,"version":1}'
 
 curl -X PATCH http://localhost:3000/api/patients/ID \
   -H "Authorization: Bearer $FIREBASE_ID_TOKEN" \

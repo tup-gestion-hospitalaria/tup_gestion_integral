@@ -1,0 +1,13 @@
+---
+description: Never add Cursor co-author attribution to git commits or PRs
+alwaysApply: true
+---
+
+# Git commit attribution
+
+When creating git commits or pull requests:
+
+- Never add `Co-authored-by: Cursor` or any Cursor/agent co-author trailer.
+- Never add `Made with Cursor` or similar attribution lines.
+- Commit messages must be written in English unless the user explicitly asks for another language.
+- Only the user's git identity should appear as author; do not attribute commits to the agent.

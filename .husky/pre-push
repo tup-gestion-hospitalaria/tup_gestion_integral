@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+if [ "${SKIP_CI:-}" = "1" ]; then
+  exit 0
+fi
+"$(dirname "$0")/../bin/ci-check.sh"

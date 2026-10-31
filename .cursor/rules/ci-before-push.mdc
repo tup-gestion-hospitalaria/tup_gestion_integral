@@ -1,0 +1,43 @@
+---
+description: Verify GitHub CI locally before commit/push or PR
+alwaysApply: true
+---
+
+# CI before push
+
+As a general rule, do not treat backend or frontend work as done until the same checks as `.github/workflows/ci.yml` pass locally.
+
+## When to run
+
+- After substantive changes under `backend/` or `frontend/`.
+- Before suggesting the user commit, push, or open a pull request.
+- When the user asks to commit or push: run checks first unless they explicitly skip.
+
+## Command (repo root)
+
+```bash
+./bin/ci-check.sh
+```
+
+Firestore emulator integration (optional, needs Java): `./bin/ci-check.sh --integration`
+
+## Parity with CI
+
+| Job | Local command |
+| --- | --- |
+| Backend | `npm audit --omit=dev --audit-level=high`, then `lint`, `test`, `build`, `smoke` in `backend/` |
+| Frontend | corepack npm 11.11.0, `npm audit --audit-level=high`, then `lint`, `test -- --watch=false`, `build`, `smoke` in `frontend/` |
+| Integration | only with `--integration`; runs `backend` `test:emulators` |
+
+Use Node 22+ (match CI).
+
+## On failure
+
+Fix the failure and re-run `./bin/ci-check.sh` until green. Do not tell the user to push with known CI failures.
+
+## Git hooks
+
+- `pre-commit`: frontend `lint-staged` only (fast).
+- `pre-push`: runs `./bin/ci-check.sh`. Bypass hook only: `SKIP_CI=1 git push`.
+
+Run `--integration` when changing Firestore rules, emulator tests, or backend integration code—not on every UI tweak.

@@ -7,7 +7,7 @@
 
   <p *ngIf="selectedPatient">
     {{ 'REFERRAL_CENTERS.SELECTED_PATIENT' | translate }}
-    <strong>{{ selectedPatient.fullName }}</strong>
+    <strong>{{ patientDisplayName(selectedPatient.fullName, selectedPatient.lastName) }}</strong>
   </p>
 
   <div class="filters-bar">
