@@ -289,26 +289,6 @@ function validateBusinessField(field, value) {
   return null;
 }
 
-function validateBusinessSlice(data) {
-  for (const field of PATIENT_BUSINESS_FIELDS) {
-    if (data[field] === undefined) {
-      return { ok: false, message: `La propiedad "${field}" es obligatoria.` };
-    }
-
-    const fieldError = validateBusinessField(field, data[field]);
-    if (fieldError) {
-      return { ok: false, message: fieldError };
-    }
-  }
-
-  const coverageError = validateCoverageRules(data);
-  if (coverageError) {
-    return { ok: false, message: coverageError };
-  }
-
-  return { ok: true };
-}
-
 /**
  * @param {Record<string, unknown>} data
  */
