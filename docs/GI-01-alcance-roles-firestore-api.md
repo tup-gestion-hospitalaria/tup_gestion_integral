@@ -129,14 +129,35 @@ El custom claim es la fuente de autorización. El campo `role` del documento fac
 | `destination` | map | Sí | Snapshot con `healthsiteId`, `name` y `address` |
 | `reason` | string | Sí | Motivo de la derivación |
 | `notes` | string o null | Sí | Observaciones opcionales |
+| `priority` | string | Sí | `low`, `normal`, `high` o `urgent`; por defecto `normal` |
+| `responsibleId` | string | Sí | UID del responsable operativo; por defecto el creador |
 | `status` | string | Sí | Estado de la derivación |
 | `rejectionReason` | string o null | Sí | Motivo obligatorio al rechazar |
+| `submittedAt` | Timestamp o null | Sí | Marca de envío (`submitted`) |
+| `decidedAt` | Timestamp o null | Sí | Marca de aceptación o rechazo |
+| `closedAt` | Timestamp o null | Sí | Marca de cierre (`rejected`, `completed`, `cancelled`) |
 | `createdAt` | Timestamp | Sí | Fecha de creación |
 | `createdBy` | string | Sí | UID propietario de la derivación |
 | `updatedAt` | Timestamp | Sí | Última modificación |
 | `updatedBy` | string | Sí | UID de última modificación |
 
-El destino se guarda como snapshot para conservar el nombre y la dirección utilizados al derivar aunque la fuente externa cambie.
+El destino se guarda como snapshot para conservar el nombre y la dirección utilizados al derivar aunque la fuente externa cambie. No se valida contra el catálogo externo en el momento de la alta.
+
+#### Historial inmutable (`referrals/{referralId}/events/{eventId}`)
+
+Cada cambio relevante agrega un evento en subcolección. No existe endpoint para modificarlo ni eliminarlo. Campos: `action`, `at`, `actorId`, `fromStatus`, `toStatus`, `changes`. `GET /api/v1/referrals/:id` incluye `history` ordenado por `at`. El listado no lo incluye.
+
+#### Candado de duplicados (`referralOpenLocks/{patientId}__{healthsiteId}`)
+
+Mientras exista una derivación en `draft`, `submitted` o `accepted` para el mismo paciente y centro, otra alta responde `409`. El documento candado se elimina al borrar el borrador o al llegar a un estado final.
+
+#### Idempotencia de alta
+
+`POST /api/v1/referrals` acepta el encabezado opcional `Idempotency-Key` (máximo 128 caracteres), scoped por usuario. La misma clave y el mismo cuerpo devuelven la derivación existente; una clave reutilizada con otro cuerpo responde `409`.
+
+#### Visibilidad
+
+Un `user` consulta derivaciones donde es `createdBy` o `responsibleId`. Un `admin` consulta todas.
 
 #### Estados y transiciones
 
@@ -217,7 +238,7 @@ users/{uid} 1 --- N auditLogs/{auditLogId} mediante actorId
 Filtros admitidos en el MVP:
 
 - `GET /patients?active=true`.
-- `GET /referrals?status=submitted`.
+- `GET /referrals?status=submitted&patientId=<id>`.
 - `GET /audit-logs?resourceType=patient&resourceId=<id>`.
 
 ### Ejemplo: crear un paciente
@@ -327,9 +348,9 @@ Este documento cierra el contrato objetivo de GI-01; no afirma que cada recurso 
 | Roles `user` y `admin` | Implementado |
 | Rutas de pacientes bajo `/api` | Implementadas; deben migrarse a `/api/v1` |
 | Catálogo externo de centros | Implementado bajo `/api/healthsites`; debe migrarse a `/api/v1` |
-| Metadatos de autoría y timestamps | Pendiente |
-| `users`, `referrals` y `auditLogs` | Pendiente |
-| Reglas de transición de derivaciones | Pendiente |
+| Metadatos de autoría y timestamps | Implementado en pacientes y derivaciones |
+| `users`, `referrals` y `auditLogs` | `users` y `referrals` implementados; `auditLogs` pendiente |
+| Reglas de transición de derivaciones | Implementadas |
 | Corrección tecnológica del README raíz | Completada: `main`, Firebase Authentication y Firestore |
 
 Los cambios incompatibles posteriores requieren una nueva versión de API o una decisión documentada y aprobada.

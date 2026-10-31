@@ -1,12 +1,14 @@
 import { createApp } from './app.js';
 import { auth, db } from './firebase.js';
 import { FirestorePatientStore } from './firestore-patient-store.js';
+import { FirestoreReferralStore } from './firestore-referral-store.js';
 import { FirestoreUserStore } from './firestore-user-store.js';
 
 export async function startServer(options = {}) {
   const port = Number(options.port ?? process.env.PORT ?? 3000);
   const host = options.host ?? process.env.HOST ?? '0.0.0.0';
   const store = options.store ?? new FirestorePatientStore(db);
+  const referralStore = options.referralStore ?? new FirestoreReferralStore(db);
   const userStore = options.userStore ?? new FirestoreUserStore(db);
   const verifyIdToken =
     options.verifyIdToken ?? ((token) => auth.verifyIdToken(token, true));
@@ -17,6 +19,7 @@ export async function startServer(options = {}) {
     options.revokeRefreshTokens ?? ((uid) => auth.revokeRefreshTokens(uid));
   const app = createApp(store, {
     userStore,
+    referralStore,
     verifyIdToken,
     setCustomUserClaims,
     revokeRefreshTokens

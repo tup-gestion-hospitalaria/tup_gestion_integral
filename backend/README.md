@@ -57,6 +57,12 @@ npm run dev:windows
 | PATCH | `/api/patients/:id` | Modificar parcialmente con `version` (`admin`) |
 | DELETE | `/api/patients/:id?version=` | Baja lógica (`admin`) |
 | POST | `/api/patients/:id/restore` | Restaurar baja con `{ "version" }` (`admin`) |
+| GET | `/api/referrals` | Listar (`user`: propias o asignadas; `admin`: todas). Filtros `patientId`, `status` |
+| GET | `/api/referrals/:id` | Obtener derivación con `history` |
+| POST | `/api/referrals` | Crear borrador. Encabezado opcional `Idempotency-Key` |
+| PATCH | `/api/referrals/:id` | Editar borrador |
+| DELETE | `/api/referrals/:id` | Eliminar borrador |
+| POST | `/api/referrals/:id/transitions` | Cambiar estado (`{ "to": "...", "rejectionReason"?: "..." }`) |
 | GET | `/api/healthsites` | Consultar centros (`user`, `admin`) |
 | GET | `/health` | Comprobar el estado del servicio |
 
