@@ -92,6 +92,11 @@ jobs:
       - name: Prepare report directory
         run: mkdir -p ci-reports
 
+      - name: Materialize Firebase config
+        run: |
+          cp src/environments/environment.example.ts src/environments/environment.ts
+          cp src/app/firebase.example.ts src/app/firebase.ts
+
       - name: Install dependencies
         run: |
           set -o pipefail
