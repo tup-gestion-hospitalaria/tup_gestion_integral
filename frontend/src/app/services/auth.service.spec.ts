@@ -22,7 +22,9 @@ vi.mock('firebase/auth', () => ({
       return authHarness.currentUser;
     },
     authStateReady: authHarness.authStateReady,
+    emulatorConfig: {},
   })),
+  connectAuthEmulator: vi.fn(),
   onAuthStateChanged: vi.fn((_auth: unknown, callback: (user: User | null) => void) => {
     authHarness.authStateCallback = callback;
     return vi.fn();
