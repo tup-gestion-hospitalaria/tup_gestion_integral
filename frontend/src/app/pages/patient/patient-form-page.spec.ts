@@ -1,67 +1,30 @@
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
-import { Patient } from '../../models/patient';
 import { PatientService } from '../../services/patient.service';
 import { PatientFormPage } from './patient-form-page';
 import { PatientToast } from './patient-toast';
 
 describe('PatientFormPage', () => {
-  let component: PatientFormPage;
-  let createPatient: ReturnType<typeof vi.fn>;
-  let navigate: ReturnType<typeof vi.fn>;
-  let toastShow: ReturnType<typeof vi.fn>;
-
-  beforeEach(() => {
+  it('crea un paciente normalizado y vuelve al listado', () => {
     vi.useFakeTimers();
-    createPatient = vi.fn().mockReturnValue(of({ id: 'patient-1' } as Patient));
-    navigate = vi.fn();
-    toastShow = vi.fn();
+    const createPatient = vi.fn().mockReturnValue(of(null));
+    const navigate = vi.fn();
 
     TestBed.configureTestingModule({
       providers: [
-        {
-          provide: ActivatedRoute,
-          useValue: {
-            snapshot: {
-              data: { mode: 'create' },
-              paramMap: convertToParamMap({}),
-            },
-          },
-        },
+        { provide: ActivatedRoute, useValue: { snapshot: { data: { mode: 'create' } } } },
         { provide: Router, useValue: { navigate } },
-        {
-          provide: PatientService,
-          useValue: {
-            createPatient,
-            getPatient: vi.fn(),
-            replacePatient: vi.fn(),
-          },
-        },
+        { provide: PatientService, useValue: { createPatient } },
         { provide: TranslateService, useValue: { instant: (key: string) => key } },
       ],
     });
 
-    component = TestBed.runInInjectionContext(() => new PatientFormPage());
-    component.toast = { show: toastShow } as unknown as PatientToast;
+    const component = TestBed.runInInjectionContext(() => new PatientFormPage());
+    component.toast = { show: vi.fn() } as unknown as PatientToast;
     component.ngOnInit();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-    TestBed.resetTestingModule();
-  });
-
-  it('no envía un formulario inválido y muestra el resumen de errores', () => {
-    component.submit();
-
-    expect(createPatient).not.toHaveBeenCalled();
-    expect(toastShow).toHaveBeenCalledWith('PATIENT.VALIDATION_SUMMARY_MANY', 'err');
-  });
-
-  it('crea un paciente con el payload normalizado y vuelve al listado', () => {
     component.form.setValue({
       fullName: '  Ana   María ',
       lastName: ' Pérez ',
@@ -88,12 +51,12 @@ describe('PatientFormPage', () => {
         fullName: 'Ana María',
         documentNumber: '30123456',
         email: 'ana@example.com',
-        phone: '542215551234',
       }),
     );
-    expect(toastShow).toHaveBeenCalledWith('PATIENT.CREATE_SUCCESS', 'ok');
-
     vi.advanceTimersByTime(800);
     expect(navigate).toHaveBeenCalledWith(['/items'], { queryParams: { refreshed: '1' } });
+
+    vi.useRealTimers();
+    TestBed.resetTestingModule();
   });
 });

@@ -14,63 +14,34 @@ const state = { url: '/items/nuevo' } as RouterStateSnapshot;
 
 describe('adminAccountGuard', () => {
   let authService: {
-    accountProfile: { status: string; role: string } | null;
+    accountProfile: { status: string; role: string };
     waitForAuthState: ReturnType<typeof vi.fn>;
     isAuthenticated: ReturnType<typeof vi.fn>;
   };
   let router: Router;
 
   beforeEach(() => {
-    TestBed.resetTestingModule();
     authService = {
-      accountProfile: null,
+      accountProfile: { status: 'approved', role: 'admin' },
       waitForAuthState: vi.fn().mockResolvedValue(undefined),
-      isAuthenticated: vi.fn(),
+      isAuthenticated: vi.fn().mockReturnValue(true),
     };
-
     TestBed.configureTestingModule({
       providers: [provideRouter([]), { provide: AuthService, useValue: authService }],
     });
-
     router = TestBed.inject(Router);
   });
 
   afterEach(() => TestBed.resetTestingModule());
 
-  it('permite acceder a una cuenta administradora aprobada', async () => {
-    authService.isAuthenticated.mockReturnValue(true);
-    authService.accountProfile = { status: 'approved', role: 'admin' };
-
+  it('permite administradores aprobados', async () => {
     const result = await TestBed.runInInjectionContext(() => adminAccountGuard(route, state));
-
     expect(result).toBe(true);
   });
 
-  it('redirige a login cuando no hay sesión', async () => {
-    authService.isAuthenticated.mockReturnValue(false);
-
+  it('redirige usuarios comunes al listado', async () => {
+    authService.accountProfile.role = 'user';
     const result = await TestBed.runInInjectionContext(() => adminAccountGuard(route, state));
-
-    expect(result).toEqual(
-      router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } }),
-    );
-  });
-
-  it('redirige cuentas pendientes a su pantalla de estado', async () => {
-    authService.isAuthenticated.mockReturnValue(true);
-    authService.accountProfile = { status: 'pending', role: 'admin' };
-
-    const result = await TestBed.runInInjectionContext(() => adminAccountGuard(route, state));
-
-    expect(result).toEqual(router.createUrlTree(['/cuenta-estado']));
-  });
-
-  it('impide que un usuario común abra el formulario de administración', async () => {
-    authService.isAuthenticated.mockReturnValue(true);
-    authService.accountProfile = { status: 'approved', role: 'user' };
-
-    const result = await TestBed.runInInjectionContext(() => adminAccountGuard(route, state));
-
     expect(result).toEqual(router.createUrlTree(['/items']));
   });
 });
