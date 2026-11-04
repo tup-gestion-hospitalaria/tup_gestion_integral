@@ -11,7 +11,7 @@
     "dev:windows": "node --use-system-ca --watch src/server.js",
     "start": "node src/server.js",
     "start:windows": "node --use-system-ca src/server.js",
-    "test": "node --test test/api.test.js test/users.test.js",
+    "test": "node --test test/api.test.js test/users.test.js test/healthsites-service.test.js",
     "test:integration": "node --test --test-concurrency=1 test/integration/firebase-emulators.test.js",
     "test:emulators": "firebase emulators:exec --config ../firebase.json --project demo-tup-gestion-integral --only auth,firestore \"npm run test:integration\"",
     "emulators:start": "firebase emulators:start --config ../firebase.json --project demo-tup-gestion-integral --only auth,firestore",
