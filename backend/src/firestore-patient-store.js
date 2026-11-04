@@ -83,18 +83,24 @@ export class FirestorePatientStore {
 
     try {
       await this.db.runTransaction(async (transaction) => {
-        if (previousIndexRef) {
-          transaction.delete(previousIndexRef);
-        }
-
         if (nextKey !== previousKey) {
-          const indexSnapshot = await transaction.get(nextIndexRef);
-          if (indexSnapshot.exists && indexSnapshot.data()?.patientId !== id) {
+          const nextIndexSnapshot = await transaction.get(nextIndexRef);
+          if (
+            nextIndexSnapshot.exists &&
+            nextIndexSnapshot.data()?.patientId !== id
+          ) {
             throw new FirestorePatientStoreError(
               'Ya existe un paciente con ese documento.',
               'DUPLICATE_DOCUMENT'
             );
           }
+        }
+
+        if (previousIndexRef) {
+          transaction.delete(previousIndexRef);
+        }
+
+        if (nextKey !== previousKey) {
           transaction.set(nextIndexRef, { patientId: id });
         }
 

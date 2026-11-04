@@ -6,7 +6,8 @@
   "NAV": {
     "PATIENTS": "Pacientes",
     "REFERRALS": "Derivaciones",
-    "SETTINGS": "Configuración"
+    "SETTINGS": "Configuración",
+    "ACCOUNT_STATUS": "Estado de cuenta"
   },
   "LOGIN": {
     "TITLE": "Iniciar sesión",
@@ -114,6 +115,7 @@
     "VALIDATION_FULL_NAME": "El nombre debe tener entre 2 y 120 caracteres.",
     "VALIDATION_EMAIL": "Revisá el correo, por ejemplo nombre@mail.com.",
     "VALIDATION_PLACE": "Debe tener entre 2 y 80 caracteres.",
+    "VALIDATION_OPTIONAL_TEXT": "No puede superar 80 caracteres.",
     "VALIDATION_PICTURE": "La foto debe ser una URL http o https válida.",
     "VALIDATION_SUMMARY_ONE": "Revisá 1 campo marcado.",
     "VALIDATION_SUMMARY_MANY": "Revisá {{count}} campos marcados.",

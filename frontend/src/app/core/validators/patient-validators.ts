@@ -240,7 +240,7 @@ export function patientFieldErrorKey(errors: ValidationErrors | null): string | 
     return 'PATIENT.VALIDATION_PLACE';
   }
   if (errors['optionalTextLength']) {
-    return 'PATIENT.VALIDATION_PLACE';
+    return 'PATIENT.VALIDATION_OPTIONAL_TEXT';
   }
   if (errors['pictureUrl']) {
     return 'PATIENT.VALIDATION_PICTURE';
