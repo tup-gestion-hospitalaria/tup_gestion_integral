@@ -110,11 +110,21 @@ El custom claim es la fuente de autorización. El campo `role` del documento fac
 
 | Campo | Tipo | Obligatorio | Descripción |
 | --- | --- | :---: | --- |
-| `fullName` | string | Sí | Nombre completo |
+| `fullName` | string | Sí | Nombre |
+| `lastName` | string | Sí | Apellido |
+| `documentNumber` | string | Sí | Documento (7–11 dígitos, único) |
+| `birthDate` | string | Sí | Fecha de nacimiento (`DD-MM-YYYY`) |
 | `email` | string | Sí | Correo de contacto |
+| `phone` | string | No | Teléfono (vacío permitido) |
+| `contactPreference` | string | No | `call`, `whatsapp`, `email` o vacío |
+| `contactHours` | string | No | Horario de contacto preferido |
 | `city` | string | Sí | Ciudad |
 | `country` | string | Sí | País |
-| `picture` | string | Sí | URL de imagen o avatar |
+| `privateCare` | boolean | Sí | Atención privada sin obra social |
+| `insuranceName` | string | Condicional | Obra social o prepaga si `privateCare` es false |
+| `affiliateNumber` | string | Condicional | Número de afiliado si `privateCare` es false |
+| `plan` | string | No | Plan de cobertura |
+| `picture` | string | Sí | URL de imagen o avatar (vacío permitido) |
 | `active` | boolean | Sí | Estado lógico del paciente |
 | `createdAt` | Timestamp | Sí | Fecha de alta |
 | `createdBy` | string | Sí | UID creador |
@@ -228,10 +238,20 @@ Authorization: Bearer <firebase-id-token>
 Content-Type: application/json
 
 {
-  "fullName": "Ana Pérez",
+  "fullName": "Ana",
+  "lastName": "Pérez",
+  "documentNumber": "30123456",
+  "birthDate": "15-03-1990",
   "email": "ana.perez@example.com",
+  "phone": "",
+  "contactPreference": "",
+  "contactHours": "",
   "city": "La Plata",
   "country": "Argentina",
+  "privateCare": false,
+  "insuranceName": "OSDE",
+  "affiliateNumber": "123456",
+  "plan": "",
   "picture": "https://example.com/ana.jpg",
   "active": true
 }
@@ -242,10 +262,20 @@ Respuesta `201 Created`:
 ```json
 {
   "id": "patient_123",
-  "fullName": "Ana Pérez",
+  "fullName": "Ana",
+  "lastName": "Pérez",
+  "documentNumber": "30123456",
+  "birthDate": "15-03-1990",
   "email": "ana.perez@example.com",
+  "phone": "",
+  "contactPreference": "",
+  "contactHours": "",
   "city": "La Plata",
   "country": "Argentina",
+  "privateCare": false,
+  "insuranceName": "OSDE",
+  "affiliateNumber": "123456",
+  "plan": "",
   "picture": "https://example.com/ana.jpg",
   "active": true,
   "createdAt": "2026-10-16T15:30:00.000Z",

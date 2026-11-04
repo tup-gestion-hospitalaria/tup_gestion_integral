@@ -7,6 +7,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 
+import { patientDisplayName } from '../../core/validators/patient-validators';
 import { Patient } from '../../models/patient';
 import { Healthsite } from '../../models/healthsite';
 import { ItemsService } from '../../services/items.service';
@@ -30,6 +31,8 @@ export class ReferralCenters implements OnInit {
   private readonly itemsService = inject(ItemsService);
 
   selectedPatient: Patient | null = null;
+
+  readonly patientDisplayName = patientDisplayName;
 
   healthsites: Healthsite[] = [];
   filteredHealthsites: Healthsite[] = [];
@@ -98,7 +101,9 @@ export class ReferralCenters implements OnInit {
 
     this.selectedPatient.healthsite = healthsite;
 
-    alert(`${this.selectedPatient.fullName} fue derivado a ${healthsite.name}`);
+    alert(
+      `${patientDisplayName(this.selectedPatient.fullName, this.selectedPatient.lastName)} fue derivado a ${healthsite.name}`,
+    );
   }
 
   translateType(type: string): string {

@@ -3,9 +3,19 @@ import { Healthsite } from './healthsite';
 export interface Patient {
   id: string;
   fullName: string;
+  lastName: string;
+  documentNumber: string;
+  birthDate: string;
   email: string;
+  phone: string;
+  contactPreference: string;
+  contactHours: string;
   city: string;
   country: string;
+  privateCare: boolean;
+  insuranceName: string;
+  affiliateNumber: string;
+  plan: string;
   picture: string;
   active: boolean;
   version?: number;
@@ -18,6 +28,29 @@ export interface Patient {
   healthsite?: Healthsite;
 }
 
+export interface PatientWritePayload {
+  fullName: string;
+  lastName: string;
+  documentNumber: string;
+  birthDate: string;
+  email: string;
+  phone: string;
+  contactPreference: string;
+  contactHours: string;
+  city: string;
+  country: string;
+  privateCare: boolean;
+  insuranceName: string;
+  affiliateNumber: string;
+  plan: string;
+  picture: string;
+  active: boolean;
+}
+
+export interface PatientReplacePayload extends PatientWritePayload {
+  version: number;
+}
+
 export interface PatientListParams {
   page?: number;
   limit?: number;
@@ -25,6 +58,7 @@ export interface PatientListParams {
   sort?: 'fullName' | 'email' | 'city' | 'country' | 'createdAt';
   order?: 'asc' | 'desc';
   active?: boolean;
+  includeDeleted?: boolean;
 }
 
 export interface PatientPage {

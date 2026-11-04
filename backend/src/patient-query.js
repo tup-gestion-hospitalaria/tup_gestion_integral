@@ -110,7 +110,10 @@ function matchesSearch(patient, q) {
   const needle = q.toLowerCase();
   const haystack = [
     patient.fullName,
+    patient.lastName,
+    patient.documentNumber,
     patient.email,
+    patient.phone,
     patient.city,
     patient.country
   ]
