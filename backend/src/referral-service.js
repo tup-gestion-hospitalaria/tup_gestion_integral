@@ -195,7 +195,7 @@ export class ReferralService {
     });
 
     try {
-      await this.store.createReferralAtomic({
+      const atomicResult = await this.store.createReferralAtomic({
         referral,
         initialEvent,
         lockKey,
@@ -207,9 +207,31 @@ export class ReferralService {
             }
           : null
       });
+
+      if (atomicResult?.replayRecord) {
+        const existingReferral = normalizeStoredReferral(
+          await this.store.findById(atomicResult.replayRecord.referralId)
+        );
+        if (!existingReferral) {
+          throw new ReferralServiceError(
+            409,
+            'La derivación asociada a la clave de idempotencia no existe.',
+            'IDEMPOTENCY_BROKEN'
+          );
+        }
+
+        return { referral: existingReferral, replay: true };
+      }
     } catch (error) {
       if (error.code === 'DUPLICATE_REFERRAL') {
         throw new ReferralServiceError(409, error.message, 'DUPLICATE_REFERRAL');
+      }
+      if (error.code === 'IDEMPOTENCY_MISMATCH') {
+        throw new ReferralServiceError(
+          409,
+          'La clave de idempotencia ya fue usada con otro cuerpo.',
+          'IDEMPOTENCY_MISMATCH'
+        );
       }
       throw error;
     }

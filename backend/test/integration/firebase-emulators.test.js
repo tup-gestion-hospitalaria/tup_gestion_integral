@@ -12,6 +12,7 @@ import { db } from '../../src/firebase.js';
 import { FirestorePatientStore } from '../../src/firestore-patient-store.js';
 import { startServer } from '../../src/start-server.js';
 import {
+  buildPatientBusinessFields,
   EMULATOR_PROJECT_ID,
   emulatorPatients,
   emulatorUsers
@@ -88,18 +89,20 @@ test('el store usa Firestore Emulator con fixtures deterministas', async () => {
   );
 
   const tempId = 'patient-temp';
-  const payload = {
+  const payload = buildPatientBusinessFields({
     fullName: 'Paciente temporal',
+    lastName: 'Store',
+    documentNumber: '41112222',
+    birthDate: '01-06-1995',
     email: 'temporal@example.test',
     city: 'Ensenada',
-    country: 'Argentina',
-    picture: 'https://example.test/temporal.jpg',
-    active: true
-  };
+    picture: 'https://example.test/temporal.jpg'
+  });
 
   await store.insert(tempId, { id: tempId, ...payload });
   assert.deepEqual(await store.findById(tempId), { id: tempId, ...payload });
   await db.collection('patients').doc(tempId).delete();
+  await db.collection('patientDocuments').doc(payload.documentNumber).delete();
 });
 
 test('el backend arranca y valida tokens y roles con Auth Emulator', async () => {
@@ -122,13 +125,14 @@ test('el backend arranca y valida tokens y roles con Auth Emulator', async () =>
   assert.equal(patientsPage.total, emulatorPatients.length);
   assert.equal(patientsPage.items.length, emulatorPatients.length);
 
+  const { id: _deniedId, ...deniedPayload } = emulatorPatients[0];
   const deniedResponse = await fetch(`${baseUrl}/api/patients`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...headersFor('user')
     },
-    body: JSON.stringify(emulatorPatients[0])
+    body: JSON.stringify(deniedPayload)
   });
   assert.equal(deniedResponse.status, 403);
 
@@ -139,7 +143,11 @@ test('el backend arranca y valida tokens y roles con Auth Emulator', async () =>
       'Content-Type': 'application/json',
       ...headersFor('admin')
     },
-    body: JSON.stringify({ ...newPatient, email: 'nuevo@example.test' })
+    body: JSON.stringify({
+      ...newPatient,
+      email: 'nuevo@example.test',
+      documentNumber: '49988777'
+    })
   });
   assert.equal(createResponse.status, 201);
 

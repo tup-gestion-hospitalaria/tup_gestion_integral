@@ -41,6 +41,20 @@ export class ReferralStore {
   }
 
   async createReferralAtomic({ referral, initialEvent, lockKey, idempotencyRecord }) {
+    if (idempotencyRecord) {
+      const idempotencyMapKey = `${idempotencyRecord.userId}::${idempotencyRecord.key}`;
+      const existingRecord = this.idempotency.get(idempotencyMapKey);
+      if (existingRecord) {
+        if (existingRecord.bodyHash !== idempotencyRecord.bodyHash) {
+          const error = new Error('La clave de idempotencia ya fue utilizada.');
+          error.code = 'IDEMPOTENCY_MISMATCH';
+          throw error;
+        }
+
+        return { replayRecord: structuredClone(existingRecord) };
+      }
+    }
+
     if (this.locks.has(lockKey)) {
       const error = new Error('Ya existe una derivación abierta para este paciente y centro.');
       error.code = 'DUPLICATE_REFERRAL';
@@ -59,6 +73,8 @@ export class ReferralStore {
         referral.id
       );
     }
+
+    return { replayRecord: null };
   }
 
   async updateReferralAtomic({ referral, event, deleteLockKey, createLockKey }) {

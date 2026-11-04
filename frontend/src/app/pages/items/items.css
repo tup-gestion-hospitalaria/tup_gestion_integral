@@ -1,7 +1,18 @@
 .items-page {
+  margin: -1.5rem;
   padding: 2rem;
   background-color: var(--background-item-color);
   min-height: calc(100vh - 4.5rem);
+}
+
+.list-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.new-patient-btn {
+  font-weight: 600;
 }
 
 .filters-bar {
@@ -22,7 +33,9 @@
 .spinner-container {
   display: flex;
   justify-content: center;
-  margin-top: 2rem;
+  align-items: center;
+  min-height: 40vh;
+  margin-top: 1rem;
 }
 
 .error-message {
@@ -46,6 +59,7 @@
   border-radius: 1rem;
   background-color: var(--white);
   box-shadow: 0 0.125rem 0.5rem var(--mdc-elevation-overlay-color);
+  cursor: pointer;
 }
 
 .patient-image {

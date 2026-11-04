@@ -156,11 +156,43 @@ test('POST crea borrador con snapshot, prioridad y evento inicial', async () => 
   assert.equal(body.status, 'draft');
   assert.equal(body.priority, 'normal');
   assert.equal(body.responsibleId, 'user-1');
-  assert.equal(body.destination.name, 'Hospital Central');
+  assert.deepEqual(body.destination, {
+    healthsiteId: 'hs-1',
+    name: 'Hospital Central',
+    address: 'Calle 1 100'
+  });
+  assert.equal(body.reason, 'Evaluación especializada');
+  assert.equal(body.notes, null);
+  assert.equal(body.createdBy, 'user-1');
+  assert.equal(body.updatedBy, 'user-1');
+  assert.ok(Number.isFinite(Date.parse(body.createdAt)));
+  assert.equal(body.updatedAt, body.createdAt);
+  assert.equal(body.submittedAt, null);
+  assert.equal(body.decidedAt, null);
+  assert.equal(body.closedAt, null);
 
   const events = await referralStore.listEvents(body.id);
   assert.equal(events.length, 1);
   assert.equal(events[0].action, 'referral.created');
+});
+
+test('OPTIONS permite el encabezado Idempotency-Key', async () => {
+  const response = await fetch(`${baseUrl}/api/v1/referrals`, {
+    method: 'OPTIONS',
+    headers: {
+      Origin: 'http://localhost:4200',
+      'Access-Control-Request-Method': 'POST',
+      'Access-Control-Request-Headers': 'authorization,content-type,idempotency-key'
+    }
+  });
+
+  assert.equal(response.status, 204);
+  const allowedHeaders = response.headers
+    .get('access-control-allow-headers')
+    .toLowerCase()
+    .split(',')
+    .map((header) => header.trim());
+  assert.ok(allowedHeaders.includes('idempotency-key'));
 });
 
 test('GET por id incluye historial y listado por paciente', async () => {
@@ -277,6 +309,40 @@ test('rechaza duplicados abiertos e idempotencia', async () => {
     body: JSON.stringify(payload)
   });
   assert.equal(duplicate.status, 409);
+});
+
+test('dos altas concurrentes con la misma clave son una sola operación', async () => {
+  const payload = referralPayload({
+    destination: {
+      healthsiteId: 'hs-concurrent-idempotency',
+      name: 'Centro Concurrente',
+      address: 'Concurrente 1'
+    }
+  });
+  const request = () =>
+    fetch(`${baseUrl}/api/v1/referrals`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Idempotency-Key': 'create-concurrently-once',
+        ...authHeaders('user')
+      },
+      body: JSON.stringify(payload)
+    });
+
+  const responses = await Promise.all([request(), request()]);
+  const bodies = await Promise.all(responses.map((response) => response.json()));
+
+  assert.deepEqual(
+    responses.map((response) => response.status).sort(),
+    [200, 201]
+  );
+  assert.equal(bodies[0].id, bodies[1].id);
+  const stored = (await referralStore.listAll()).filter(
+    (referral) =>
+      referral.destination.healthsiteId === 'hs-concurrent-idempotency'
+  );
+  assert.equal(stored.length, 1);
 });
 
 test('transiciones inválidas y permisos de rol', async () => {

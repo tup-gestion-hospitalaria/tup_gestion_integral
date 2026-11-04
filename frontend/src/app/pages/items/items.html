@@ -1,4 +1,16 @@
 <section class="items-page">
+  <div class="list-header">
+    <button
+      *ngIf="isAdmin"
+      mat-flat-button
+      type="button"
+      class="new-patient-btn"
+      (click)="createPatient()"
+    >
+      {{ 'PATIENT.NEW' | translate }}
+    </button>
+  </div>
+
   <div class="filters-bar">
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>{{ 'ITEMS.SEARCH' | translate }}</mat-label>
@@ -67,11 +79,22 @@
   </div>
 
   <div *ngIf="!isLoading && !errorMessage" class="items-list">
-    <mat-card *ngFor="let patient of patients" class="item-card">
-      <img [src]="patient.picture" [alt]="patient.fullName" class="patient-image" />
+    <mat-card
+      *ngFor="let patient of patients"
+      class="item-card"
+      (click)="openPatient(patient)"
+      (keydown.enter)="openPatient(patient)"
+      tabindex="0"
+      role="button"
+    >
+      <img
+        [src]="patient.picture || '/foto-perfil.png'"
+        [alt]="displayName(patient)"
+        class="patient-image"
+      />
 
       <div class="patient-info">
-        <mat-card-title>{{ patient.fullName }}</mat-card-title>
+        <mat-card-title>{{ displayName(patient) }}</mat-card-title>
 
         <mat-card-content>
           <p>{{ patient.email }}</p>
@@ -86,7 +109,7 @@
         </mat-card-content>
 
         <mat-card-actions>
-          <button type="button" (click)="referPatient(patient)">
+          <button type="button" (click)="referPatient(patient, $event)">
             {{ 'ITEMS.REFER' | translate }}
           </button>
         </mat-card-actions>

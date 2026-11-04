@@ -19,6 +19,15 @@ npm run dev
 
 La API queda disponible en `http://localhost:3000`.
 
+Copiar `.env.example` a `.env` y configurar, como mínimo, las credenciales de
+Firebase y `HEALTHSITES_API_KEY`. La credencial de Healthsites es exclusiva del
+backend y no debe incluirse en ningún archivo del frontend.
+
+El proxy de Healthsites cancela cada consulta al proveedor después de
+`HEALTHSITES_TIMEOUT_MS` (5 segundos por defecto) y conserva la respuesta
+normalizada durante `HEALTHSITES_CACHE_TTL_MS` (5 minutos por defecto). También
+se puede ajustar la cantidad de páginas con `HEALTHSITES_PAGE_COUNT`.
+
 Las rutas bajo `/api` requieren un ID token de Firebase en el encabezado:
 
 ```http
@@ -63,7 +72,8 @@ npm run dev:windows
 | PATCH | `/api/referrals/:id` | Editar borrador |
 | DELETE | `/api/referrals/:id` | Eliminar borrador |
 | POST | `/api/referrals/:id/transitions` | Cambiar estado (`{ "to": "...", "rejectionReason"?: "..." }`) |
-| GET | `/api/healthsites` | Consultar centros (`user`, `admin`) |
+| GET | `/api/v1/healthsites` | Obtener centros normalizados (`user`, `admin`) |
+| GET | `/api/healthsites` | Alias temporal de compatibilidad (`user`, `admin`) |
 | GET | `/health` | Comprobar el estado del servicio |
 
 Ejemplos completos para probar cada operación:
@@ -78,12 +88,12 @@ curl http://localhost:3000/api/patients/ID \
 curl -X POST http://localhost:3000/api/patients \
   -H "Authorization: Bearer $FIREBASE_ID_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"fullName":"Ana Pérez","email":"ana@example.com","city":"La Plata","country":"Argentina","picture":"https://example.com/ana.jpg","active":true}'
+  -d '{"fullName":"Ana","lastName":"Pérez","documentNumber":"30123456","birthDate":"15-03-1990","email":"ana@example.com","phone":"","contactPreference":"","contactHours":"","city":"La Plata","country":"Argentina","privateCare":false,"insuranceName":"OSDE","affiliateNumber":"123456","plan":"","picture":"https://example.com/ana.jpg","active":true}'
 
 curl -X PUT http://localhost:3000/api/patients/ID \
   -H "Authorization: Bearer $FIREBASE_ID_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"fullName":"Ana Gómez","email":"ana.gomez@example.com","city":"Berisso","country":"Argentina","picture":"https://example.com/ana.jpg","active":false,"version":1}'
+  -d '{"fullName":"Ana","lastName":"Gómez","documentNumber":"30123456","birthDate":"15-03-1990","email":"ana.gomez@example.com","phone":"","contactPreference":"","contactHours":"","city":"Berisso","country":"Argentina","privateCare":false,"insuranceName":"OSDE","affiliateNumber":"123456","plan":"","picture":"https://example.com/ana.jpg","active":false,"version":1}'
 
 curl -X PATCH http://localhost:3000/api/patients/ID \
   -H "Authorization: Bearer $FIREBASE_ID_TOKEN" \

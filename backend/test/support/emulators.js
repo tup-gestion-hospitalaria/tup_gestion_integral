@@ -60,6 +60,9 @@ export async function resetAndSeedEmulators() {
 
   for (const { id, ...patient } of emulatorPatients) {
     batch.set(db.collection('patients').doc(id), patient);
+    batch.set(db.collection('patientDocuments').doc(patient.documentNumber), {
+      patientId: id
+    });
   }
 
   await batch.commit();

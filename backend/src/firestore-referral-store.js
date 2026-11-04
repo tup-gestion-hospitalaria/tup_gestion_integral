@@ -59,7 +59,28 @@ export class FirestoreReferralStore {
     const lockRef = this.locks.doc(lockKey);
     const eventRef = referralRef.collection('events').doc(initialEvent.id);
 
+    let replayRecord = null;
+
     await this.db.runTransaction(async (transaction) => {
+      let idempotencyRef = null;
+      if (idempotencyRecord) {
+        idempotencyRef = this.idempotency.doc(
+          this.idempotencyDocId(idempotencyRecord.userId, idempotencyRecord.key)
+        );
+        const idempotencySnap = await transaction.get(idempotencyRef);
+        if (idempotencySnap.exists) {
+          const existingRecord = idempotencySnap.data();
+          if (existingRecord.bodyHash !== idempotencyRecord.bodyHash) {
+            const error = new Error('La clave de idempotencia ya fue utilizada.');
+            error.code = 'IDEMPOTENCY_MISMATCH';
+            throw error;
+          }
+
+          replayRecord = existingRecord;
+          return;
+        }
+      }
+
       const lockSnap = await transaction.get(lockRef);
       if (lockSnap.exists) {
         const error = new Error('Ya existe una derivación abierta para este paciente y centro.');
@@ -68,15 +89,6 @@ export class FirestoreReferralStore {
       }
 
       if (idempotencyRecord) {
-        const idempotencyRef = this.idempotency.doc(
-          this.idempotencyDocId(idempotencyRecord.userId, idempotencyRecord.key)
-        );
-        const idempotencySnap = await transaction.get(idempotencyRef);
-        if (idempotencySnap.exists) {
-          const error = new Error('La clave de idempotencia ya fue utilizada.');
-          error.code = 'IDEMPOTENCY_CONFLICT';
-          throw error;
-        }
         transaction.set(idempotencyRef, {
           userId: idempotencyRecord.userId,
           key: idempotencyRecord.key,
@@ -96,6 +108,8 @@ export class FirestoreReferralStore {
       const { id: _eventId, ...eventPayload } = initialEvent;
       transaction.set(eventRef, eventPayload);
     });
+
+    return { replayRecord };
   }
 
   async updateReferralAtomic({ referral, event, deleteLockKey, createLockKey }) {

@@ -17,23 +17,48 @@ export const emulatorUsers = [
   }
 ];
 
+export function buildPatientBusinessFields(overrides = {}) {
+  return {
+    fullName: 'Ana',
+    lastName: 'Pérez',
+    documentNumber: '30123456',
+    birthDate: '15-03-1990',
+    email: 'ana@example.test',
+    phone: '',
+    contactPreference: '',
+    contactHours: '',
+    city: 'La Plata',
+    country: 'Argentina',
+    privateCare: false,
+    insuranceName: 'OSDE',
+    affiliateNumber: '123456',
+    plan: '',
+    picture: 'https://example.test/ana.jpg',
+    active: true,
+    ...overrides
+  };
+}
+
 export const emulatorPatients = [
   {
     id: 'patient-1',
-    fullName: 'Ana Perez',
-    email: 'ana@example.test',
-    city: 'La Plata',
-    country: 'Argentina',
-    picture: 'https://example.test/ana.jpg',
-    active: true
+    ...buildPatientBusinessFields({
+      fullName: 'Ana',
+      lastName: 'Perez',
+      documentNumber: '30123456',
+      email: 'ana@example.test'
+    })
   },
   {
     id: 'patient-2',
-    fullName: 'Juan Lopez',
-    email: 'juan@example.test',
-    city: 'Berisso',
-    country: 'Argentina',
-    picture: 'https://example.test/juan.jpg',
-    active: true
+    ...buildPatientBusinessFields({
+      fullName: 'Juan',
+      lastName: 'Lopez',
+      documentNumber: '28987654',
+      birthDate: '20-07-1985',
+      email: 'juan@example.test',
+      city: 'Berisso',
+      picture: 'https://example.test/juan.jpg'
+    })
   }
 ];

@@ -132,4 +132,9 @@ test('las reglas bloquean acceso directo a referrals', async () => {
       patientId: 'patient-1'
     })
   );
+  await assertFails(
+    setDoc(doc(authenticatedDb, 'referrals/referral-direct/events/event-direct'), {
+      action: 'referral.tampered'
+    })
+  );
 });

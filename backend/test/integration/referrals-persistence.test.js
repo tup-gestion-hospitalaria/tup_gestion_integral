@@ -68,8 +68,18 @@ test('creación persiste documento, lock e idempotencia en Firestore', async () 
   assert.equal(stored.status, 'draft');
   assert.equal(stored.patientId, emulatorPatients[0].id);
   assert.equal(stored.destination.healthsiteId, healthsiteId);
+  assert.equal(stored.destination.name, 'Centro Persistencia');
+  assert.equal(stored.destination.address, 'Persist 1');
+  assert.equal(stored.reason, 'Consulta especializada');
+  assert.equal(stored.notes, null);
+  assert.equal(stored.priority, 'normal');
   assert.equal(stored.createdBy, 'user-1');
   assert.equal(stored.responsibleId, 'user-1');
+  assert.ok(Number.isFinite(Date.parse(stored.createdAt)));
+  assert.equal(stored.updatedAt, stored.createdAt);
+  assert.equal(stored.submittedAt, null);
+  assert.equal(stored.decidedAt, null);
+  assert.equal(stored.closedAt, null);
 
   const lock = await lockDocExists(emulatorPatients[0].id, healthsiteId);
   assert.equal(lock.referralId, created.id);
@@ -104,6 +114,33 @@ test('idempotencia en Firestore devuelve la misma derivación sin duplicar docs'
   const allReferrals = await db.collection('referrals').get();
   const matching = allReferrals.docs.filter(
     (doc) => doc.data().destination?.healthsiteId === healthsiteId
+  );
+  assert.equal(matching.length, 1);
+});
+
+test('idempotencia concurrente en Firestore crea un solo documento', async () => {
+  const healthsiteId = uniqueHealthsite('idem-concurrent');
+  const idempotencyKey = `concurrent-${healthsiteId}`;
+  const payload = {
+    destination: {
+      healthsiteId,
+      name: 'Centro Idempotencia Concurrente',
+      address: 'Concurrente 1'
+    }
+  };
+
+  const requests = await Promise.all([
+    createReferral(baseUrl, tokens, payload, { idempotencyKey }),
+    createReferral(baseUrl, tokens, payload, { idempotencyKey })
+  ]);
+
+  assert.deepEqual(
+    requests.map(({ response }) => response.status).sort(),
+    [200, 201]
+  );
+  assert.equal(requests[0].body.id, requests[1].body.id);
+  const matching = (await db.collection('referrals').get()).docs.filter(
+    (document) => document.data().destination?.healthsiteId === healthsiteId
   );
   assert.equal(matching.length, 1);
 });
