@@ -6,7 +6,8 @@
   "NAV": {
     "PATIENTS": "Pacientes",
     "REFERRALS": "Derivaciones",
-    "SETTINGS": "Configuración"
+    "SETTINGS": "Configuración",
+    "ACCOUNT_STATUS": "Estado de cuenta"
   },
   "LOGIN": {
     "TITLE": "Iniciar sesión",

@@ -1,3 +1,4 @@
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import type { User } from 'firebase/auth';
@@ -39,17 +40,17 @@ vi.mock('firebase/auth', () => ({
 
 describe('AuthService', () => {
   let service: AuthService;
-  let router: { navigate: ReturnType<typeof vi.fn> };
+  let router: { navigate: ReturnType<typeof vi.fn>; url: string };
 
   beforeEach(() => {
     TestBed.resetTestingModule();
     authHarness.currentUser = null;
     authHarness.authStateCallback = undefined;
     authHarness.authStateReady.mockClear();
-    router = { navigate: vi.fn() };
+    router = { navigate: vi.fn(), url: '/' };
 
     TestBed.configureTestingModule({
-      providers: [AuthService, { provide: Router, useValue: router }],
+      providers: [AuthService, { provide: Router, useValue: router }, provideHttpClientTesting()],
     });
 
     service = TestBed.inject(AuthService);
@@ -62,6 +63,7 @@ describe('AuthService', () => {
   it('waitForAuthState waits for Firebase and syncs user', async () => {
     const user = { uid: '1' } as User;
     authHarness.currentUser = user;
+    vi.spyOn(service, 'refreshAccountProfile').mockResolvedValue(null);
 
     await service.waitForAuthState();
 
@@ -93,11 +95,14 @@ describe('AuthService', () => {
     expect(service.user).toBeNull();
   });
 
-  it('navigates to items when auth state has a user', () => {
+  it('syncs user and triggers profile refresh without breaking deep links on auth state change', () => {
     router.navigate.mockClear();
+    const refreshSpy = vi.spyOn(service, 'refreshAccountProfile').mockResolvedValue(null);
     authHarness.authStateCallback?.({ uid: '1' } as User);
 
-    expect(router.navigate).toHaveBeenCalledWith(['/items']);
+    expect(service.user).toEqual({ uid: '1' });
+    expect(refreshSpy).toHaveBeenCalled();
+    expect(router.navigate).not.toHaveBeenCalled();
   });
 
   it('navigates to login when auth state has no user', () => {
