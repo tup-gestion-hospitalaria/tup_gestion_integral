@@ -119,7 +119,17 @@ npm test
 
 Las pruebas de integración levantan Firebase Authentication y Firestore
 Emulator, cargan fixtures deterministas, prueban el store, el arranque de la
-API, los roles y las reglas, y apagan los emuladores al terminar:
+API, los permisos, el aislamiento entre usuarios y las reglas, y apagan los
+emuladores al terminar. La matriz de resultados está en
+[`docs/GI-12-matriz-permisos-emuladores.md`](../docs/GI-12-matriz-permisos-emuladores.md):
+
+En Windows, con JDK 21 o superior instalado, ejecutar:
+
+```powershell
+npm run test:emulators:windows
+```
+
+En otros sistemas, ejecutar:
 
 ```bash
 npm run test:emulators
@@ -144,9 +154,8 @@ npm run emulators:start
 npm run emulators:seed
 ```
 
-Firebase CLI necesita Java disponible en `PATH` para ejecutar Firestore
-Emulator. Las credenciales de Google o Firebase no son necesarias para estos
-comandos locales.
+Firebase Emulator requiere JDK 21 o superior. Las credenciales de Google o
+Firebase no son necesarias para estos comandos locales.
 
 ## Hosting en Render
 
