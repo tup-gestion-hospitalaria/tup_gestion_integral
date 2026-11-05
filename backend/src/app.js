@@ -13,6 +13,11 @@ import { UserStore, validateUserStatusUpdate } from './user-store.js';
 import { authenticate } from './middleware/authenticate.js';
 import { authorizeUser } from './middleware/authorize-user.js';
 import {
+  createReferralService,
+  registerReferralRoutes
+} from './referral-routes.js';
+import { ReferralStore } from './referral-store.js';
+import {
   createHealthsitesService,
   HealthsitesError
 } from './healthsites-service.js';
@@ -21,6 +26,14 @@ export function createApp(store = new PatientStore(), options = {}) {
   const app = express();
   const patientService = options.patientService ?? new PatientService(store);
   const userStore = options.userStore ?? new UserStore();
+  const referralStore = options.referralStore ?? new ReferralStore();
+  const referralService =
+    options.referralService ??
+    createReferralService({
+      referralStore,
+      patientService,
+      userStore
+    });
   const setCustomUserClaims =
     options.setCustomUserClaims ??
     (async () => {});
@@ -89,7 +102,7 @@ export function createApp(store = new PatientStore(), options = {}) {
     );
     response.setHeader(
       'Access-Control-Allow-Headers',
-      'Content-Type, Authorization'
+      'Content-Type, Authorization, Idempotency-Key'
     );
     response.setHeader(
       'Access-Control-Allow-Methods',
@@ -388,6 +401,11 @@ export function createApp(store = new PatientStore(), options = {}) {
   };
   app.post('/api/patients/:id/restore', allowAdmins, restorePatientHandler);
   app.post('/api/v1/patients/:id/restore', allowAdmins, restorePatientHandler);
+
+  registerReferralRoutes(app, {
+    referralService,
+    allowAuthenticatedUsers
+  });
 
   app.use((_request, response) => {
     response.status(404).json({ message: 'Ruta no encontrada.' });

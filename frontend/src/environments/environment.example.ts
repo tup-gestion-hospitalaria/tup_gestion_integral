@@ -1,3 +1,4 @@
+// Copiá este archivo a environment.ts (environment.ts está en .gitignore).
 export const environment = {
   production: true,
   backendApiUrl: 'https://tup-gestion-integral.onrender.com/api',
