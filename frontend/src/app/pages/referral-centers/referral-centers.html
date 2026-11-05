@@ -5,11 +5,6 @@
     {{ 'REFERRAL_CENTERS.DESCRIPTION' | translate }}
   </p>
 
-  <p *ngIf="selectedPatient">
-    {{ 'REFERRAL_CENTERS.SELECTED_PATIENT' | translate }}
-    <strong>{{ patientDisplayName(selectedPatient.fullName, selectedPatient.lastName) }}</strong>
-  </p>
-
   <div class="filters-bar">
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>{{ 'REFERRAL_CENTERS.SEARCH' | translate }}</mat-label>
@@ -87,10 +82,6 @@
       </mat-card-content>
 
       <mat-card-actions>
-        <button *ngIf="selectedPatient" type="button" (click)="referToHealthsite(healthsite)">
-          {{ 'REFERRAL_CENTERS.REFER_HERE' | translate }}
-        </button>
-
         <a *ngIf="healthsite.googleMapsUrl" [href]="healthsite.googleMapsUrl" target="_blank">
           {{ 'REFERRAL_CENTERS.VIEW_LOCATION' | translate }}
         </a>

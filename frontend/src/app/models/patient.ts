@@ -1,5 +1,3 @@
-import { Healthsite } from './healthsite';
-
 export interface Patient {
   id: string;
   fullName: string;
@@ -25,7 +23,6 @@ export interface Patient {
   updatedBy?: string | null;
   deletedAt?: string | null;
   deletedBy?: string | null;
-  healthsite?: Healthsite;
 }
 
 export interface PatientWritePayload {

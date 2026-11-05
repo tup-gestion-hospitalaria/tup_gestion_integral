@@ -8,7 +8,9 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { patientDisplayName } from '../../core/validators/patient-validators';
 import { Patient } from '../../models/patient';
+import { Referral, ReferralStatus } from '../../models/referral';
 import { PatientService } from '../../services/patient.service';
+import { ReferralService } from '../../services/referral.service';
 import { UserService } from '../../services/user.service';
 import { PatientDeleteDialog, PatientDeleteDialogData } from './patient-delete-dialog';
 import { PatientToast } from './patient-toast';
@@ -31,6 +33,7 @@ export class PatientDetail implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly patientService = inject(PatientService);
+  private readonly referralService = inject(ReferralService);
   private readonly userService = inject(UserService);
   private readonly dialog = inject(MatDialog);
   private readonly translate = inject(TranslateService);
@@ -38,6 +41,8 @@ export class PatientDetail implements OnInit {
   @ViewChild(PatientToast) toast!: PatientToast;
 
   patient: Patient | null = null;
+  referrals: Referral[] = [];
+  referralsLoading = false;
   isLoading = true;
   isDeleting = false;
   errorMessageKey = '';
@@ -75,6 +80,7 @@ export class PatientDetail implements OnInit {
       next: (patient) => {
         this.patient = patient;
         this.isLoading = false;
+        this.loadReferrals(patient.id);
       },
       error: (error: HttpErrorResponse) => {
         this.isLoading = false;
@@ -95,7 +101,18 @@ export class PatientDetail implements OnInit {
     if (!this.patient) {
       return;
     }
-    this.router.navigate(['/centros-derivacion'], { state: { patient: this.patient } });
+    this.router.navigate(['/pacientes', this.patient.id, 'derivar']);
+  }
+
+  referralStatusLabel(status: ReferralStatus): string {
+    return {
+      draft: 'Borrador',
+      submitted: 'Enviada',
+      accepted: 'Aceptada',
+      rejected: 'Rechazada',
+      completed: 'Completada',
+      cancelled: 'Cancelada',
+    }[status];
   }
 
   editPatient(): void {
@@ -154,6 +171,20 @@ export class PatientDetail implements OnInit {
     this.patientService.getPatient(this.patient.id).subscribe({
       next: (patient) => {
         this.patient = patient;
+      },
+    });
+  }
+
+  private loadReferrals(patientId: string): void {
+    this.referralsLoading = true;
+    this.referralService.list({ patientId }).subscribe({
+      next: (referrals) => {
+        this.referrals = referrals;
+        this.referralsLoading = false;
+      },
+      error: () => {
+        this.referrals = [];
+        this.referralsLoading = false;
       },
     });
   }

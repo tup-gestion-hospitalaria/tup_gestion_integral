@@ -227,6 +227,54 @@
   border: 2px solid var(--ficha-line);
 }
 
+.patient-ficha-page .referrals-list {
+  display: grid;
+  gap: 10px;
+}
+
+.patient-ficha-page .referral-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px;
+  color: var(--ficha-ink);
+  background: var(--ficha-card);
+  border: 1.5px solid var(--ficha-line);
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.patient-ficha-page .referral-row:hover {
+  border-color: var(--ficha-accent);
+}
+
+.patient-ficha-page .referral-row small {
+  display: block;
+  margin-top: 3px;
+  color: var(--ficha-muted);
+}
+
+.patient-ficha-page .referral-status {
+  flex: none;
+  padding: 4px 8px;
+  color: var(--ficha-accent);
+  background: var(--ficha-accent-soft);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.patient-ficha-page .referral-status[data-status='rejected'],
+.patient-ficha-page .referral-status[data-status='cancelled'] {
+  color: var(--ficha-danger);
+  background: #fae5e2;
+}
+
+.patient-ficha-page .referrals-empty {
+  color: var(--ficha-muted);
+}
+
 .patient-ficha-page .ficha-bar {
   position: fixed;
   left: 0;

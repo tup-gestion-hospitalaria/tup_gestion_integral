@@ -152,6 +152,33 @@
         </ng-container>
       </div>
     </section>
+
+    <section class="block">
+      <header class="block-head">
+        <h3>Derivaciones</h3>
+        <p>Seguimiento persistente de destinos, estados e historial.</p>
+      </header>
+
+      <p *ngIf="referralsLoading" class="referrals-empty">Cargando derivaciones…</p>
+      <div *ngIf="!referralsLoading && referrals.length" class="referrals-list">
+        <a
+          *ngFor="let referral of referrals"
+          class="referral-row"
+          [routerLink]="['/derivaciones', referral.id]"
+        >
+          <span>
+            <strong>{{ referral.destination.name }}</strong>
+            <small>{{ referral.createdAt | date: 'dd/MM/yyyy HH:mm' }}</small>
+          </span>
+          <span class="referral-status" [attr.data-status]="referral.status">
+            {{ referralStatusLabel(referral.status) }}
+          </span>
+        </a>
+      </div>
+      <p *ngIf="!referralsLoading && referrals.length === 0" class="referrals-empty">
+        Este paciente todavía no tiene derivaciones visibles.
+      </p>
+    </section>
   </div>
 
   <div class="ficha-bar" *ngIf="patient && !isLoading && !errorMessageKey">
