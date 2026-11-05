@@ -46,6 +46,23 @@ export const routes: Routes = [
         canActivate: [approvedAccountGuard],
       },
       {
+        path: 'pacientes/:id/derivar',
+        loadComponent: () =>
+          import('./pages/referral/referral-form-page').then((m) => m.ReferralFormPage),
+        canActivate: [approvedAccountGuard],
+      },
+      {
+        path: 'pacientes/:id',
+        loadComponent: () => import('./pages/patient/patient-detail').then((m) => m.PatientDetail),
+        canActivate: [approvedAccountGuard],
+      },
+      {
+        path: 'derivaciones/:id',
+        loadComponent: () =>
+          import('./pages/referral/referral-detail').then((m) => m.ReferralDetail),
+        canActivate: [approvedAccountGuard],
+      },
+      {
         path: 'centros-derivacion',
         loadComponent: () =>
           import('./pages/referral-centers/referral-centers').then((m) => m.ReferralCenters),

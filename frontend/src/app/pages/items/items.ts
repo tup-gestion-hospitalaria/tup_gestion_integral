@@ -146,13 +146,11 @@ export class Items implements OnInit, OnDestroy {
 
   referPatient(patient: Patient, event: Event): void {
     event.stopPropagation();
-    this.router.navigate(['/centros-derivacion'], {
-      state: { patient },
-    });
+    this.router.navigate(['/pacientes', patient.id, 'derivar']);
   }
 
   openPatient(patient: Patient): void {
-    this.router.navigate(['/items', patient.id]);
+    this.router.navigate(['/pacientes', patient.id]);
   }
 
   displayName(patient: Patient): string {
