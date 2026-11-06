@@ -1,3 +1,8 @@
+param(
+  [ValidateSet('test:emulators', 'test:e2e')]
+  [string]$NpmScript = 'test:emulators'
+)
+
 $ErrorActionPreference = 'Stop'
 
 function Get-JavaMajorVersion($javaPath) {
@@ -66,7 +71,7 @@ Write-Host "Usando Java $javaMajorVersion desde $javaHome"
 $backendRoot = $PSScriptRoot
 Push-Location $backendRoot
 try {
-  & npm.cmd run test:emulators
+  & npm.cmd run $NpmScript
   exit $LASTEXITCODE
 }
 finally {

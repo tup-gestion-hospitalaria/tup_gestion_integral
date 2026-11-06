@@ -139,6 +139,20 @@ El comando usa siempre el proyecto local `demo-tup-gestion-integral`. El script
 de fixtures además rechaza ejecutarse si no detecta ambos emuladores, por lo que
 no puede borrar ni sembrar datos de producción.
 
+El recorrido E2E crítico de GI-13 se ejecuta por separado con los mismos
+emuladores y usuarios/pacientes deterministas:
+
+```bash
+npm run test:e2e
+```
+
+La prueba autentica usuarios autorizados, crea/edita/consulta pacientes,
+persiste y vuelve a leer una derivación, valida respuestas 401/403 y simula la
+caída y recuperación de Healthsites sin hacer solicitudes al proveedor real.
+Guarda el detalle en `ci-reports/e2e-evidence.json`; el job de integración de
+CI publica ese archivo junto con los logs. En Windows, con JDK 21 o superior,
+ejecutar `npm run test:e2e:windows`.
+
 Para desarrollo interactivo, este comando levanta los emuladores, carga los
 fixtures y arranca el backend (la UI queda en `http://127.0.0.1:4000`):
 
