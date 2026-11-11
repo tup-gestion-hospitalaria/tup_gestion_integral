@@ -196,15 +196,25 @@
   outline-offset: 2px;
 }
 
-.input-group mat-icon {
+.input-group .input-icon {
+  display: inline-flex;
   color: var(--healthsite-text-color);
+  flex-shrink: 0;
+}
 
-  font-size: 1.5rem;
-
+.input-group .input-icon svg {
   width: 1.5rem;
   height: 1.5rem;
+}
 
-  flex-shrink: 0;
+.button-content .input-icon {
+  display: inline-flex;
+  color: inherit;
+}
+
+.button-content .input-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .login-input {

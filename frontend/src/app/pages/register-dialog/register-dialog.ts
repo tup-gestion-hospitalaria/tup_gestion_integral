@@ -5,9 +5,6 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogRef } from '@angular/material/dialog';
 
-import { auth } from '../../firebase';
-import { updateProfile } from 'firebase/auth';
-
 @Component({
   selector: 'app-register-dialog',
   standalone: true,

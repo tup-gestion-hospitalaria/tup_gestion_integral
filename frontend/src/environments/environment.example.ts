@@ -2,6 +2,7 @@
 export const environment = {
   production: true,
   backendApiUrl: 'https://tup-gestion-integral.onrender.com/api',
+  useAuthEmulator: false,
 
   firebaseConfig: {
     apiKey: 'AIzaSyCafv5Un8ifToHe5-I40LM7KG-e9yReRB0',

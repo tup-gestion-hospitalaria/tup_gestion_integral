@@ -1,30 +1,45 @@
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import type { User } from 'firebase/auth';
-import { signOut } from 'firebase/auth';
+import type { Auth, User } from 'firebase/auth';
 
-import { auth } from '../firebase';
+import * as firebaseClient from '../firebase';
 import { AuthService } from './auth.service';
 
-const authHarness = vi.hoisted(() => ({
-  currentUser: null as User | null,
-  authStateCallback: undefined as ((user: User | null) => void) | undefined,
-  authStateReady: vi.fn().mockResolvedValue(undefined),
-}));
+interface AuthHarness {
+  currentUser: User | null;
+  authStateCallback: ((user: User | null) => void) | undefined;
+  authStateReady: ReturnType<typeof vi.fn>;
+  auth: {
+    readonly currentUser: User | null;
+    authStateReady: ReturnType<typeof vi.fn>;
+    emulatorConfig: Record<string, unknown>;
+  };
+}
+
+const authHarness = vi.hoisted((): AuthHarness => {
+  const harness: AuthHarness = {
+    currentUser: null,
+    authStateCallback: undefined,
+    authStateReady: vi.fn().mockResolvedValue(undefined),
+    auth: {
+      get currentUser() {
+        return harness.currentUser;
+      },
+      authStateReady: vi.fn().mockResolvedValue(undefined),
+      emulatorConfig: {},
+    },
+  };
+  harness.auth.authStateReady = harness.authStateReady;
+  return harness;
+});
 
 vi.mock('firebase/app', () => ({
   initializeApp: vi.fn(() => ({})),
 }));
 
 vi.mock('firebase/auth', () => ({
-  getAuth: vi.fn(() => ({
-    get currentUser() {
-      return authHarness.currentUser;
-    },
-    authStateReady: authHarness.authStateReady,
-    emulatorConfig: {},
-  })),
+  getAuth: vi.fn(() => authHarness.auth),
   connectAuthEmulator: vi.fn(),
   onAuthStateChanged: vi.fn((_auth: unknown, callback: (user: User | null) => void) => {
     authHarness.authStateCallback = callback;
@@ -43,12 +58,17 @@ vi.mock('firebase/auth', () => ({
 describe('AuthService', () => {
   let service: AuthService;
   let router: { navigate: ReturnType<typeof vi.fn>; url: string };
+  let previousAuthImpl: typeof firebaseClient.firebaseAuthLoader.getAuth;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     TestBed.resetTestingModule();
     authHarness.currentUser = null;
     authHarness.authStateCallback = undefined;
     authHarness.authStateReady.mockClear();
+    previousAuthImpl = firebaseClient.firebaseAuthLoader.getAuth;
+    firebaseClient.firebaseAuthLoader.getAuth = vi
+      .fn()
+      .mockResolvedValue(authHarness.auth as unknown as Auth);
     router = { navigate: vi.fn(), url: '/' };
 
     TestBed.configureTestingModule({
@@ -56,9 +76,11 @@ describe('AuthService', () => {
     });
 
     service = TestBed.inject(AuthService);
+    await new Promise((resolve) => setTimeout(resolve, 0));
   });
 
   afterEach(() => {
+    firebaseClient.firebaseAuthLoader.getAuth = previousAuthImpl;
     TestBed.resetTestingModule();
   });
 
@@ -73,27 +95,34 @@ describe('AuthService', () => {
     expect(service.user).toBe(user);
   });
 
-  it('isAuthenticated reflects auth.currentUser', () => {
-    authHarness.currentUser = { uid: '1' } as User;
+  it('isAuthenticated reflects current user', async () => {
+    const user = { uid: '1' } as User;
+    authHarness.currentUser = user;
+    vi.spyOn(service, 'refreshAccountProfile').mockResolvedValue(null);
+    await service.waitForAuthState();
     expect(service.isAuthenticated()).toBe(true);
 
     authHarness.currentUser = null;
+    service.user = null;
     expect(service.isAuthenticated()).toBe(false);
   });
 
-  it('getCurrentUser returns auth.currentUser', () => {
+  it('getCurrentUser returns synced user', async () => {
     const user = { uid: '1' } as User;
     authHarness.currentUser = user;
+    vi.spyOn(service, 'refreshAccountProfile').mockResolvedValue(null);
+    await service.waitForAuthState();
 
     expect(service.getCurrentUser()).toBe(user);
   });
 
   it('logout signs out and clears user', async () => {
+    const { signOut } = await import('firebase/auth');
     service.user = { uid: '1' } as User;
 
     await service.logout();
 
-    expect(signOut).toHaveBeenCalledWith(auth);
+    expect(signOut).toHaveBeenCalledWith(authHarness.auth);
     expect(service.user).toBeNull();
   });
 
