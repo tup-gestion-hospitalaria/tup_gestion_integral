@@ -28,7 +28,8 @@
     "SETTINGS": "Configuración",
     "ACCOUNT_STATUS": "Estado de cuenta",
     "PRIMARY": "Navegación principal",
-    "MOBILE": "Navegación inferior"
+    "MOBILE": "Navegación inferior",
+    "OPEN_MENU": "Abrir menú de navegación"
   },
   "LOGIN": {
     "TITLE": "Iniciar sesión",

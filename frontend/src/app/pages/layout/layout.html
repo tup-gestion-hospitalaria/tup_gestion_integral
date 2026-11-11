@@ -2,12 +2,31 @@
 
 <div class="layout-container">
   <mat-toolbar class="header">
+    <button
+      *ngIf="isSmallScreen"
+      mat-icon-button
+      type="button"
+      class="menu-button"
+      (click)="openMobileNav()"
+      [attr.aria-label]="'NAV.OPEN_MENU' | translate"
+      [attr.aria-expanded]="sidenavOpen"
+      aria-controls="app-primary-nav"
+    >
+      <mat-icon aria-hidden="true">menu</mat-icon>
+    </button>
+
     <img src="/logo-proyect.png" class="logo-header" alt="" aria-hidden="true" />
     <span class="title">{{ 'APP.TITLE' | translate }}</span>
   </mat-toolbar>
 
   <mat-sidenav-container class="sidenav-container">
-    <mat-sidenav mode="side" opened class="sidebar" [attr.aria-label]="'NAV.PRIMARY' | translate">
+    <mat-sidenav
+      id="app-primary-nav"
+      [mode]="isSmallScreen ? 'over' : 'side'"
+      [(opened)]="sidenavOpen"
+      class="sidebar"
+      [attr.aria-label]="'NAV.PRIMARY' | translate"
+    >
       <mat-nav-list>
         <ng-container *ngIf="isApproved">
           <a
@@ -50,14 +69,14 @@
       </mat-nav-list>
     </mat-sidenav>
 
-    <mat-sidenav-content class="content">
+    <mat-sidenav-content class="content" [class.content--mobile-nav]="isSmallScreen">
       <main id="contenido" tabindex="-1">
         <router-outlet></router-outlet>
       </main>
     </mat-sidenav-content>
   </mat-sidenav-container>
 
-  <nav class="bottom-bar" [attr.aria-label]="'NAV.MOBILE' | translate">
+  <nav *ngIf="isSmallScreen" class="bottom-bar" [attr.aria-label]="'NAV.MOBILE' | translate">
     <ng-container *ngIf="isApproved">
       <a
         routerLink="/items"

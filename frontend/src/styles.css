@@ -32,16 +32,19 @@ body,
   font-family: 'Inter', sans-serif;
 }
 
-html {
-  overflow-x: clip;
-}
-
 body {
   margin: 0;
   background-color: var(--background-color);
   color: var(--text-color);
   line-height: 1.4;
   overflow-wrap: anywhere;
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
+  height: auto;
 }
 
 .skip-link {
