@@ -7,18 +7,26 @@
 .header {
   display: flex;
   align-items: center;
-  gap: 0.1rem;
+  gap: 0.5rem;
+  min-width: 0;
   background-color: var(--primary-color);
   color: var(--white);
 }
 
 .logo-header {
+  flex: none;
   width: 7rem;
+  max-width: 28vw;
+  height: auto;
 }
 
 .title {
-  font-size: 1.4rem;
+  flex: 1;
+  min-width: 0;
+  font-size: clamp(1rem, 4.5vw, 1.4rem);
   font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 .sidenav-container {
@@ -68,6 +76,12 @@ a.active {
 
   .bottom-bar {
     display: none;
+  }
+}
+
+@media (max-width: 400px) {
+  .logo-header {
+    width: 4.5rem;
   }
 }
 

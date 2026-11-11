@@ -4,31 +4,33 @@
       class="profile-img"
       [src]="user.photoURL ? user.photoURL : '/foto-perfil.png'"
       [alt]="
-        user.displayName ? 'Foto de perfil de ' + user.displayName : 'Foto de perfil del usuario'
+        user.displayName
+          ? ('SETTINGS.PROFILE_ALT' | translate: { name: user.displayName })
+          : ('SETTINGS.PROFILE_ALT_FALLBACK' | translate)
       "
       referrerpolicy="no-referrer"
     />
 
-    <h2>{{ user.displayName || 'Usuario sin nombre' }}</h2>
+    <h2>{{ user.displayName || ('COMMON.UNNAMED_USER' | translate) }}</h2>
 
-    <p class="user-email">{{ user.email || 'Email no disponible' }}</p>
+    <p class="user-email">{{ user.email || ('COMMON.EMAIL_UNAVAILABLE' | translate) }}</p>
 
     <div class="account-summary">
       <div class="summary-row">
-        <span class="summary-label">Estado de la cuenta</span>
+        <span class="summary-label">{{ 'SETTINGS.ACCOUNT_STATUS_LABEL' | translate }}</span>
         <span class="status-badge" [ngClass]="authService.accountProfile?.status ?? 'pending'">
           {{ accountStatusLabel }}
         </span>
       </div>
 
       <div class="summary-row">
-        <span class="summary-label">Rol en el sistema</span>
+        <span class="summary-label">{{ 'SETTINGS.ROLE_LABEL' | translate }}</span>
         <strong>{{ accountRoleLabel }}</strong>
       </div>
     </div>
 
     <div class="status-notice" *ngIf="statusNotice as notice" [ngClass]="notice.type">
-      <p>{{ notice.text }}</p>
+      <p>{{ notice.textKey | translate }}</p>
     </div>
 
     <button mat-raised-button color="warn" type="button" (click)="logout()">
@@ -47,13 +49,13 @@
   </ng-template>
 
   <mat-card class="app-info">
-    <img src="/logo-proyect.png" alt="Logo de Gestión Hospitalaria" class="logo" />
+    <img src="/logo-proyect.png" alt="{{ 'APP.TITLE' | translate }}" class="logo" />
 
     <h3>{{ 'APP.TITLE' | translate }}</h3>
 
     <p>{{ 'APP.VERSION' | translate }} {{ version }}</p>
 
-    <small class="user-agent">
+    <small class="user-agent" aria-label="{{ 'SETTINGS.USER_AGENT_LABEL' | translate }}">
       {{ userAgent }}
     </small>
   </mat-card>

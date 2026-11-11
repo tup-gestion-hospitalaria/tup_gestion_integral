@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -13,7 +13,9 @@ import { PatientService } from '../../services/patient.service';
 import { ReferralService } from '../../services/referral.service';
 import { UserService } from '../../services/user.service';
 import { PatientDeleteDialog, PatientDeleteDialogData } from './patient-delete-dialog';
-import { PatientToast } from './patient-toast';
+import { AppToastService } from '../../shared/app-toast.service';
+import { UiState } from '../../shared/ui-state';
+import { httpErrorMessageKey } from '../../core/http-error-message';
 
 @Component({
   selector: 'app-patient-detail',
@@ -24,7 +26,7 @@ import { PatientToast } from './patient-toast';
     MatProgressSpinnerModule,
     MatDialogModule,
     TranslateModule,
-    PatientToast,
+    UiState,
   ],
   templateUrl: './patient-detail.html',
   styleUrl: './patient-ficha.css',
@@ -38,7 +40,7 @@ export class PatientDetail implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly translate = inject(TranslateService);
 
-  @ViewChild(PatientToast) toast!: PatientToast;
+  private readonly toast = inject(AppToastService);
 
   patient: Patient | null = null;
   referrals: Referral[] = [];
@@ -84,15 +86,7 @@ export class PatientDetail implements OnInit {
       },
       error: (error: HttpErrorResponse) => {
         this.isLoading = false;
-        if (error.status === 404) {
-          this.errorMessageKey = 'PATIENT.NOT_FOUND';
-        } else if (error.status === 401) {
-          this.errorMessageKey = 'ITEMS.AUTH_ERROR';
-        } else if (error.status === 403) {
-          this.errorMessageKey = 'ITEMS.PERMISSION_ERROR';
-        } else {
-          this.errorMessageKey = 'PATIENT.LOAD_ERROR';
-        }
+        this.errorMessageKey = httpErrorMessageKey(error, 'patient');
       },
     });
   }
@@ -105,14 +99,15 @@ export class PatientDetail implements OnInit {
   }
 
   referralStatusLabel(status: ReferralStatus): string {
-    return {
-      draft: 'Borrador',
-      submitted: 'Enviada',
-      accepted: 'Aceptada',
-      rejected: 'Rechazada',
-      completed: 'Completada',
-      cancelled: 'Cancelada',
-    }[status];
+    const keys: Record<ReferralStatus, string> = {
+      draft: 'REFERRAL.STATUS_DRAFT',
+      submitted: 'REFERRAL.STATUS_SUBMITTED',
+      accepted: 'REFERRAL.STATUS_ACCEPTED',
+      rejected: 'REFERRAL.STATUS_REJECTED',
+      completed: 'REFERRAL.STATUS_COMPLETED',
+      cancelled: 'REFERRAL.STATUS_CANCELLED',
+    };
+    return this.translate.instant(keys[status]);
   }
 
   editPatient(): void {
@@ -151,10 +146,7 @@ export class PatientDetail implements OnInit {
         error: (error: HttpErrorResponse) => {
           this.isDeleting = false;
           if (error.status === 409) {
-            this.toast.show(
-              error.error?.message ?? this.translate.instant('PATIENT.VERSION_CONFLICT'),
-              'err',
-            );
+            this.toast.show(this.translate.instant('PATIENT.VERSION_CONFLICT'), 'err');
             this.reloadPatient();
             return;
           }

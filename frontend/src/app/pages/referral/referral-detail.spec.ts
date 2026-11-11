@@ -7,6 +7,7 @@ import { Referral } from '../../models/referral';
 import { PatientService } from '../../services/patient.service';
 import { ReferralService } from '../../services/referral.service';
 import { UserService } from '../../services/user.service';
+import { TranslateService } from '@ngx-translate/core';
 import { ReferralDetail } from './referral-detail';
 
 describe('ReferralDetail', () => {
@@ -27,6 +28,10 @@ describe('ReferralDetail', () => {
         },
         { provide: ReferralService, useValue: { getById } },
         { provide: PatientService, useValue: { getPatient: () => of(samplePatient()) } },
+        {
+          provide: TranslateService,
+          useValue: { instant: (key: string) => key },
+        },
         {
           provide: UserService,
           useValue: {
@@ -69,6 +74,7 @@ describe('ReferralDetail', () => {
             },
           },
         },
+        { provide: TranslateService, useValue: { instant: (key: string) => key } },
         { provide: ReferralService, useValue: { getById: () => of(sampleSubmittedReferral()) } },
         { provide: PatientService, useValue: { getPatient: () => of(samplePatient()) } },
         {

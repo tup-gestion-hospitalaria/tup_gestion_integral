@@ -5,7 +5,7 @@ import { of } from 'rxjs';
 
 import { PatientService } from '../../services/patient.service';
 import { PatientFormPage } from './patient-form-page';
-import { PatientToast } from './patient-toast';
+import { AppToastService } from '../../shared/app-toast.service';
 
 describe('PatientFormPage', () => {
   it('crea un paciente normalizado y vuelve al listado', () => {
@@ -19,11 +19,11 @@ describe('PatientFormPage', () => {
         { provide: Router, useValue: { navigate } },
         { provide: PatientService, useValue: { createPatient } },
         { provide: TranslateService, useValue: { instant: (key: string) => key } },
+        { provide: AppToastService, useValue: { show: vi.fn() } },
       ],
     });
 
     const component = TestBed.runInInjectionContext(() => new PatientFormPage());
-    component.toast = { show: vi.fn() } as unknown as PatientToast;
     component.ngOnInit();
     component.form.setValue({
       fullName: '  Ana   María ',

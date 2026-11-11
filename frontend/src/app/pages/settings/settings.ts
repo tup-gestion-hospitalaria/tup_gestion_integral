@@ -1,12 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AuthService } from '../../services/auth.service';
+import { ConfirmDialogService } from '../../shared/confirm-dialog.service';
 
 @Component({
   selector: 'app-settings',
@@ -19,36 +20,38 @@ export class Settings {
   readonly version = '1.0.0';
   readonly userAgent = navigator.userAgent;
 
-  constructor(public authService: AuthService) {}
+  readonly authService = inject(AuthService);
+  private readonly confirmDialog = inject(ConfirmDialogService);
+  private readonly translate = inject(TranslateService);
 
   get accountStatusLabel(): string {
     const status = this.authService.accountProfile?.status ?? 'pending';
 
     switch (status) {
       case 'approved':
-        return 'Aprobada';
+        return this.translate.instant('SETTINGS.STATUS_APPROVED');
       case 'rejected':
-        return 'Rechazada';
+        return this.translate.instant('SETTINGS.STATUS_REJECTED');
       case 'disabled':
-        return 'Deshabilitada';
+        return this.translate.instant('SETTINGS.STATUS_DISABLED');
       case 'pending':
       default:
-        return 'Pendiente';
+        return this.translate.instant('SETTINGS.STATUS_PENDING');
     }
   }
 
   get accountRoleLabel(): string {
     switch (this.authService.accountProfile?.role) {
       case 'admin':
-        return 'Administrador';
+        return this.translate.instant('SETTINGS.ROLE_ADMIN');
       case 'user':
-        return 'Usuario';
+        return this.translate.instant('SETTINGS.ROLE_USER');
       default:
-        return 'Sin rol asignado';
+        return this.translate.instant('SETTINGS.ROLE_UNASSIGNED');
     }
   }
 
-  get statusNotice(): { text: string; type: 'info' | 'warning' | 'error' } | null {
+  get statusNotice(): { textKey: string; type: 'info' | 'warning' | 'error' } | null {
     const status = this.authService.accountProfile?.status;
 
     if (!status || status === 'approved') {
@@ -57,32 +60,22 @@ export class Settings {
 
     switch (status) {
       case 'pending':
-        return {
-          text: 'Tu cuenta se encuentra pendiente de aprobación. Un administrador debe autorizar tu acceso para poder operar en el sistema.',
-          type: 'warning',
-        };
+        return { textKey: 'SETTINGS.NOTICE_PENDING', type: 'warning' };
       case 'rejected':
-        return {
-          text: 'Tu solicitud de acceso fue rechazada. Si considerás que se trata de un error, comunicate con el equipo de soporte o administración.',
-          type: 'error',
-        };
+        return { textKey: 'SETTINGS.NOTICE_REJECTED', type: 'error' };
       case 'disabled':
-        return {
-          text: 'Esta cuenta ha sido deshabilitada. Comunicate con el administrador para más información.',
-          type: 'error',
-        };
+        return { textKey: 'SETTINGS.NOTICE_DISABLED', type: 'error' };
       default:
         return null;
     }
   }
 
-  async logout(): Promise<void> {
-    const confirmLogout = confirm('¿Seguro que querés cerrar sesión?');
-
-    if (!confirmLogout) {
-      return;
-    }
-
-    await this.authService.logout();
+  logout(): void {
+    this.confirmDialog.confirmLogout().subscribe((confirmed) => {
+      if (!confirmed) {
+        return;
+      }
+      void this.authService.logout();
+    });
   }
 }

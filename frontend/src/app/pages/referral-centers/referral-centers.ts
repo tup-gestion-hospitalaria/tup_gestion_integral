@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
@@ -9,7 +10,9 @@ import { MatSelectModule } from '@angular/material/select';
 
 import { Healthsite } from '../../models/healthsite';
 import { ItemsService } from '../../services/items.service';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { UiState } from '../../shared/ui-state';
+import { httpErrorMessageKey } from '../../core/http-error-message';
 
 @Component({
   selector: 'app-referral-centers',
@@ -21,12 +24,14 @@ import { TranslateModule } from '@ngx-translate/core';
     MatInputModule,
     MatSelectModule,
     TranslateModule,
+    UiState,
   ],
   templateUrl: './referral-centers.html',
   styleUrl: './referral-centers.css',
 })
 export class ReferralCenters implements OnInit {
   private readonly itemsService = inject(ItemsService);
+  private readonly translate = inject(TranslateService);
 
   healthsites: Healthsite[] = [];
   filteredHealthsites: Healthsite[] = [];
@@ -62,8 +67,8 @@ export class ReferralCenters implements OnInit {
 
         this.isLoading = false;
       },
-      error: () => {
-        this.errorMessage = 'No se pudieron cargar los centros de derivación.';
+      error: (error: HttpErrorResponse) => {
+        this.errorMessage = httpErrorMessageKey(error, 'referralCenters');
         this.isLoading = false;
       },
     });
@@ -87,16 +92,17 @@ export class ReferralCenters implements OnInit {
   }
 
   translateType(type: string): string {
-    const translations: Record<string, string> = {
-      pharmacy: 'Farmacia',
-      clinic: 'Clínica',
-      hospital: 'Hospital',
-      doctors: 'Consultorio médico',
-      dentist: 'Odontología',
-      laboratory: 'Laboratorio',
-      healthcare: 'Centro de salud',
+    const keyByType: Record<string, string> = {
+      pharmacy: 'REFERRAL_CENTERS.TYPE_PHARMACY',
+      clinic: 'REFERRAL_CENTERS.TYPE_CLINIC',
+      hospital: 'REFERRAL_CENTERS.TYPE_HOSPITAL',
+      doctors: 'REFERRAL_CENTERS.TYPE_DOCTORS',
+      dentist: 'REFERRAL_CENTERS.TYPE_DENTIST',
+      laboratory: 'REFERRAL_CENTERS.TYPE_LABORATORY',
+      healthcare: 'REFERRAL_CENTERS.TYPE_HEALTHCARE',
     };
 
-    return translations[type.toLowerCase()] ?? type;
+    const key = keyByType[type.toLowerCase()];
+    return key ? this.translate.instant(key) : type;
   }
 }

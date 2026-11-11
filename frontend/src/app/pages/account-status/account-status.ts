@@ -4,76 +4,98 @@ import { Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+
 import { AuthService } from '../../services/auth.service';
+import { ConfirmDialogService } from '../../shared/confirm-dialog.service';
 
 @Component({
   selector: 'app-account-status',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatProgressSpinnerModule, RouterLink],
+  imports: [
+    CommonModule,
+    MatCardModule,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    RouterLink,
+    TranslateModule,
+  ],
   templateUrl: './account-status.html',
   styleUrl: './account-status.css',
 })
 export class AccountStatus {
   readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly translate = inject(TranslateService);
+  private readonly confirmDialog = inject(ConfirmDialogService);
 
   checking = false;
-  message = '';
+  messageKey = '';
 
   get status(): string {
     return this.authService.accountProfile?.status ?? 'pending';
   }
 
-  get statusTitle(): string {
+  get statusTitleKey(): string {
     switch (this.status) {
       case 'rejected':
-        return 'Solicitud de acceso rechazada';
+        return 'ACCOUNT_STATUS.TITLE_REJECTED';
       case 'disabled':
-        return 'Cuenta deshabilitada';
+        return 'ACCOUNT_STATUS.TITLE_DISABLED';
       case 'approved':
-        return 'Cuenta aprobada';
+        return 'ACCOUNT_STATUS.TITLE_APPROVED';
       case 'pending':
       default:
-        return 'Cuenta pendiente de aprobación';
+        return 'ACCOUNT_STATUS.TITLE_PENDING';
     }
   }
 
-  get statusDescription(): string {
+  get statusDescriptionKey(): string {
     switch (this.status) {
       case 'rejected':
-        return 'Tu solicitud de acceso al sistema fue rechazada por la administración. Si considerás que se trata de un error, por favor comunicate con el soporte o la administración del hospital.';
+        return 'ACCOUNT_STATUS.DESC_REJECTED';
       case 'disabled':
-        return 'Tu cuenta ha sido deshabilitada temporal o definitivamente por un administrador. No tenés acceso operativo a la plataforma.';
+        return 'ACCOUNT_STATUS.DESC_DISABLED';
       case 'approved':
-        return '¡Tu cuenta ha sido aprobada! Ya podés acceder a todas las funciones del sistema.';
+        return 'ACCOUNT_STATUS.DESC_APPROVED';
       case 'pending':
       default:
-        return 'Un administrador debe verificar y habilitar tu usuario antes de que puedas acceder a los módulos de pacientes y derivaciones. Este proceso asegura la confidencialidad y seguridad de los datos médicos.';
+        return 'ACCOUNT_STATUS.DESC_PENDING';
     }
+  }
+
+  roleLabel(): string {
+    const role = this.authService.accountProfile?.role;
+    if (role === 'admin') {
+      return this.translate.instant('ACCOUNT_STATUS.ROLE_ADMIN');
+    }
+    return this.translate.instant('ACCOUNT_STATUS.ROLE_USER');
   }
 
   async checkStatus(): Promise<void> {
     this.checking = true;
-    this.message = '';
+    this.messageKey = '';
 
     try {
       const profile = await this.authService.refreshAccountProfile();
       if (profile?.status === 'approved') {
         await this.router.navigate(['/items']);
       } else {
-        this.message =
-          'Tu cuenta aún no ha sido aprobada. Por favor, aguardá la validación del administrador.';
+        this.messageKey = 'ACCOUNT_STATUS.STILL_PENDING';
       }
     } catch {
-      this.message =
-        'No se pudo verificar el estado en este momento. Intentá nuevamente más tarde.';
+      this.messageKey = 'ACCOUNT_STATUS.CHECK_ERROR';
     } finally {
       this.checking = false;
     }
   }
 
-  async logout(): Promise<void> {
-    await this.authService.logout();
-    await this.router.navigate(['/login']);
+  logout(): void {
+    this.confirmDialog.confirmLogout().subscribe((confirmed) => {
+      if (!confirmed) {
+        return;
+      }
+      void this.authService.logout().then(() => this.router.navigate(['/login']));
+    });
   }
 }

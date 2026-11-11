@@ -1,0 +1,29 @@
+.confirm-dialog {
+  padding: 0.25rem 0.15rem 0.15rem;
+  max-width: min(28rem, calc(100vw - 1.5rem));
+}
+
+.confirm-dialog h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.confirm-dialog p {
+  margin: 0 0 1.25rem;
+  line-height: 1.45;
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+@media (max-width: 480px) {
+  .confirm-dialog-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+}
