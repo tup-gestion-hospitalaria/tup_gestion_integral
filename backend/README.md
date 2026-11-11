@@ -119,7 +119,17 @@ npm test
 
 Las pruebas de integración levantan Firebase Authentication y Firestore
 Emulator, cargan fixtures deterministas, prueban el store, el arranque de la
-API, los roles y las reglas, y apagan los emuladores al terminar:
+API, los permisos, el aislamiento entre usuarios y las reglas, y apagan los
+emuladores al terminar. La matriz de resultados está en
+[`docs/GI-12-matriz-permisos-emuladores.md`](../docs/GI-12-matriz-permisos-emuladores.md):
+
+En Windows, con JDK 21 o superior instalado, ejecutar:
+
+```powershell
+npm run test:emulators:windows
+```
+
+En otros sistemas, ejecutar:
 
 ```bash
 npm run test:emulators
@@ -128,6 +138,20 @@ npm run test:emulators
 El comando usa siempre el proyecto local `demo-tup-gestion-integral`. El script
 de fixtures además rechaza ejecutarse si no detecta ambos emuladores, por lo que
 no puede borrar ni sembrar datos de producción.
+
+El recorrido E2E crítico de GI-13 se ejecuta por separado con los mismos
+emuladores y usuarios/pacientes deterministas:
+
+```bash
+npm run test:e2e
+```
+
+La prueba autentica usuarios autorizados, crea/edita/consulta pacientes,
+persiste y vuelve a leer una derivación, valida respuestas 401/403 y simula la
+caída y recuperación de Healthsites sin hacer solicitudes al proveedor real.
+Guarda el detalle en `ci-reports/e2e-evidence.json`; el job de integración de
+CI publica ese archivo junto con los logs. En Windows, con JDK 21 o superior,
+ejecutar `npm run test:e2e:windows`.
 
 Para desarrollo interactivo, este comando levanta los emuladores, carga los
 fixtures y arranca el backend (la UI queda en `http://127.0.0.1:4000`):
@@ -144,9 +168,8 @@ npm run emulators:start
 npm run emulators:seed
 ```
 
-Firebase CLI necesita Java disponible en `PATH` para ejecutar Firestore
-Emulator. Las credenciales de Google o Firebase no son necesarias para estos
-comandos locales.
+Firebase Emulator requiere JDK 21 o superior. Las credenciales de Google o
+Firebase no son necesarias para estos comandos locales.
 
 ## Hosting en Render
 
