@@ -5,7 +5,7 @@
     {{ 'REFERRAL_CENTERS.DESCRIPTION' | translate }}
   </p>
 
-  <div class="filters-bar">
+  <div class="filters-bar" *ngIf="!isLoading && !errorMessage">
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>{{ 'REFERRAL_CENTERS.SEARCH' | translate }}</mat-label>
 
@@ -46,46 +46,53 @@
     </mat-form-field>
   </div>
 
-  <div *ngIf="isLoading" class="spinner-container">
-    <mat-spinner></mat-spinner>
-  </div>
+  <app-ui-state
+    [loading]="isLoading"
+    [errorKey]="errorMessage"
+    [empty]="!isLoading && !errorMessage && filteredHealthsites.length === 0"
+    [emptyKey]="'REFERRAL_CENTERS.NO_RESULTS'"
+    [loadingKey]="'COMMON.LOADING'"
+  >
+    <div class="healthsites-list">
+      <mat-card *ngFor="let healthsite of filteredHealthsites" class="healthsite-card">
+        <mat-card-title>
+          {{ healthsite.name }}
+        </mat-card-title>
 
-  <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage | translate }}
-  </div>
+        <mat-card-content>
+          <p>
+            <strong>{{ 'REFERRAL_CENTERS.CITY' | translate }}:</strong>
+            {{ healthsite.city }}
+          </p>
 
-  <p *ngIf="!isLoading && !errorMessage && filteredHealthsites.length === 0">
-    {{ 'REFERRAL_CENTERS.NO_RESULTS' | translate }}
-  </p>
+          <p>
+            <strong>{{ 'REFERRAL_CENTERS.ADDRESS' | translate }}</strong>
+            {{ healthsite.address }}
+          </p>
 
-  <div *ngIf="!isLoading && !errorMessage" class="healthsites-list">
-    <mat-card *ngFor="let healthsite of filteredHealthsites" class="healthsite-card">
-      <mat-card-title>
-        {{ healthsite.name }}
-      </mat-card-title>
+          <p>
+            <strong>{{ 'REFERRAL_CENTERS.CENTER_TYPE' | translate }}</strong>
+            {{ translateType(healthsite.type) }}
+          </p>
+        </mat-card-content>
 
-      <mat-card-content>
-        <p>
-          <strong>{{ 'REFERRAL_CENTERS.CITY' | translate }}:</strong>
-          {{ healthsite.city }}
-        </p>
-
-        <p>
-          <strong>{{ 'REFERRAL_CENTERS.ADDRESS' | translate }}</strong>
-          {{ healthsite.address }}
-        </p>
-
-        <p>
-          <strong>{{ 'REFERRAL_CENTERS.CENTER_TYPE' | translate }}</strong>
-          {{ translateType(healthsite.type) }}
-        </p>
-      </mat-card-content>
-
-      <mat-card-actions>
-        <a *ngIf="healthsite.googleMapsUrl" [href]="healthsite.googleMapsUrl" target="_blank">
-          {{ 'REFERRAL_CENTERS.VIEW_LOCATION' | translate }}
-        </a>
-      </mat-card-actions>
-    </mat-card>
-  </div>
+        <mat-card-actions>
+          <a
+            *ngIf="healthsite.googleMapsUrl"
+            [href]="healthsite.googleMapsUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            [attr.aria-label]="
+              ('REFERRAL_CENTERS.VIEW_LOCATION' | translate) +
+              ' (' +
+              ('COMMON.EXTERNAL_LINK' | translate) +
+              ')'
+            "
+          >
+            {{ 'REFERRAL_CENTERS.VIEW_LOCATION' | translate }}
+          </a>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </app-ui-state>
 </section>

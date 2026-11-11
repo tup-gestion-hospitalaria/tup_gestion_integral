@@ -1,56 +1,114 @@
+<a class="skip-link" href="#contenido">{{ 'COMMON.SKIP_TO_CONTENT' | translate }}</a>
+
 <div class="layout-container">
   <mat-toolbar class="header">
-    <img src="/logo-proyect.png" class="logo-header" alt="Logo" />
+    <button
+      *ngIf="isSmallScreen"
+      mat-icon-button
+      type="button"
+      class="menu-button"
+      (click)="openMobileNav()"
+      [attr.aria-label]="'NAV.OPEN_MENU' | translate"
+      [attr.aria-expanded]="sidenavOpen"
+      aria-controls="app-primary-nav"
+    >
+      <mat-icon aria-hidden="true">menu</mat-icon>
+    </button>
+
+    <img src="/logo-proyect.png" class="logo-header" alt="" aria-hidden="true" />
     <span class="title">{{ 'APP.TITLE' | translate }}</span>
   </mat-toolbar>
 
   <mat-sidenav-container class="sidenav-container">
-    <mat-sidenav mode="side" opened class="sidebar">
+    <mat-sidenav
+      id="app-primary-nav"
+      [mode]="isSmallScreen ? 'over' : 'side'"
+      [(opened)]="sidenavOpen"
+      class="sidebar"
+      [attr.aria-label]="'NAV.PRIMARY' | translate"
+    >
       <mat-nav-list>
-        <!-- Rutas operativas: solo para cuentas aprobadas -->
         <ng-container *ngIf="isApproved">
-          <a mat-list-item routerLink="/items" routerLinkActive="active">
+          <a
+            mat-list-item
+            routerLink="/items"
+            routerLinkActive="active"
+            [attr.aria-current]="isRouteActive('/items') ? 'page' : null"
+          >
             {{ 'NAV.PATIENTS' | translate }}
           </a>
 
-          <a mat-list-item routerLink="/centros-derivacion" routerLinkActive="active">
+          <a
+            mat-list-item
+            routerLink="/centros-derivacion"
+            routerLinkActive="active"
+            [attr.aria-current]="isRouteActive('/centros-derivacion') ? 'page' : null"
+          >
             {{ 'NAV.REFERRALS' | translate }}
           </a>
         </ng-container>
 
-        <!-- Ruta de estado: si la cuenta no está aprobada -->
-        <a mat-list-item *ngIf="!isApproved" routerLink="/cuenta-estado" routerLinkActive="active">
+        <a
+          mat-list-item
+          *ngIf="!isApproved"
+          routerLink="/cuenta-estado"
+          routerLinkActive="active"
+          [attr.aria-current]="isRouteActive('/cuenta-estado') ? 'page' : null"
+        >
           {{ 'NAV.ACCOUNT_STATUS' | translate }}
         </a>
 
-        <!-- Configuración: siempre disponible -->
-        <a mat-list-item routerLink="/configuracion" routerLinkActive="active">
+        <a
+          mat-list-item
+          routerLink="/configuracion"
+          routerLinkActive="active"
+          [attr.aria-current]="isRouteActive('/configuracion') ? 'page' : null"
+        >
           {{ 'NAV.SETTINGS' | translate }}
         </a>
       </mat-nav-list>
     </mat-sidenav>
 
-    <mat-sidenav-content class="content">
-      <router-outlet></router-outlet>
+    <mat-sidenav-content class="content" [class.content--mobile-nav]="isSmallScreen">
+      <main id="contenido" tabindex="-1">
+        <router-outlet></router-outlet>
+      </main>
     </mat-sidenav-content>
   </mat-sidenav-container>
 
-  <nav class="bottom-bar">
+  <nav *ngIf="isSmallScreen" class="bottom-bar" [attr.aria-label]="'NAV.MOBILE' | translate">
     <ng-container *ngIf="isApproved">
-      <a routerLink="/items" routerLinkActive="active">
+      <a
+        routerLink="/items"
+        routerLinkActive="active"
+        [attr.aria-current]="isRouteActive('/items') ? 'page' : null"
+      >
         {{ 'NAV.PATIENTS' | translate }}
       </a>
 
-      <a routerLink="/centros-derivacion" routerLinkActive="active">
+      <a
+        routerLink="/centros-derivacion"
+        routerLinkActive="active"
+        [attr.aria-current]="isRouteActive('/centros-derivacion') ? 'page' : null"
+      >
         {{ 'NAV.REFERRALS' | translate }}
       </a>
     </ng-container>
 
-    <a *ngIf="!isApproved" routerLink="/cuenta-estado" routerLinkActive="active">
+    <a
+      *ngIf="!isApproved"
+      routerLink="/cuenta-estado"
+      routerLinkActive="active"
+      [attr.aria-current]="isRouteActive('/cuenta-estado') ? 'page' : null"
+    >
       {{ 'NAV.ACCOUNT_STATUS' | translate }}
     </a>
 
-    <a routerLink="/configuracion" routerLinkActive="active">
+    <a
+      routerLink="/configuracion"
+      routerLinkActive="active"
+      [attr.aria-current]="isRouteActive('/configuracion') ? 'page' : null"
+    >
       {{ 'NAV.SETTINGS' | translate }}
     </a>
   </nav>

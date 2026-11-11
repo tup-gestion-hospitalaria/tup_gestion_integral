@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -10,6 +10,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
 import { RegisterDialog } from '../register-dialog/register-dialog';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { AppToastService } from '../../shared/app-toast.service';
 
 @Component({
   selector: 'app-login',
@@ -28,21 +29,28 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 })
 export class Login {
   loading = false;
+  loginErrorKey = '';
 
   email = '';
   password = '';
 
-  constructor(
-    private authService: AuthService,
-    private dialog: MatDialog,
-    private cdr: ChangeDetectorRef,
-    private translate: TranslateService,
-    private router: Router,
-    private route: ActivatedRoute,
-  ) {}
+  private readonly authService = inject(AuthService);
+  private readonly dialog = inject(MatDialog);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly translate = inject(TranslateService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly toast = inject(AppToastService);
 
   private setLoading(value: boolean): void {
     this.loading = value;
+    this.cdr.detectChanges();
+  }
+
+  private showError(messageKey: string): void {
+    this.loginErrorKey = messageKey;
+    const message = this.translate.instant(messageKey);
+    this.toast.show(message, 'err');
     this.cdr.detectChanges();
   }
 
@@ -63,12 +71,13 @@ export class Login {
 
   async loginWithGoogle(): Promise<void> {
     try {
+      this.loginErrorKey = '';
       this.setLoading(true);
 
       await this.authService.loginWithGoogle();
       this.redirectAfterLogin();
     } catch {
-      this.translate.get('LOGIN.GOOGLE_ERROR').subscribe((res: string) => alert(res));
+      this.showError('LOGIN.GOOGLE_ERROR');
     } finally {
       this.setLoading(false);
     }
@@ -76,22 +85,24 @@ export class Login {
 
   async loginWithEmail(): Promise<void> {
     if (!this.email.trim() || !this.password.trim()) {
-      this.translate.get('LOGIN.FIELDS_REQUIRED').subscribe((res: string) => alert(res));
+      this.showError('LOGIN.FIELDS_REQUIRED');
       return;
     }
 
     try {
+      this.loginErrorKey = '';
       this.setLoading(true);
 
       await this.authService.loginWithEmail(this.email.trim(), this.password);
       this.redirectAfterLogin();
-    } catch (error: any) {
-      if (error.code === 'auth/invalid-email') {
-        this.translate.get('LOGIN.INVALID_EMAIL').subscribe((res: string) => alert(res));
-      } else if (error.code === 'auth/invalid-credential') {
-        this.translate.get('LOGIN.INVALID_CREDENTIALS').subscribe((res: string) => alert(res));
+    } catch (error: unknown) {
+      const code = typeof error === 'object' && error && 'code' in error ? String(error.code) : '';
+      if (code === 'auth/invalid-email') {
+        this.showError('LOGIN.INVALID_EMAIL');
+      } else if (code === 'auth/invalid-credential') {
+        this.showError('LOGIN.INVALID_CREDENTIALS');
       } else {
-        this.translate.get('LOGIN.EMAIL_LOGIN_ERROR').subscribe((res: string) => alert(res));
+        this.showError('LOGIN.EMAIL_LOGIN_ERROR');
       }
     } finally {
       this.setLoading(false);
@@ -100,8 +111,11 @@ export class Login {
 
   registerWithEmail(): void {
     const dialogRef = this.dialog.open(RegisterDialog, {
-      width: '28rem',
+      width: 'min(28rem, calc(100vw - 1.5rem))',
+      maxWidth: 'calc(100vw - 1rem)',
       disableClose: true,
+      autoFocus: 'first-tabbable',
+      restoreFocus: true,
     });
 
     dialogRef.afterClosed().subscribe(async (result) => {
@@ -111,6 +125,7 @@ export class Login {
       }
 
       try {
+        this.loginErrorKey = '';
         this.setLoading(true);
 
         await this.authService.registerWithEmail(
@@ -120,15 +135,17 @@ export class Login {
           result.photoURL,
         );
         this.redirectAfterLogin();
-      } catch (error: any) {
-        if (error.code === 'auth/email-already-in-use') {
-          this.translate.get('LOGIN.EMAIL_ALREADY_IN_USE').subscribe((res: string) => alert(res));
-        } else if (error.code === 'auth/invalid-email') {
-          this.translate.get('LOGIN.INVALID_EMAIL').subscribe((res: string) => alert(res));
-        } else if (error.code === 'auth/weak-password') {
-          this.translate.get('LOGIN.WEAK_PASSWORD').subscribe((res: string) => alert(res));
+      } catch (error: unknown) {
+        const code =
+          typeof error === 'object' && error && 'code' in error ? String(error.code) : '';
+        if (code === 'auth/email-already-in-use') {
+          this.showError('LOGIN.EMAIL_ALREADY_IN_USE');
+        } else if (code === 'auth/invalid-email') {
+          this.showError('LOGIN.INVALID_EMAIL');
+        } else if (code === 'auth/weak-password') {
+          this.showError('LOGIN.WEAK_PASSWORD');
         } else {
-          this.translate.get('LOGIN.CREATE_ACCOUNT_ERROR').subscribe((res: string) => alert(res));
+          this.showError('LOGIN.CREATE_ACCOUNT_ERROR');
         }
       } finally {
         this.setLoading(false);

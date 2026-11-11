@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, DestroyRef, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -25,7 +25,9 @@ import {
 } from '../../core/validators/patient-validators';
 import { Patient } from '../../models/patient';
 import { PatientService } from '../../services/patient.service';
-import { PatientToast } from './patient-toast';
+import { AppToastService } from '../../shared/app-toast.service';
+import { UiState } from '../../shared/ui-state';
+import { httpErrorMessageKey } from '../../core/http-error-message';
 
 type FormMode = 'create' | 'edit';
 
@@ -38,7 +40,7 @@ type FormMode = 'create' | 'edit';
     RouterLink,
     MatProgressSpinnerModule,
     TranslateModule,
-    PatientToast,
+    UiState,
   ],
   templateUrl: './patient-form-page.html',
   styleUrl: './patient-ficha.css',
@@ -51,7 +53,7 @@ export class PatientFormPage implements OnInit {
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
 
-  @ViewChild(PatientToast) toast!: PatientToast;
+  private readonly toast = inject(AppToastService);
 
   mode: FormMode = 'create';
   patientId = '';
@@ -298,27 +300,11 @@ export class PatientFormPage implements OnInit {
   private handleSaveError(error: HttpErrorResponse): void {
     this.isSaving = false;
 
-    if (error.status === 409) {
-      const message = error.error?.message ?? this.translate.instant('PATIENT.VERSION_CONFLICT');
-      this.toast.show(message, 'err');
-      if (this.mode === 'edit') {
-        this.loadPatient();
-      }
-      return;
+    const messageKey = httpErrorMessageKey(error, 'patient');
+    this.toast.show(this.translate.instant(messageKey), 'err');
+    if (error.status === 409 && this.mode === 'edit') {
+      this.loadPatient();
     }
-
-    if (error.status === 400) {
-      const message = error.error?.message ?? this.translate.instant('PATIENT.SAVE_ERROR');
-      this.toast.show(message, 'err');
-      return;
-    }
-
-    if (error.status === 403) {
-      this.toast.show(this.translate.instant('ITEMS.PERMISSION_ERROR'), 'err');
-      return;
-    }
-
-    this.toast.show(this.translate.instant('PATIENT.SAVE_ERROR'), 'err');
   }
 
   private markAllTouched(): void {

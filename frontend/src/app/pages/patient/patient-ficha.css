@@ -382,6 +382,19 @@
   font-weight: 700;
 }
 
+@media (max-width: 480px) {
+  .patient-ficha-page .ficha-top {
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    gap: 8px;
+  }
+
+  .patient-ficha-page .ficha-top h1 {
+    font-size: 1rem;
+    overflow-wrap: anywhere;
+  }
+}
+
 @media (max-width: 620px) {
   .patient-ficha-page .fields {
     grid-template-columns: 1fr;
@@ -408,50 +421,4 @@
   .patient-ficha-page .ficha-layout {
     padding: 24px 20px;
   }
-}
-
-.patient-delete-dialog-panel .mdc-dialog__surface {
-  border-radius: 8px;
-  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
-}
-
-.patient-delete-dialog {
-  padding: 1.5rem;
-  max-width: 28rem;
-  color: #18212b;
-}
-
-.patient-delete-dialog h2 {
-  margin: 0 0 0.75rem;
-  font-size: 20px;
-}
-
-.patient-delete-dialog p {
-  margin: 0 0 1.5rem;
-  color: #55606a;
-  line-height: 1.5;
-}
-
-.patient-delete-dialog .dialog-acts {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.patient-delete-dialog .btn {
-  min-height: 48px;
-  padding: 0 22px;
-  font: inherit;
-  font-size: 16px;
-  font-weight: 700;
-  border-radius: 6px;
-  cursor: pointer;
-  border: 1.5px solid #18212b;
-  background: #fff;
-}
-
-.patient-delete-dialog .btn.primary {
-  background: #a8281e;
-  border-color: #a8281e;
-  color: #fff;
 }

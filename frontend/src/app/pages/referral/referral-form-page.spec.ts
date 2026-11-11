@@ -9,6 +9,7 @@ import { Referral } from '../../models/referral';
 import { ItemsService } from '../../services/items.service';
 import { PatientService } from '../../services/patient.service';
 import { ReferralService } from '../../services/referral.service';
+import { TranslateService } from '@ngx-translate/core';
 import { ReferralFormPage } from './referral-form-page';
 
 describe('ReferralFormPage', () => {
@@ -43,6 +44,7 @@ describe('ReferralFormPage', () => {
           useValue: { getHealthsites: vi.fn().mockReturnValue(of([healthsite])) },
         },
         { provide: ReferralService, useValue: { create } },
+        { provide: TranslateService, useValue: { instant: (key: string) => key } },
       ],
     });
 

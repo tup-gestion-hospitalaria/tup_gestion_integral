@@ -1,109 +1,115 @@
 <section class="referral-flow-page">
   <header class="flow-top">
     <a [routerLink]="patient ? ['/pacientes', patient.id] : ['/items']" class="back-link">
-      ← Volver al paciente
+      ← {{ 'REFERRAL.BACK_PATIENT' | translate }}
     </a>
-    <span class="eyebrow">Nueva derivación</span>
+    <span class="eyebrow">{{ 'REFERRAL.FORM_EYEBROW' | translate }}</span>
   </header>
 
-  <div *ngIf="isLoading" class="flow-loading">
-    <mat-spinner diameter="42"></mat-spinner>
-    <p>Cargando paciente y centros…</p>
-  </div>
+  <app-ui-state
+    [loading]="isLoading"
+    [errorKey]="errorMessageKey"
+    [loadingKey]="'REFERRAL.LOADING_FORM'"
+  >
+    <form *ngIf="patient && !errorMessageKey" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="flow-layout">
+        <section class="flow-intro">
+          <p class="kicker">{{ 'REFERRAL.KICKER_DERIVE' | translate }}</p>
+          <h1>{{ displayName() }}</h1>
+          <p>{{ 'REFERRAL.INTRO' | translate }}</p>
+        </section>
 
-  <p *ngIf="errorMessage && !isLoading" class="feedback error" role="alert">
-    {{ errorMessage }}
-  </p>
+        <section class="flow-block">
+          <div class="block-number">01</div>
+          <div class="block-content">
+            <h2>{{ 'REFERRAL.BLOCK_DESTINATION' | translate }}</h2>
+            <p>{{ 'REFERRAL.BLOCK_DESTINATION_DESC' | translate }}</p>
 
-  <form *ngIf="patient && !isLoading && !errorMessage" [formGroup]="form" (ngSubmit)="submit()">
-    <div class="flow-layout">
-      <section class="flow-intro">
-        <p class="kicker">Derivar paciente</p>
-        <h1>{{ displayName() }}</h1>
-        <p>Elegí el destino y registrá la información necesaria para iniciar el seguimiento.</p>
-      </section>
-
-      <section class="flow-block">
-        <div class="block-number">01</div>
-        <div class="block-content">
-          <h2>Destino</h2>
-          <p>El nombre y la dirección quedarán guardados como snapshot de la derivación.</p>
-
-          <label for="healthsiteId">Centro de derivación</label>
-          <select id="healthsiteId" class="control" formControlName="healthsiteId">
-            <option value="">Seleccioná un centro</option>
-            <option *ngFor="let healthsite of healthsites" [value]="healthsite.id">
-              {{ healthsite.name }} · {{ healthsite.city }} · {{ healthsite.address }}
-            </option>
-          </select>
-          <p
-            *ngIf="form.controls.healthsiteId.touched && form.controls.healthsiteId.invalid"
-            class="field-error"
-          >
-            Seleccioná un centro.
-          </p>
-        </div>
-      </section>
-
-      <section class="flow-block">
-        <div class="block-number">02</div>
-        <div class="block-content fields-grid">
-          <div class="wide">
-            <h2>Indicación</h2>
-            <p>Describí el motivo clínico u operativo con información concreta.</p>
-          </div>
-
-          <div class="wide">
-            <label for="reason">Motivo</label>
-            <textarea
-              id="reason"
-              class="control"
-              formControlName="reason"
-              rows="4"
-              maxlength="500"
-              placeholder="Ej.: evaluación cardiológica"
-            ></textarea>
+            <label for="healthsiteId">{{ 'REFERRAL.HEALTHSITE_LABEL' | translate }}</label>
+            <select id="healthsiteId" class="control" formControlName="healthsiteId">
+              <option value="">{{ 'REFERRAL.HEALTHSITE_PLACEHOLDER' | translate }}</option>
+              <option *ngFor="let healthsite of healthsites" [value]="healthsite.id">
+                {{ healthsite.name }} · {{ healthsite.city }} · {{ healthsite.address }}
+              </option>
+            </select>
             <p
-              *ngIf="form.controls.reason.touched && form.controls.reason.invalid"
+              *ngIf="form.controls.healthsiteId.touched && form.controls.healthsiteId.invalid"
               class="field-error"
             >
-              Ingresá un motivo de entre 3 y 500 caracteres.
+              {{ 'REFERRAL.HEALTHSITE_INVALID' | translate }}
             </p>
           </div>
+        </section>
 
-          <div>
-            <label for="priority">Prioridad</label>
-            <select id="priority" class="control" formControlName="priority">
-              <option value="low">Baja</option>
-              <option value="normal">Normal</option>
-              <option value="high">Alta</option>
-              <option value="urgent">Urgente</option>
-            </select>
+        <section class="flow-block">
+          <div class="block-number">02</div>
+          <div class="block-content fields-grid">
+            <div class="wide">
+              <h2>{{ 'REFERRAL.BLOCK_INDICATION' | translate }}</h2>
+              <p>{{ 'REFERRAL.BLOCK_INDICATION_DESC' | translate }}</p>
+            </div>
+
+            <div class="wide">
+              <label for="reason">{{ 'REFERRAL.REASON_LABEL' | translate }}</label>
+              <textarea
+                id="reason"
+                class="control"
+                formControlName="reason"
+                rows="4"
+                maxlength="500"
+                [placeholder]="'REFERRAL.REASON_PLACEHOLDER' | translate"
+              ></textarea>
+              <p
+                *ngIf="form.controls.reason.touched && form.controls.reason.invalid"
+                class="field-error"
+              >
+                {{ 'REFERRAL.REASON_INVALID' | translate }}
+              </p>
+            </div>
+
+            <div>
+              <label for="priority">{{ 'REFERRAL.PRIORITY_LABEL' | translate }}</label>
+              <select id="priority" class="control" formControlName="priority">
+                <option value="low">{{ 'REFERRAL.PRIORITY_LOW' | translate }}</option>
+                <option value="normal">{{ 'REFERRAL.PRIORITY_NORMAL' | translate }}</option>
+                <option value="high">{{ 'REFERRAL.PRIORITY_HIGH' | translate }}</option>
+                <option value="urgent">{{ 'REFERRAL.PRIORITY_URGENT' | translate }}</option>
+              </select>
+            </div>
+
+            <div class="wide">
+              <label for="notes"
+                >{{ 'REFERRAL.NOTES_LABEL' | translate }}
+                <span>{{ 'REFERRAL.NOTES_OPTIONAL' | translate }}</span></label
+              >
+              <textarea
+                id="notes"
+                class="control"
+                formControlName="notes"
+                rows="4"
+                maxlength="2000"
+                [placeholder]="'REFERRAL.NOTES_PLACEHOLDER' | translate"
+              ></textarea>
+            </div>
           </div>
-
-          <div class="wide">
-            <label for="notes">Observaciones <span>(opcional)</span></label>
-            <textarea
-              id="notes"
-              class="control"
-              formControlName="notes"
-              rows="4"
-              maxlength="2000"
-              placeholder="Documentación, disponibilidad u otra información relevante"
-            ></textarea>
-          </div>
-        </div>
-      </section>
-    </div>
-
-    <footer class="flow-actions">
-      <p class="feedback" aria-live="polite">{{ feedbackMessage }}</p>
-      <div>
-        <a class="button secondary" [routerLink]="['/pacientes', patient.id]">Cancelar</a>
-        <button class="button primary" type="submit" [disabled]="isSubmitting">
-          {{ isSubmitting ? 'Creando…' : 'Crear derivación' }}
-        </button>
+        </section>
       </div>
-    </footer>
-  </form>
+
+      <footer class="flow-actions">
+        <p class="feedback" aria-live="polite" *ngIf="feedbackMessageKey">
+          {{ feedbackMessageKey | translate }}
+        </p>
+        <div>
+          <a class="button secondary" [routerLink]="['/pacientes', patient.id]">{{
+            'REFERRAL.CANCEL' | translate
+          }}</a>
+          <button class="button primary" type="submit" [disabled]="isSubmitting">
+            {{
+              isSubmitting ? ('REFERRAL.SUBMITTING' | translate) : ('REFERRAL.SUBMIT' | translate)
+            }}
+          </button>
+        </div>
+      </footer>
+    </form>
+  </app-ui-state>
 </section>

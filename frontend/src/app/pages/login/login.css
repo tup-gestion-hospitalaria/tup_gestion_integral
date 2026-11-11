@@ -67,6 +67,36 @@
   background-color: var(--secondary-color);
 }
 
+.login-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.login-error {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  color: var(--error-color);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+  background: rgba(176, 0, 32, 0.08);
+  border: 1px solid rgba(176, 0, 32, 0.2);
+  border-radius: 0.65rem;
+}
+
+.field {
+  width: 100%;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 .login-card {
   width: 100%;
   max-width: 38rem;
@@ -222,6 +252,22 @@
   background-color: transparent;
 
   box-sizing: border-box;
+}
+
+@media (max-width: 400px) {
+  .brand-logo {
+    width: 9rem;
+    height: 9rem;
+  }
+
+  .brand-content h1 {
+    font-size: 1.85rem;
+  }
+
+  .login-card {
+    padding: 1.25rem;
+    gap: 1rem;
+  }
 }
 
 @media (max-width: 900px) {

@@ -1,4 +1,4 @@
-// Copiá este archivo a environment.ts (environment.ts está en .gitignore).
+// Copiá a environment.ts (prod). Para local dev, copiá environment.development.example.ts → environment.development.ts.
 export const environment = {
   production: true,
   backendApiUrl: 'https://tup-gestion-integral.onrender.com/api',

@@ -95,6 +95,7 @@ jobs:
       - name: Materialize Firebase config
         run: |
           cp src/environments/environment.example.ts src/environments/environment.ts
+          cp src/environments/environment.development.example.ts src/environments/environment.development.ts
           cp src/app/firebase.example.ts src/app/firebase.ts
 
       - name: Install dependencies

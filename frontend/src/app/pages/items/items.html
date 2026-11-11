@@ -11,7 +11,7 @@
     </button>
   </div>
 
-  <div class="filters-bar">
+  <div class="filters-bar" *ngIf="!isLoading && !errorMessage">
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>{{ 'ITEMS.SEARCH' | translate }}</mat-label>
 
@@ -70,68 +70,66 @@
     </mat-form-field>
   </div>
 
-  <div *ngIf="isLoading" class="spinner-container">
-    <mat-spinner></mat-spinner>
-  </div>
+  <app-ui-state
+    [loading]="isLoading"
+    [errorKey]="errorMessage"
+    [empty]="!isLoading && !errorMessage && patients.length === 0"
+    [emptyKey]="'ITEMS.NO_RESULTS'"
+    [loadingKey]="'COMMON.LOADING'"
+  >
+    <div class="items-list">
+      <mat-card
+        *ngFor="let patient of patients"
+        class="item-card"
+        (click)="openPatient(patient)"
+        (keydown.enter)="openPatient(patient)"
+        (keydown.space)="$event.preventDefault(); openPatient(patient)"
+        tabindex="0"
+        role="button"
+        [attr.aria-label]="'ITEMS.OPEN_PATIENT' | translate: { name: displayName(patient) }"
+      >
+        <img
+          [src]="patient.picture || '/foto-perfil.png'"
+          [alt]="displayName(patient)"
+          class="patient-image"
+        />
 
-  <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage | translate }}
-  </div>
+        <div class="patient-info">
+          <mat-card-title>{{ displayName(patient) }}</mat-card-title>
 
-  <div *ngIf="!isLoading && !errorMessage" class="items-list">
-    <mat-card
-      *ngFor="let patient of patients"
-      class="item-card"
-      (click)="openPatient(patient)"
-      (keydown.enter)="openPatient(patient)"
-      tabindex="0"
-      role="button"
-    >
-      <img
-        [src]="patient.picture || '/foto-perfil.png'"
-        [alt]="displayName(patient)"
-        class="patient-image"
-      />
+          <mat-card-content>
+            <p>{{ patient.email }}</p>
+            <p>{{ patient.city }}, {{ patient.country }}</p>
+            <p class="status-line">
+              {{
+                patient.active
+                  ? ('ITEMS.STATUS_ACTIVE' | translate)
+                  : ('ITEMS.STATUS_INACTIVE' | translate)
+              }}
+            </p>
+          </mat-card-content>
 
-      <div class="patient-info">
-        <mat-card-title>{{ displayName(patient) }}</mat-card-title>
+          <mat-card-actions>
+            <button type="button" (click)="referPatient(patient, $event)">
+              {{ 'ITEMS.REFER' | translate }}
+            </button>
+          </mat-card-actions>
+        </div>
+      </mat-card>
 
-        <mat-card-content>
-          <p>{{ patient.email }}</p>
-          <p>{{ patient.city }}, {{ patient.country }}</p>
-          <p class="status-line">
-            {{
-              patient.active
-                ? ('ITEMS.STATUS_ACTIVE' | translate)
-                : ('ITEMS.STATUS_INACTIVE' | translate)
-            }}
-          </p>
-        </mat-card-content>
+      <div class="pagination-bar" *ngIf="totalPages > 0">
+        <button mat-button type="button" (click)="goToPreviousPage()" [disabled]="page <= 1">
+          {{ 'ITEMS.PREV_PAGE' | translate }}
+        </button>
 
-        <mat-card-actions>
-          <button type="button" (click)="referPatient(patient, $event)">
-            {{ 'ITEMS.REFER' | translate }}
-          </button>
-        </mat-card-actions>
+        <span class="pagination-summary">
+          {{ 'ITEMS.PAGE_SUMMARY' | translate: { page, totalPages, total } }}
+        </span>
+
+        <button mat-button type="button" (click)="goToNextPage()" [disabled]="page >= totalPages">
+          {{ 'ITEMS.NEXT_PAGE' | translate }}
+        </button>
       </div>
-    </mat-card>
-
-    <div class="pagination-bar" *ngIf="totalPages > 0">
-      <button mat-button type="button" (click)="goToPreviousPage()" [disabled]="page <= 1">
-        {{ 'ITEMS.PREV_PAGE' | translate }}
-      </button>
-
-      <span class="pagination-summary">
-        {{ 'ITEMS.PAGE_SUMMARY' | translate: { page, totalPages, total } }}
-      </span>
-
-      <button mat-button type="button" (click)="goToNextPage()" [disabled]="page >= totalPages">
-        {{ 'ITEMS.NEXT_PAGE' | translate }}
-      </button>
     </div>
-
-    <p *ngIf="patients.length === 0" class="empty-message">
-      {{ 'ITEMS.NO_RESULTS' | translate }}
-    </p>
-  </div>
+  </app-ui-state>
 </section>

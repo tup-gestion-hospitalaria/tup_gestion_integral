@@ -3,8 +3,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
+import { httpErrorMessageKey } from '../../core/http-error-message';
 import { patientDisplayName } from '../../core/validators/patient-validators';
 import { Patient } from '../../models/patient';
 import { Referral, ReferralEvent, ReferralStatus } from '../../models/referral';
@@ -12,11 +12,13 @@ import { UserProfile } from '../../models/user';
 import { PatientService } from '../../services/patient.service';
 import { ReferralService } from '../../services/referral.service';
 import { UserService } from '../../services/user.service';
+import { UiState } from '../../shared/ui-state';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-referral-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, MatProgressSpinnerModule],
+  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, UiState],
   templateUrl: './referral-detail.html',
   styleUrl: './referral-flow.css',
 })
@@ -25,22 +27,22 @@ export class ReferralDetail implements OnInit {
   private readonly referralService = inject(ReferralService);
   private readonly patientService = inject(PatientService);
   private readonly userService = inject(UserService);
+  private readonly translate = inject(TranslateService);
 
   referral: Referral | null = null;
   patient: Patient | null = null;
   profile: UserProfile | null = null;
   isLoading = true;
   isTransitioning = false;
-  errorMessage = '';
-  feedbackMessage = '';
+  errorMessageKey = '';
+  feedbackMessageKey = '';
+  feedbackParams: Record<string, string> = {};
   showRejectionInput = false;
   rejectionReason = '';
 
   ngOnInit(): void {
-    this.feedbackMessage =
-      this.route.snapshot.queryParamMap.get('created') === '1'
-        ? 'Derivación creada correctamente.'
-        : '';
+    this.feedbackMessageKey =
+      this.route.snapshot.queryParamMap.get('created') === '1' ? 'REFERRAL.CREATED_SUCCESS' : '';
 
     this.userService.getMe().subscribe({
       next: (profile) => (this.profile = profile),
@@ -84,55 +86,62 @@ export class ReferralDetail implements OnInit {
   patientName(): string {
     return this.patient
       ? patientDisplayName(this.patient.fullName, this.patient.lastName)
-      : 'Paciente';
+      : this.translate.instant('COMMON.USER_FALLBACK');
   }
 
   statusLabel(status: ReferralStatus): string {
-    return {
-      draft: 'Borrador',
-      submitted: 'Enviada',
-      accepted: 'Aceptada',
-      rejected: 'Rechazada',
-      completed: 'Completada',
-      cancelled: 'Cancelada',
-    }[status];
+    const keys: Record<ReferralStatus, string> = {
+      draft: 'REFERRAL.STATUS_DRAFT',
+      submitted: 'REFERRAL.STATUS_SUBMITTED',
+      accepted: 'REFERRAL.STATUS_ACCEPTED',
+      rejected: 'REFERRAL.STATUS_REJECTED',
+      completed: 'REFERRAL.STATUS_COMPLETED',
+      cancelled: 'REFERRAL.STATUS_CANCELLED',
+    };
+    return this.translate.instant(keys[status]);
   }
 
   priorityLabel(): string {
     if (!this.referral) return '';
-    return { low: 'Baja', normal: 'Normal', high: 'Alta', urgent: 'Urgente' }[
-      this.referral.priority
-    ];
+    const keys: Record<Referral['priority'], string> = {
+      low: 'REFERRAL.PRIORITY_LOW',
+      normal: 'REFERRAL.PRIORITY_NORMAL',
+      high: 'REFERRAL.PRIORITY_HIGH',
+      urgent: 'REFERRAL.PRIORITY_URGENT',
+    };
+    return this.translate.instant(keys[this.referral.priority]);
   }
 
   transitionLabel(status: ReferralStatus): string {
-    return {
-      draft: 'Volver a borrador',
-      submitted: 'Enviar',
-      accepted: 'Aceptar',
-      rejected: 'Rechazar',
-      completed: 'Completar',
-      cancelled: 'Cancelar derivación',
-    }[status];
+    const keys: Record<ReferralStatus, string> = {
+      draft: 'REFERRAL.TRANSITION_DRAFT',
+      submitted: 'REFERRAL.TRANSITION_SUBMITTED',
+      accepted: 'REFERRAL.TRANSITION_ACCEPTED',
+      rejected: 'REFERRAL.TRANSITION_REJECTED',
+      completed: 'REFERRAL.TRANSITION_COMPLETED',
+      cancelled: 'REFERRAL.TRANSITION_CANCELLED',
+    };
+    return this.translate.instant(keys[status]);
   }
 
   eventLabel(event: ReferralEvent): string {
     const labels: Record<string, string> = {
-      'referral.created': 'Derivación creada',
-      'referral.updated': 'Borrador actualizado',
-      'referral.submitted': 'Derivación enviada',
-      'referral.accepted': 'Derivación aceptada',
-      'referral.rejected': 'Derivación rechazada',
-      'referral.completed': 'Derivación completada',
-      'referral.cancelled': 'Derivación cancelada',
+      'referral.created': 'REFERRAL.EVENT_CREATED',
+      'referral.updated': 'REFERRAL.EVENT_UPDATED',
+      'referral.submitted': 'REFERRAL.EVENT_SUBMITTED',
+      'referral.accepted': 'REFERRAL.EVENT_ACCEPTED',
+      'referral.rejected': 'REFERRAL.EVENT_REJECTED',
+      'referral.completed': 'REFERRAL.EVENT_COMPLETED',
+      'referral.cancelled': 'REFERRAL.EVENT_CANCELLED',
     };
-    return labels[event.action] ?? event.action;
+    const key = labels[event.action];
+    return key ? this.translate.instant(key) : event.action;
   }
 
   startTransition(status: ReferralStatus): void {
     if (status === 'rejected') {
       this.showRejectionInput = true;
-      this.feedbackMessage = '';
+      this.feedbackMessageKey = '';
       return;
     }
     this.runTransition(status);
@@ -141,7 +150,7 @@ export class ReferralDetail implements OnInit {
   confirmRejection(): void {
     const reason = this.rejectionReason.trim();
     if (!reason) {
-      this.feedbackMessage = 'Ingresá el motivo del rechazo.';
+      this.feedbackMessageKey = 'REFERRAL.REJECTION_REQUIRED';
       return;
     }
     this.runTransition('rejected', reason);
@@ -150,7 +159,7 @@ export class ReferralDetail implements OnInit {
   private loadReferral(): void {
     const id = this.route.snapshot.paramMap.get('id') ?? '';
     if (!id) {
-      this.errorMessage = 'No se indicó la derivación.';
+      this.errorMessageKey = 'REFERRAL.NO_REFERRAL_ID';
       this.isLoading = false;
       return;
     }
@@ -165,12 +174,13 @@ export class ReferralDetail implements OnInit {
         });
       },
       error: (error: HttpErrorResponse) => {
-        this.errorMessage =
-          error.status === 404
-            ? 'Derivación no encontrada.'
-            : error.status === 403
-              ? 'No tenés permisos para ver esta derivación.'
-              : 'No se pudo cargar la derivación.';
+        if (error.status === 404) {
+          this.errorMessageKey = 'REFERRAL.NOT_FOUND';
+        } else if (error.status === 403) {
+          this.errorMessageKey = 'REFERRAL.PERMISSION_ERROR';
+        } else {
+          this.errorMessageKey = httpErrorMessageKey(error, 'referral');
+        }
         this.isLoading = false;
       },
     });
@@ -182,7 +192,7 @@ export class ReferralDetail implements OnInit {
     }
 
     this.isTransitioning = true;
-    this.feedbackMessage = 'Actualizando estado…';
+    this.feedbackMessageKey = 'REFERRAL.UPDATING_STATUS';
     this.referralService
       .transition(this.referral.id, {
         to: status,
@@ -193,13 +203,13 @@ export class ReferralDetail implements OnInit {
           this.isTransitioning = false;
           this.showRejectionInput = false;
           this.rejectionReason = '';
-          this.feedbackMessage = `Estado actualizado a ${this.statusLabel(status).toLowerCase()}.`;
+          this.feedbackParams = { status: this.statusLabel(status).toLowerCase() };
+          this.feedbackMessageKey = 'REFERRAL.STATUS_UPDATED';
           this.loadReferral();
         },
         error: (error: HttpErrorResponse) => {
           this.isTransitioning = false;
-          this.feedbackMessage =
-            error.error?.message ?? 'No se pudo actualizar el estado de la derivación.';
+          this.feedbackMessageKey = httpErrorMessageKey(error, 'referralTransition');
         },
       });
   }

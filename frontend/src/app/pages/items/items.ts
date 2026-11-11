@@ -16,6 +16,9 @@ import { PatientService } from '../../services/patient.service';
 import { UserService } from '../../services/user.service';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { UiState } from '../../shared/ui-state';
+import { httpErrorMessageKey } from '../../core/http-error-message';
+
 @Component({
   selector: 'app-items',
   imports: [
@@ -27,6 +30,7 @@ import { TranslateModule } from '@ngx-translate/core';
     MatProgressSpinnerModule,
     MatButtonModule,
     TranslateModule,
+    UiState,
   ],
   templateUrl: './items.html',
   styleUrl: './items.css',
@@ -132,13 +136,7 @@ export class Items implements OnInit, OnDestroy {
         this.isLoading = false;
       },
       error: (error: HttpErrorResponse) => {
-        if (error.status === 401) {
-          this.errorMessage = 'ITEMS.AUTH_ERROR';
-        } else if (error.status === 403) {
-          this.errorMessage = 'ITEMS.PERMISSION_ERROR';
-        } else {
-          this.errorMessage = 'ITEMS.LOAD_ERROR';
-        }
+        this.errorMessage = httpErrorMessageKey(error, 'items');
         this.isLoading = false;
       },
     });

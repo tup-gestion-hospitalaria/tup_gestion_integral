@@ -1,31 +1,31 @@
 <div class="status-page-container">
   <mat-card class="status-card" [ngClass]="status">
-    <div class="status-icon-wrapper" [ngClass]="status">
+    <div class="status-icon-wrapper" [ngClass]="status" aria-hidden="true">
       <span *ngIf="status === 'pending'" class="status-symbol">⏳</span>
       <span *ngIf="status === 'rejected'" class="status-symbol">🚫</span>
       <span *ngIf="status === 'disabled'" class="status-symbol">🔒</span>
       <span *ngIf="status === 'approved'" class="status-symbol">✅</span>
     </div>
 
-    <h1>{{ statusTitle }}</h1>
+    <h1>{{ statusTitleKey | translate }}</h1>
 
     <div class="badge-wrapper">
       <span class="status-badge" [ngClass]="status">
         {{ status | uppercase }}
       </span>
       <span class="role-badge" *ngIf="authService.accountProfile?.role">
-        Rol: {{ authService.accountProfile?.role === 'admin' ? 'Administrador' : 'Usuario' }}
+        {{ 'ACCOUNT_STATUS.ROLE_PREFIX' | translate }} {{ roleLabel() }}
       </span>
     </div>
 
-    <p class="status-desc">{{ statusDescription }}</p>
+    <p class="status-desc">{{ statusDescriptionKey | translate }}</p>
 
     <div class="user-info-box" *ngIf="authService.user as user">
-      <span class="user-name">{{ user.displayName || 'Usuario' }}</span>
+      <span class="user-name">{{ user.displayName || ('COMMON.USER_FALLBACK' | translate) }}</span>
       <span class="user-email">{{ user.email }}</span>
     </div>
 
-    <p class="feedback-msg" *ngIf="message">{{ message }}</p>
+    <p class="feedback-msg" *ngIf="messageKey" role="status">{{ messageKey | translate }}</p>
 
     <div class="actions">
       <button
@@ -35,15 +35,17 @@
         (click)="checkStatus()"
         [disabled]="checking"
       >
-        <span *ngIf="!checking">Verificar estado actual</span>
-        <span *ngIf="checking">Comprobando...</span>
+        <span *ngIf="!checking">{{ 'ACCOUNT_STATUS.CHECK_STATUS' | translate }}</span>
+        <span *ngIf="checking">{{ 'ACCOUNT_STATUS.CHECKING' | translate }}</span>
       </button>
 
       <button mat-stroked-button type="button" routerLink="/configuracion">
-        Mi Perfil / Configuración
+        {{ 'ACCOUNT_STATUS.GO_SETTINGS' | translate }}
       </button>
 
-      <button mat-button color="warn" type="button" (click)="logout()">Cerrar sesión</button>
+      <button mat-button color="warn" type="button" (click)="logout()">
+        {{ 'SETTINGS.LOGOUT' | translate }}
+      </button>
     </div>
   </mat-card>
 </div>

@@ -3,9 +3,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { forkJoin } from 'rxjs';
 
+import { httpErrorMessageKey } from '../../core/http-error-message';
 import { patientDisplayName } from '../../core/validators/patient-validators';
 import { Healthsite } from '../../models/healthsite';
 import { Patient } from '../../models/patient';
@@ -13,11 +13,13 @@ import { ReferralCreatePayload, ReferralPriority } from '../../models/referral';
 import { ItemsService } from '../../services/items.service';
 import { PatientService } from '../../services/patient.service';
 import { ReferralService } from '../../services/referral.service';
+import { UiState } from '../../shared/ui-state';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-referral-form-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, MatProgressSpinnerModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, UiState],
   templateUrl: './referral-form-page.html',
   styleUrl: './referral-flow.css',
 })
@@ -28,6 +30,7 @@ export class ReferralFormPage implements OnInit {
   private readonly patientService = inject(PatientService);
   private readonly itemsService = inject(ItemsService);
   private readonly referralService = inject(ReferralService);
+  private readonly translate = inject(TranslateService);
 
   readonly form = this.formBuilder.nonNullable.group({
     healthsiteId: ['', Validators.required],
@@ -40,15 +43,15 @@ export class ReferralFormPage implements OnInit {
   healthsites: Healthsite[] = [];
   isLoading = true;
   isSubmitting = false;
-  errorMessage = '';
-  feedbackMessage = '';
+  errorMessageKey = '';
+  feedbackMessageKey = '';
 
   private idempotencyKey = this.createIdempotencyKey();
 
   ngOnInit(): void {
     const patientId = this.route.snapshot.paramMap.get('id') ?? '';
     if (!patientId) {
-      this.errorMessage = 'No se indicó el paciente a derivar.';
+      this.errorMessageKey = 'REFERRAL.NO_PATIENT_ID';
       this.isLoading = false;
       return;
     }
@@ -62,14 +65,12 @@ export class ReferralFormPage implements OnInit {
         this.healthsites = healthsites;
         this.isLoading = false;
         if (!healthsites.length) {
-          this.errorMessage = 'No hay centros disponibles para crear la derivación.';
+          this.errorMessageKey = 'REFERRAL.NO_HEALTHSITES';
         }
       },
       error: (error: HttpErrorResponse) => {
-        this.errorMessage =
-          error.status === 404
-            ? 'Paciente no encontrado.'
-            : 'No se pudieron cargar los datos para la derivación.';
+        this.errorMessageKey =
+          error.status === 404 ? 'PATIENT.NOT_FOUND' : httpErrorMessageKey(error, 'referralCreate');
         this.isLoading = false;
       },
     });
@@ -86,14 +87,14 @@ export class ReferralFormPage implements OnInit {
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.feedbackMessage = 'Revisá los campos marcados antes de continuar.';
+      this.feedbackMessageKey = 'REFERRAL.VALIDATION_SUMMARY';
       return;
     }
 
     const value = this.form.getRawValue();
     const healthsite = this.healthsites.find((item) => item.id === value.healthsiteId);
     if (!healthsite) {
-      this.feedbackMessage = 'Seleccioná un centro de derivación válido.';
+      this.feedbackMessageKey = 'REFERRAL.HEALTHSITE_REQUIRED';
       return;
     }
 
@@ -110,18 +111,17 @@ export class ReferralFormPage implements OnInit {
     };
 
     this.isSubmitting = true;
-    this.feedbackMessage = 'Guardando la derivación…';
+    this.feedbackMessageKey = 'REFERRAL.SAVING';
     this.referralService.create(payload, this.idempotencyKey).subscribe({
       next: (referral) => {
-        this.feedbackMessage = 'Derivación creada. Abriendo el detalle…';
+        this.feedbackMessageKey = 'REFERRAL.CREATED_REDIRECT';
         void this.router.navigate(['/derivaciones', referral.id], {
           queryParams: { created: '1' },
         });
       },
       error: (error: HttpErrorResponse) => {
         this.isSubmitting = false;
-        this.feedbackMessage =
-          error.error?.message ?? 'No se pudo crear la derivación. Intentá nuevamente.';
+        this.feedbackMessageKey = httpErrorMessageKey(error, 'referralCreate');
       },
     });
   }
