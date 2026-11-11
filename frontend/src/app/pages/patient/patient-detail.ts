@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -12,22 +11,15 @@ import { Referral, ReferralStatus } from '../../models/referral';
 import { PatientService } from '../../services/patient.service';
 import { ReferralService } from '../../services/referral.service';
 import { UserService } from '../../services/user.service';
-import { PatientDeleteDialog, PatientDeleteDialogData } from './patient-delete-dialog';
 import { AppToastService } from '../../shared/app-toast.service';
+import { ConfirmDialogService } from '../../shared/confirm-dialog.service';
 import { UiState } from '../../shared/ui-state';
 import { httpErrorMessageKey } from '../../core/http-error-message';
 
 @Component({
   selector: 'app-patient-detail',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterLink,
-    MatProgressSpinnerModule,
-    MatDialogModule,
-    TranslateModule,
-    UiState,
-  ],
+  imports: [CommonModule, RouterLink, MatProgressSpinnerModule, TranslateModule, UiState],
   templateUrl: './patient-detail.html',
   styleUrl: './patient-ficha.css',
 })
@@ -37,7 +29,7 @@ export class PatientDetail implements OnInit {
   private readonly patientService = inject(PatientService);
   private readonly referralService = inject(ReferralService);
   private readonly userService = inject(UserService);
-  private readonly dialog = inject(MatDialog);
+  private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly translate = inject(TranslateService);
 
   private readonly toast = inject(AppToastService);
@@ -122,38 +114,35 @@ export class PatientDetail implements OnInit {
       return;
     }
 
-    const dialogRef = this.dialog.open(PatientDeleteDialog, {
-      data: { fullName: this.displayName(this.patient) } satisfies PatientDeleteDialogData,
-      panelClass: 'patient-delete-dialog-panel',
-    });
+    this.confirmDialog
+      .confirmPatientDeactivate(this.displayName(this.patient))
+      .subscribe((confirmed) => {
+        if (!confirmed || !this.patient) {
+          return;
+        }
 
-    dialogRef.afterClosed().subscribe((confirmed) => {
-      if (!confirmed || !this.patient) {
-        return;
-      }
+        const version = this.patient.version ?? 1;
+        this.isDeleting = true;
 
-      const version = this.patient.version ?? 1;
-      this.isDeleting = true;
-
-      this.patientService.deactivatePatient(this.patient.id, version).subscribe({
-        next: () => {
-          this.isDeleting = false;
-          this.toast.show(this.translate.instant('PATIENT.DEACTIVATE_SUCCESS'), 'ok');
-          setTimeout(() => {
-            this.router.navigate(['/items']);
-          }, 800);
-        },
-        error: (error: HttpErrorResponse) => {
-          this.isDeleting = false;
-          if (error.status === 409) {
-            this.toast.show(this.translate.instant('PATIENT.VERSION_CONFLICT'), 'err');
-            this.reloadPatient();
-            return;
-          }
-          this.toast.show(this.translate.instant('PATIENT.DEACTIVATE_ERROR'), 'err');
-        },
+        this.patientService.deactivatePatient(this.patient.id, version).subscribe({
+          next: () => {
+            this.isDeleting = false;
+            this.toast.show(this.translate.instant('PATIENT.DEACTIVATE_SUCCESS'), 'ok');
+            setTimeout(() => {
+              this.router.navigate(['/items']);
+            }, 800);
+          },
+          error: (error: HttpErrorResponse) => {
+            this.isDeleting = false;
+            if (error.status === 409) {
+              this.toast.show(this.translate.instant('PATIENT.VERSION_CONFLICT'), 'err');
+              this.reloadPatient();
+              return;
+            }
+            this.toast.show(this.translate.instant('PATIENT.DEACTIVATE_ERROR'), 'err');
+          },
+        });
       });
-    });
   }
 
   private reloadPatient(): void {

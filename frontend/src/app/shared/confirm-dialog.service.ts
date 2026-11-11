@@ -29,4 +29,15 @@ export class ConfirmDialogService {
       danger: true,
     });
   }
+
+  confirmPatientDeactivate(fullName: string): Observable<boolean> {
+    return this.open({
+      titleKey: 'PATIENT.DELETE_TITLE',
+      messageKey: 'PATIENT.DELETE_MESSAGE',
+      messageParams: { name: fullName },
+      confirmKey: 'PATIENT.DELETE_CONFIRM',
+      cancelKey: 'PATIENT.CANCEL',
+      danger: true,
+    });
+  }
 }
