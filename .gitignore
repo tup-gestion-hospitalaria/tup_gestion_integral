@@ -2,9 +2,19 @@
 ci-reports/
 *-debug.log
 
-# Frontend: config local (prod → copiar desde *.example.ts; emulador → scripts/local/)
+# Frontend: config local (prod/dev → copiar desde *.example.ts; emulador → scripts/local/)
 frontend/src/environments/environment.ts
+frontend/src/environments/environment.development.ts
 frontend/src/app/firebase.ts
+
+# Variables de entorno (mantener solo *.example)
+.env
+.env.*
+!.env.example
+backend/.env
+
+# Postman: entornos con secrets/URLs locales
+postman/**/environments/*.json
 
 # Notas personales de referencia (no versionar)
 docs/resumen-aplicacion.md

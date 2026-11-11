@@ -1,4 +1,5 @@
-const DEFAULT_SOURCE_URL = 'https://api.healthsites.io/api/v3/facilities/';
+const DEFAULT_SOURCE_URL = 'https://healthsites.io/api/v3/facilities/';
+//const DEFAULT_SOURCE_URL = 'https://api.healthsites.io/api/v3/facilities/'; fallaba en mi entorno local, probar en render si no funciona volver atras Julian
 const DEFAULT_EXTENT = '-58.20,-35.10,-57.70,-34.70';
 const DEFAULT_PAGE_COUNT = 3;
 const DEFAULT_TIMEOUT_MS = 5_000;
