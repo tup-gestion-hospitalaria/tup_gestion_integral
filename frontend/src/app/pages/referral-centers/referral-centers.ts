@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatInputModule } from '@angular/material/input';
@@ -16,6 +17,7 @@ import { TranslateModule } from '@ngx-translate/core';
   imports: [
     CommonModule,
     FormsModule,
+    MatButtonModule,
     MatCardModule,
     MatProgressSpinnerModule,
     MatInputModule,
@@ -39,14 +41,34 @@ export class ReferralCenters implements OnInit {
   availableCities: string[] = [];
 
   isLoading = true;
-  errorMessage = '';
+  hasLoadError = false;
 
   ngOnInit(): void {
-    this.loadHealthsites();
+    this.loadHealthsites(false);
   }
 
-  private loadHealthsites(): void {
-    this.itemsService.getHealthsites().subscribe({
+  retryLoad(): void {
+    this.loadHealthsites(true);
+  }
+
+  isCatalogEmpty(): boolean {
+    return !this.isLoading && !this.hasLoadError && this.healthsites.length === 0;
+  }
+
+  hasFilteredResults(): boolean {
+    return (
+      !this.isLoading &&
+      !this.hasLoadError &&
+      this.healthsites.length > 0 &&
+      this.filteredHealthsites.length === 0
+    );
+  }
+
+  private loadHealthsites(refresh: boolean): void {
+    this.isLoading = true;
+    this.hasLoadError = false;
+
+    this.itemsService.getHealthsites({ refresh }).subscribe({
       next: (healthsites) => {
         this.healthsites = healthsites;
 
@@ -59,11 +81,14 @@ export class ReferralCenters implements OnInit {
         ].sort();
 
         this.applyFilters();
-
         this.isLoading = false;
       },
       error: () => {
-        this.errorMessage = 'No se pudieron cargar los centros de derivación.';
+        this.healthsites = [];
+        this.filteredHealthsites = [];
+        this.availableTypes = [];
+        this.availableCities = [];
+        this.hasLoadError = true;
         this.isLoading = false;
       },
     });
