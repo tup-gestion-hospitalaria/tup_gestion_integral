@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+
+# Cursor may inject agent co-author trailers; keep commits attributed to humans only.
+msg_file="$1"
+if [ -n "$msg_file" ] && [ -f "$msg_file" ]; then
+  grep -v '^Co-authored-by: Cursor <cursoragent@cursor.com>$' "$msg_file" > "${msg_file}.tmp"
+  mv "${msg_file}.tmp" "$msg_file"
+fi
