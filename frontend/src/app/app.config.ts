@@ -1,20 +1,17 @@
 import {
   ApplicationConfig,
-  isDevMode,
   ErrorHandler,
-  inject,
-  provideAppInitializer,
+  isDevMode,
   provideBrowserGlobalErrorListeners,
   provideZoneChangeDetection,
 } from '@angular/core';
+import { createErrorHandler } from '@sentry/angular';
 
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideServiceWorker } from '@angular/service-worker';
-import { provideRouter, Router } from '@angular/router';
-
+import { provideRouter } from '@angular/router';
 import { provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
-import * as Sentry from '@sentry/angular';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
@@ -35,15 +32,8 @@ export const appConfig: ApplicationConfig = {
     }),
     {
       provide: ErrorHandler,
-      useValue: Sentry.createErrorHandler(),
+      useValue: createErrorHandler(),
     },
-    {
-      provide: Sentry.TraceService,
-      deps: [Router],
-    },
-    provideAppInitializer(() => {
-      inject(Sentry.TraceService);
-    }),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000',
