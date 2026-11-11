@@ -5,7 +5,7 @@
     {{ 'REFERRAL_CENTERS.DESCRIPTION' | translate }}
   </p>
 
-  <div class="filters-bar">
+  <div *ngIf="!isLoading && !hasLoadError" class="filters-bar">
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>{{ 'REFERRAL_CENTERS.SEARCH' | translate }}</mat-label>
 
@@ -50,15 +50,25 @@
     <mat-spinner></mat-spinner>
   </div>
 
-  <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage | translate }}
+  <div *ngIf="hasLoadError && !isLoading" class="error-panel" role="alert">
+    <p class="error-message">{{ 'REFERRAL_CENTERS.LOAD_ERROR' | translate }}</p>
+    <button mat-stroked-button type="button" (click)="retryLoad()">
+      {{ 'REFERRAL_CENTERS.RETRY' | translate }}
+    </button>
   </div>
 
-  <p *ngIf="!isLoading && !errorMessage && filteredHealthsites.length === 0">
+  <p *ngIf="isCatalogEmpty()" class="empty-message">
+    {{ 'REFERRAL_CENTERS.EMPTY' | translate }}
+  </p>
+
+  <p *ngIf="hasFilteredResults()" class="empty-message">
     {{ 'REFERRAL_CENTERS.NO_RESULTS' | translate }}
   </p>
 
-  <div *ngIf="!isLoading && !errorMessage" class="healthsites-list">
+  <div
+    *ngIf="!isLoading && !hasLoadError && filteredHealthsites.length > 0"
+    class="healthsites-list"
+  >
     <mat-card *ngFor="let healthsite of filteredHealthsites" class="healthsite-card">
       <mat-card-title>
         {{ healthsite.name }}

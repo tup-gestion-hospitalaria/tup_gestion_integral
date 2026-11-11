@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { firstValueFrom } from 'rxjs';
 import { of, throwError } from 'rxjs';
 
 import { Healthsite } from '../models/healthsite';
@@ -49,9 +50,7 @@ describe('ItemsService', () => {
   it('returns cached healthsites without calling the API', async () => {
     storageService.getItem.mockReturnValue(sampleHealthsites);
 
-    const result = await new Promise<Healthsite[]>((resolve) => {
-      service.getHealthsites().subscribe(resolve);
-    });
+    const result = await firstValueFrom(service.getHealthsites());
 
     expect(storageService.getItem).toHaveBeenCalledWith(cacheKey);
     expect(itemsApiService.getHealthsites).not.toHaveBeenCalled();
@@ -62,25 +61,28 @@ describe('ItemsService', () => {
     storageService.getItem.mockReturnValue(null);
     itemsApiService.getHealthsites.mockReturnValue(of(sampleHealthsites));
 
-    const result = await new Promise<Healthsite[]>((resolve) => {
-      service.getHealthsites().subscribe(resolve);
-    });
+    const result = await firstValueFrom(service.getHealthsites());
 
     expect(itemsApiService.getHealthsites).toHaveBeenCalled();
     expect(storageService.setItem).toHaveBeenCalledWith(cacheKey, sampleHealthsites, 5);
     expect(result).toEqual(sampleHealthsites);
   });
 
-  it('returns empty array when API fails', async () => {
+  it('propagates API failures without caching', async () => {
     storageService.getItem.mockReturnValue(null);
     itemsApiService.getHealthsites.mockReturnValue(throwError(() => new Error('network')));
-    const consoleError = vi.spyOn(console, 'error').mockReturnValue();
 
-    const result = await new Promise<Healthsite[]>((resolve) => {
-      service.getHealthsites().subscribe(resolve);
-    });
+    await expect(firstValueFrom(service.getHealthsites())).rejects.toThrow('network');
+    expect(storageService.setItem).not.toHaveBeenCalled();
+  });
 
-    expect(result).toEqual([]);
-    consoleError.mockRestore();
+  it('bypasses cache when refresh is requested', async () => {
+    storageService.getItem.mockReturnValue(sampleHealthsites);
+    itemsApiService.getHealthsites.mockReturnValue(of(sampleHealthsites));
+
+    await firstValueFrom(service.getHealthsites({ refresh: true }));
+
+    expect(storageService.getItem).not.toHaveBeenCalled();
+    expect(itemsApiService.getHealthsites).toHaveBeenCalled();
   });
 });
