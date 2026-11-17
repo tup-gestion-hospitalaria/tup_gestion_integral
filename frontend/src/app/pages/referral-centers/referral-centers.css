@@ -18,8 +18,17 @@
   margin-top: 2rem;
 }
 
+.error-panel {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
 .error-message {
   color: var(--error-color);
+  margin: 0 0 1rem;
+}
+
+.empty-message {
   text-align: center;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
 }
