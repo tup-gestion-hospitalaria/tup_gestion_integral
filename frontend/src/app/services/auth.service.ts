@@ -3,19 +3,10 @@ import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
-import {
-  GoogleAuthProvider,
-  User,
-  onAuthStateChanged,
-  signInWithPopup,
-  signOut,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  updateProfile,
-} from 'firebase/auth';
+import type { User } from 'firebase/auth';
 
 import { environment } from '../../environments/environment';
-import { auth } from '../firebase';
+import { getFirebaseAuth } from '../firebase';
 
 export type UserAccountStatus = 'pending' | 'approved' | 'rejected' | 'disabled';
 export type UserRole = 'user' | 'admin';
@@ -40,8 +31,21 @@ export class AuthService {
   accountProfile: AccountProfile | null = null;
 
   private readonly http = inject(HttpClient);
+  private authListenerStarted = false;
 
   constructor(private router: Router) {
+    void this.ensureAuthListener();
+  }
+
+  private async ensureAuthListener(): Promise<void> {
+    if (this.authListenerStarted) {
+      return;
+    }
+    this.authListenerStarted = true;
+
+    const auth = await getFirebaseAuth();
+    const { onAuthStateChanged } = await import('firebase/auth');
+
     onAuthStateChanged(auth, (user) => {
       this.user = user;
 
@@ -57,6 +61,8 @@ export class AuthService {
   }
 
   async waitForAuthState(): Promise<void> {
+    const auth = await getFirebaseAuth();
+    await this.ensureAuthListener();
     await auth.authStateReady();
     this.user = auth.currentUser;
 
@@ -66,6 +72,9 @@ export class AuthService {
   }
 
   async loginWithGoogle(): Promise<void> {
+    const auth = await getFirebaseAuth();
+    const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth');
+
     const provider = new GoogleAuthProvider();
 
     provider.setCustomParameters({
@@ -78,6 +87,9 @@ export class AuthService {
   }
 
   async loginWithEmail(email: string, password: string): Promise<void> {
+    const auth = await getFirebaseAuth();
+    const { signInWithEmailAndPassword } = await import('firebase/auth');
+
     const credential = await signInWithEmailAndPassword(auth, email, password);
     this.user = credential.user;
     await this.refreshAccountProfile();
@@ -89,6 +101,9 @@ export class AuthService {
     displayName: string,
     photoURL?: string,
   ): Promise<void> {
+    const auth = await getFirebaseAuth();
+    const { createUserWithEmailAndPassword, updateProfile } = await import('firebase/auth');
+
     const credential = await createUserWithEmailAndPassword(auth, email, password);
 
     await updateProfile(credential.user, {
@@ -120,13 +135,16 @@ export class AuthService {
   }
 
   async logout(): Promise<void> {
+    const auth = await getFirebaseAuth();
+    const { signOut } = await import('firebase/auth');
+
     await signOut(auth);
     this.user = null;
     this.accountProfile = null;
   }
 
   isAuthenticated(): boolean {
-    return auth.currentUser !== null;
+    return this.user !== null;
   }
 
   isApproved(): boolean {
@@ -138,6 +156,6 @@ export class AuthService {
   }
 
   getCurrentUser(): User | null {
-    return auth.currentUser;
+    return this.user;
   }
 }

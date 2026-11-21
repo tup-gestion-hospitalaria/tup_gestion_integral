@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
@@ -20,7 +19,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
     MatButtonModule,
     MatProgressSpinnerModule,
     MatDialogModule,
-    MatIconModule,
     TranslateModule,
   ],
   templateUrl: './login.html',
