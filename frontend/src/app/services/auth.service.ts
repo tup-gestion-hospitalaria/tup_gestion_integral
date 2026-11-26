@@ -1,5 +1,7 @@
-import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 
 import {
   GoogleAuthProvider,
@@ -12,22 +14,44 @@ import {
   updateProfile,
 } from 'firebase/auth';
 
+import { environment } from '../../environments/environment';
 import { auth } from '../firebase';
+
+export type UserAccountStatus = 'pending' | 'approved' | 'rejected' | 'disabled';
+export type UserRole = 'user' | 'admin';
+
+export interface AccountProfile {
+  uid: string;
+  email: string;
+  displayName: string | null;
+  photoUrl: string | null;
+  role: UserRole | null;
+  status: UserAccountStatus | null;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   user: User | null = null;
+  accountProfile: AccountProfile | null = null;
+
+  private readonly http = inject(HttpClient);
 
   constructor(private router: Router) {
     onAuthStateChanged(auth, (user) => {
       this.user = user;
 
       if (user) {
-        this.router.navigate(['/items']);
+        void this.refreshAccountProfile();
       } else {
-        this.router.navigate(['/login']);
+        this.accountProfile = null;
+        if (!this.router.url || !this.router.url.includes('/login')) {
+          this.router.navigate(['/login']);
+        }
       }
     });
   }
@@ -35,6 +59,10 @@ export class AuthService {
   async waitForAuthState(): Promise<void> {
     await auth.authStateReady();
     this.user = auth.currentUser;
+
+    if (this.user) {
+      await this.refreshAccountProfile();
+    }
   }
 
   async loginWithGoogle(): Promise<void> {
@@ -46,11 +74,13 @@ export class AuthService {
 
     const credential = await signInWithPopup(auth, provider);
     this.user = credential.user;
+    await this.refreshAccountProfile();
   }
 
   async loginWithEmail(email: string, password: string): Promise<void> {
     const credential = await signInWithEmailAndPassword(auth, email, password);
     this.user = credential.user;
+    await this.refreshAccountProfile();
   }
 
   async registerWithEmail(
@@ -65,15 +95,46 @@ export class AuthService {
       displayName,
       photoURL: photoURL || null,
     });
+
+    this.user = credential.user;
+    await this.refreshAccountProfile();
+  }
+
+  async refreshAccountProfile(): Promise<AccountProfile | null> {
+    if (!this.user) {
+      this.accountProfile = null;
+      return null;
+    }
+
+    try {
+      const profile = await firstValueFrom(
+        this.http.get<AccountProfile>(`${environment.backendApiUrl}/users/me`),
+      );
+
+      this.accountProfile = profile;
+      return profile;
+    } catch {
+      this.accountProfile = null;
+      return null;
+    }
   }
 
   async logout(): Promise<void> {
     await signOut(auth);
     this.user = null;
+    this.accountProfile = null;
   }
 
   isAuthenticated(): boolean {
     return auth.currentUser !== null;
+  }
+
+  isApproved(): boolean {
+    return this.accountProfile?.status === 'approved';
+  }
+
+  isAdmin(): boolean {
+    return this.accountProfile?.role === 'admin';
   }
 
   getCurrentUser(): User | null {

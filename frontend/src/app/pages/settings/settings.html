@@ -11,12 +11,25 @@
 
     <h2>{{ user.displayName || 'Usuario sin nombre' }}</h2>
 
-    <p>{{ user.email || 'Email no disponible' }}</p>
+    <p class="user-email">{{ user.email || 'Email no disponible' }}</p>
 
-    <p>
-      Usuario autenticado con
-      {{ user.providerData[0].providerId === 'google.com' ? 'Google' : 'Email y contraseña' }}
-    </p>
+    <div class="account-summary">
+      <div class="summary-row">
+        <span class="summary-label">Estado de la cuenta</span>
+        <span class="status-badge" [ngClass]="authService.accountProfile?.status ?? 'pending'">
+          {{ accountStatusLabel }}
+        </span>
+      </div>
+
+      <div class="summary-row">
+        <span class="summary-label">Rol en el sistema</span>
+        <strong>{{ accountRoleLabel }}</strong>
+      </div>
+    </div>
+
+    <div class="status-notice" *ngIf="statusNotice as notice" [ngClass]="notice.type">
+      <p>{{ notice.text }}</p>
+    </div>
 
     <button mat-raised-button color="warn" type="button" (click)="logout()">
       {{ 'SETTINGS.LOGOUT' | translate }}

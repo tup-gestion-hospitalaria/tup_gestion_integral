@@ -1,1 +1,16 @@
 .firebase/
+ci-reports/
+*-debug.log
+
+# Frontend: config local (prod → copiar desde *.example.ts; emulador → scripts/local/)
+frontend/src/environments/environment.ts
+frontend/src/app/firebase.ts
+
+# Notas personales de referencia (no versionar)
+docs/resumen-aplicacion.md
+
+# Integración local Antigravity y Trello
+AGENTS.md
+scripts/
+.env.trello
+repotesting/

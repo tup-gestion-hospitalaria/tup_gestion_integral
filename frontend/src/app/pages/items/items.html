@@ -1,4 +1,16 @@
 <section class="items-page">
+  <div class="list-header">
+    <button
+      *ngIf="isAdmin"
+      mat-flat-button
+      type="button"
+      class="new-patient-btn"
+      (click)="createPatient()"
+    >
+      {{ 'PATIENT.NEW' | translate }}
+    </button>
+  </div>
+
   <div class="filters-bar">
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>{{ 'ITEMS.SEARCH' | translate }}</mat-label>
@@ -6,15 +18,25 @@
       <input
         matInput
         [(ngModel)]="filterText"
-        (input)="onFilterChange()"
+        (input)="onSearchInput()"
         [placeholder]="'ITEMS.SEARCH_PLACEHOLDER' | translate"
       />
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>{{ 'ITEMS.STATUS' | translate }}</mat-label>
+
+      <mat-select [(ngModel)]="activeFilter" (selectionChange)="onActiveFilterChange()">
+        <mat-option value="all">{{ 'ITEMS.STATUS_ALL' | translate }}</mat-option>
+        <mat-option value="active">{{ 'ITEMS.STATUS_ACTIVE' | translate }}</mat-option>
+        <mat-option value="inactive">{{ 'ITEMS.STATUS_INACTIVE' | translate }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
       <mat-label>{{ 'ITEMS.SORT_BY' | translate }}</mat-label>
 
-      <mat-select [(ngModel)]="sortField" (selectionChange)="sortPatients()">
+      <mat-select [(ngModel)]="sortField" (selectionChange)="onSortChange()">
         <mat-option value="fullName">
           {{ 'ITEMS.NAME' | translate }}
         </mat-option>
@@ -36,7 +58,7 @@
     <mat-form-field appearance="outline" class="filter-field">
       <mat-label>{{ 'ITEMS.DIRECTION' | translate }}</mat-label>
 
-      <mat-select [(ngModel)]="sortDirection" (selectionChange)="sortPatients()">
+      <mat-select [(ngModel)]="sortDirection" (selectionChange)="onSortChange()">
         <mat-option value="asc">
           {{ 'ITEMS.ASC' | translate }}
         </mat-option>
@@ -57,23 +79,59 @@
   </div>
 
   <div *ngIf="!isLoading && !errorMessage" class="items-list">
-    <mat-card *ngFor="let patient of filteredPatients" class="item-card">
-      <img [src]="patient.picture" [alt]="patient.fullName" class="patient-image" />
+    <mat-card
+      *ngFor="let patient of patients"
+      class="item-card"
+      (click)="openPatient(patient)"
+      (keydown.enter)="openPatient(patient)"
+      tabindex="0"
+      role="button"
+    >
+      <img
+        [src]="patient.picture || '/foto-perfil.png'"
+        [alt]="displayName(patient)"
+        class="patient-image"
+      />
 
       <div class="patient-info">
-        <mat-card-title>{{ patient.fullName }}</mat-card-title>
+        <mat-card-title>{{ displayName(patient) }}</mat-card-title>
 
         <mat-card-content>
           <p>{{ patient.email }}</p>
           <p>{{ patient.city }}, {{ patient.country }}</p>
+          <p class="status-line">
+            {{
+              patient.active
+                ? ('ITEMS.STATUS_ACTIVE' | translate)
+                : ('ITEMS.STATUS_INACTIVE' | translate)
+            }}
+          </p>
         </mat-card-content>
 
         <mat-card-actions>
-          <button type="button" (click)="referPatient(patient)">
+          <button type="button" (click)="referPatient(patient, $event)">
             {{ 'ITEMS.REFER' | translate }}
           </button>
         </mat-card-actions>
       </div>
     </mat-card>
+
+    <div class="pagination-bar" *ngIf="totalPages > 0">
+      <button mat-button type="button" (click)="goToPreviousPage()" [disabled]="page <= 1">
+        {{ 'ITEMS.PREV_PAGE' | translate }}
+      </button>
+
+      <span class="pagination-summary">
+        {{ 'ITEMS.PAGE_SUMMARY' | translate: { page, totalPages, total } }}
+      </span>
+
+      <button mat-button type="button" (click)="goToNextPage()" [disabled]="page >= totalPages">
+        {{ 'ITEMS.NEXT_PAGE' | translate }}
+      </button>
+    </div>
+
+    <p *ngIf="patients.length === 0" class="empty-message">
+      {{ 'ITEMS.NO_RESULTS' | translate }}
+    </p>
   </div>
 </section>

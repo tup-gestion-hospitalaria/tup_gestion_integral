@@ -19,7 +19,17 @@ export function authenticate(verifyIdToken) {
       request.user = decodedToken;
 
       next();
-    } catch (_error) {
+    } catch (error) {
+      if (
+        error?.code === 'auth/id-token-revoked' ||
+        error?.message?.toLowerCase().includes('revok')
+      ) {
+        return response.status(401).json({
+          code: 'TOKEN_REVOKED',
+          message: 'El token de autenticación ha sido revocado.'
+        });
+      }
+
       return response.status(401).json({
         message: 'El token de autenticación no es válido o expiró.'
       });

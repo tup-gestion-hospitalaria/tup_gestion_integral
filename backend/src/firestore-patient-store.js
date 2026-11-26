@@ -1,9 +1,23 @@
+import {
+  assertValidPatientPersistPayload,
+  documentIndexId
+} from './patient-schema.js';
+
+export class FirestorePatientStoreError extends Error {
+  constructor(message, code) {
+    super(message);
+    this.code = code;
+  }
+}
+
 export class FirestorePatientStore {
   constructor(db) {
+    this.db = db;
     this.collection = db.collection('patients');
+    this.documentIndex = db.collection('patientDocuments');
   }
 
-  async findAll() {
+  async listAll() {
     const snapshot = await this.collection.get();
     return snapshot.docs.map((document) => ({
       id: document.id,
@@ -16,13 +30,38 @@ export class FirestorePatientStore {
     return document.exists ? { id: document.id, ...document.data() } : null;
   }
 
-  async create(data) {
-    const reference = this.collection.doc();
-    await reference.set(data);
-    return { id: reference.id, ...data };
+  async insert(id, data) {
+    const reference = this.collection.doc(id);
+    const { id: _ignored, ...payload } = data;
+    assertValidPatientPersistPayload(payload);
+
+    const documentKey = documentIndexId(payload.documentNumber);
+    const indexRef = this.documentIndex.doc(documentKey);
+
+    try {
+      await this.db.runTransaction(async (transaction) => {
+        const indexSnapshot = await transaction.get(indexRef);
+        if (indexSnapshot.exists) {
+          throw new FirestorePatientStoreError(
+            'Ya existe un paciente con ese documento.',
+            'DUPLICATE_DOCUMENT'
+          );
+        }
+
+        transaction.set(indexRef, { patientId: id });
+        transaction.set(reference, payload);
+      });
+    } catch (error) {
+      if (error instanceof FirestorePatientStoreError) {
+        throw error;
+      }
+      throw error;
+    }
+
+    return { id, ...payload };
   }
 
-  async replace(id, data) {
+  async save(id, data) {
     const reference = this.collection.doc(id);
     const document = await reference.get();
 
@@ -30,31 +69,50 @@ export class FirestorePatientStore {
       return null;
     }
 
-    await reference.set(data);
-    return { id, ...data };
-  }
+    const existing = document.data();
+    const { id: _ignored, ...payload } = data;
+    assertValidPatientPersistPayload(payload);
 
-  async update(id, changes) {
-    const reference = this.collection.doc(id);
-    const document = await reference.get();
+    const previousKey = documentIndexId(existing.documentNumber ?? '');
+    const nextKey = documentIndexId(payload.documentNumber);
+    const previousIndexRef =
+      previousKey !== nextKey && previousKey
+        ? this.documentIndex.doc(previousKey)
+        : null;
+    const nextIndexRef = this.documentIndex.doc(nextKey);
 
-    if (!document.exists) {
-      return null;
+    try {
+      await this.db.runTransaction(async (transaction) => {
+        if (nextKey !== previousKey) {
+          const nextIndexSnapshot = await transaction.get(nextIndexRef);
+          if (
+            nextIndexSnapshot.exists &&
+            nextIndexSnapshot.data()?.patientId !== id
+          ) {
+            throw new FirestorePatientStoreError(
+              'Ya existe un paciente con ese documento.',
+              'DUPLICATE_DOCUMENT'
+            );
+          }
+        }
+
+        if (previousIndexRef) {
+          transaction.delete(previousIndexRef);
+        }
+
+        if (nextKey !== previousKey) {
+          transaction.set(nextIndexRef, { patientId: id });
+        }
+
+        transaction.set(reference, payload);
+      });
+    } catch (error) {
+      if (error instanceof FirestorePatientStoreError) {
+        throw error;
+      }
+      throw error;
     }
 
-    await reference.update(changes);
-    return { id, ...document.data(), ...changes };
-  }
-
-  async delete(id) {
-    const reference = this.collection.doc(id);
-    const document = await reference.get();
-
-    if (!document.exists) {
-      return false;
-    }
-
-    await reference.delete();
-    return true;
+    return { id, ...payload };
   }
 }

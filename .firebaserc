@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "tup-gestion-integral"
+    "default": "tup-gestion-integral",
+    "emulator": "demo-tup-gestion-integral"
   }
 }

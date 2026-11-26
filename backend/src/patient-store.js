@@ -1,105 +1,89 @@
-import { randomUUID } from 'node:crypto';
+import {
+  assertValidPatientPersistPayload,
+  documentIndexId
+} from './patient-schema.js';
 
-export const PATIENT_FIELDS = [
-  'fullName',
-  'email',
-  'city',
-  'country',
-  'picture',
-  'active'
-];
+export class PatientStoreError extends Error {
+  constructor(message, code) {
+    super(message);
+    this.code = code;
+  }
+}
 
 export class PatientStore {
   constructor(initialPatients = []) {
     this.patients = structuredClone(initialPatients);
+    this.documentIndex = new Map();
+
+    for (const patient of this.patients) {
+      const key = documentIndexId(patient.documentNumber ?? '');
+      if (key) {
+        this.documentIndex.set(key, patient.id);
+      }
+    }
   }
 
-  findAll() {
+  assertDocumentUnique(documentNumber, patientId) {
+    const key = documentIndexId(documentNumber);
+    if (!key) {
+      return;
+    }
+
+    const owner = this.documentIndex.get(key);
+    if (owner && owner !== patientId) {
+      throw new PatientStoreError(
+        'Ya existe un paciente con ese documento.',
+        'DUPLICATE_DOCUMENT'
+      );
+    }
+  }
+
+  syncDocumentIndex(patientId, previousDocument, nextDocument) {
+    const previousKey = documentIndexId(previousDocument ?? '');
+    const nextKey = documentIndexId(nextDocument ?? '');
+
+    if (previousKey && this.documentIndex.get(previousKey) === patientId) {
+      this.documentIndex.delete(previousKey);
+    }
+
+    if (nextKey) {
+      this.documentIndex.set(nextKey, patientId);
+    }
+  }
+
+  async listAll() {
     return structuredClone(this.patients);
   }
 
-  findById(id) {
+  async findById(id) {
     const patient = this.patients.find((item) => item.id === id);
     return patient ? structuredClone(patient) : null;
   }
 
-  create(data) {
-    const patient = { id: randomUUID(), ...data };
+  async insert(id, data) {
+    const { id: _ignored, ...payload } = data;
+    assertValidPatientPersistPayload(payload);
+    this.assertDocumentUnique(payload.documentNumber, id);
+
+    const patient = { id, ...data };
     this.patients.push(patient);
+    this.syncDocumentIndex(id, '', payload.documentNumber);
     return structuredClone(patient);
   }
 
-  replace(id, data) {
+  async save(id, data) {
     const index = this.patients.findIndex((item) => item.id === id);
     if (index === -1) {
       return null;
     }
+
+    const existing = this.patients[index];
+    const { id: _ignored, ...payload } = data;
+    assertValidPatientPersistPayload(payload);
+    this.assertDocumentUnique(payload.documentNumber, id);
 
     this.patients[index] = { id, ...data };
+    this.syncDocumentIndex(id, existing.documentNumber, payload.documentNumber);
     return structuredClone(this.patients[index]);
   }
-
-  update(id, changes) {
-    const index = this.patients.findIndex((item) => item.id === id);
-    if (index === -1) {
-      return null;
-    }
-
-    this.patients[index] = { ...this.patients[index], ...changes, id };
-    return structuredClone(this.patients[index]);
-  }
-
-  delete(id) {
-    const index = this.patients.findIndex((item) => item.id === id);
-    if (index === -1) {
-      return false;
-    }
-
-    this.patients.splice(index, 1);
-    return true;
-  }
-}
-
-export function validatePatient(data, requireAllFields = true) {
-  if (!data || typeof data !== 'object' || Array.isArray(data)) {
-    return 'El cuerpo debe ser un objeto JSON.';
-  }
-
-  const suppliedFields = Object.keys(data);
-  const unknownField = suppliedFields.find(
-    (field) => !PATIENT_FIELDS.includes(field)
-  );
-
-  if (unknownField) {
-    return `La propiedad "${unknownField}" no está permitida.`;
-  }
-
-  if (requireAllFields) {
-    const missingField = PATIENT_FIELDS.find(
-      (field) => data[field] === undefined
-    );
-
-    if (missingField) {
-      return `La propiedad "${missingField}" es obligatoria.`;
-    }
-  } else if (suppliedFields.length === 0) {
-    return 'Se debe enviar al menos una propiedad.';
-  }
-
-  const stringFields = PATIENT_FIELDS.filter((field) => field !== 'active');
-  const invalidString = stringFields.find(
-    (field) =>
-      data[field] !== undefined &&
-      (typeof data[field] !== 'string' || data[field].trim() === '')
-  );
-
-  if (invalidString) {
-    return `La propiedad "${invalidString}" debe ser un texto no vacío.`;
-  }
-
-  if (data.active !== undefined && typeof data.active !== 'boolean') {
-    return 'La propiedad "active" debe ser booleana.';
-  }
-
-  return null;
 }

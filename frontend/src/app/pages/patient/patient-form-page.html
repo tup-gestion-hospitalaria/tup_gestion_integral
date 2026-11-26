@@ -1,0 +1,374 @@
+<section class="patient-ficha-page">
+  <header class="ficha-top">
+    <a routerLink="/items" class="back-link">{{ 'PATIENT.BACK_LIST' | translate }}</a>
+    <h1>{{ 'NAV.PATIENTS' | translate }}</h1>
+  </header>
+
+  <div *ngIf="isLoading" class="ficha-spinner">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <p *ngIf="loadErrorKey && !isLoading" class="ficha-error-banner">
+    {{ loadErrorKey | translate }}
+  </p>
+
+  <div *ngIf="!isLoading && !loadErrorKey" class="ficha-layout">
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="intro">
+        <h2>
+          {{
+            mode === 'create'
+              ? ('PATIENT.TITLE_CREATE' | translate)
+              : ('PATIENT.TITLE_EDIT' | translate)
+          }}
+        </h2>
+        <p>
+          {{
+            mode === 'create'
+              ? ('PATIENT.SUBTITLE_CREATE' | translate)
+              : ('PATIENT.SUBTITLE_EDIT' | translate)
+          }}
+        </p>
+      </div>
+
+      <section class="block" aria-labelledby="ident-heading">
+        <header class="block-head">
+          <h3 id="ident-heading">{{ 'PATIENT.SECTION_IDENT' | translate }}</h3>
+          <p>{{ 'PATIENT.SECTION_IDENT_DESC' | translate }}</p>
+        </header>
+
+        <div class="fields">
+          <div
+            class="field"
+            [class.error]="showFieldError('fullName')"
+            [class.changed]="isChanged('fullName')"
+          >
+            <label for="fullName">{{ 'PATIENT.FIELD_FIRST_NAME' | translate }}</label>
+            <input
+              class="inp"
+              id="fullName"
+              type="text"
+              formControlName="fullName"
+              autocomplete="given-name"
+              (blur)="onBlur('fullName')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('fullName') as errKey">{{ errKey | translate }}</p>
+          </div>
+
+          <div
+            class="field"
+            [class.error]="showFieldError('lastName')"
+            [class.changed]="isChanged('lastName')"
+          >
+            <label for="lastName">{{ 'PATIENT.FIELD_LAST_NAME' | translate }}</label>
+            <input
+              class="inp"
+              id="lastName"
+              type="text"
+              formControlName="lastName"
+              autocomplete="family-name"
+              (blur)="onBlur('lastName')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('lastName') as errKey">{{ errKey | translate }}</p>
+          </div>
+
+          <div
+            class="field"
+            [class.error]="showFieldError('documentNumber')"
+            [class.changed]="isChanged('documentNumber')"
+          >
+            <label for="documentNumber">{{ 'PATIENT.FIELD_DOCUMENT' | translate }}</label>
+            <input
+              class="inp"
+              id="documentNumber"
+              type="text"
+              formControlName="documentNumber"
+              inputmode="numeric"
+              (blur)="onBlur('documentNumber')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('documentNumber') as errKey">
+              {{ errKey | translate }}
+            </p>
+          </div>
+
+          <div
+            class="field"
+            [class.error]="showFieldError('birthDate')"
+            [class.changed]="isChanged('birthDate')"
+          >
+            <label for="birthDate">{{ 'PATIENT.FIELD_BIRTH_DATE' | translate }}</label>
+            <input
+              class="inp"
+              id="birthDate"
+              type="text"
+              formControlName="birthDate"
+              placeholder="DD-MM-YYYY"
+              autocomplete="bday"
+              (blur)="onBlur('birthDate')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('birthDate') as errKey">{{ errKey | translate }}</p>
+          </div>
+
+          <div
+            class="field wide"
+            [class.error]="showFieldError('picture')"
+            [class.changed]="isChanged('picture')"
+          >
+            <label for="picture">{{ 'PATIENT.FIELD_PICTURE' | translate }}</label>
+            <input
+              class="inp"
+              id="picture"
+              type="url"
+              formControlName="picture"
+              placeholder="https://"
+              (blur)="onBlur('picture')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('picture') as errKey">{{ errKey | translate }}</p>
+          </div>
+
+          <div class="field wide" [class.changed]="isChanged('active')">
+            <span id="active-label">{{ 'PATIENT.FIELD_ACTIVE' | translate }}</span>
+            <div class="seg" role="group" aria-labelledby="active-label">
+              <button
+                type="button"
+                [attr.aria-pressed]="form.controls['active'].value === true"
+                (click)="setActive(true)"
+              >
+                {{ 'ITEMS.STATUS_ACTIVE' | translate }}
+              </button>
+              <button
+                type="button"
+                [attr.aria-pressed]="form.controls['active'].value === false"
+                (click)="setActive(false)"
+              >
+                {{ 'ITEMS.STATUS_INACTIVE' | translate }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="block" aria-labelledby="contact-heading">
+        <header class="block-head">
+          <h3 id="contact-heading">{{ 'PATIENT.SECTION_CONTACT' | translate }}</h3>
+          <p>{{ 'PATIENT.SECTION_CONTACT_DESC' | translate }}</p>
+        </header>
+
+        <div class="fields">
+          <div
+            class="field wide"
+            [class.error]="showFieldError('email')"
+            [class.changed]="isChanged('email')"
+          >
+            <label for="email">{{ 'ITEMS.EMAIL' | translate }}</label>
+            <input
+              class="inp"
+              id="email"
+              type="email"
+              formControlName="email"
+              autocomplete="email"
+              (blur)="onBlur('email')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('email') as errKey">{{ errKey | translate }}</p>
+          </div>
+
+          <div
+            class="field"
+            [class.error]="showFieldError('phone')"
+            [class.changed]="isChanged('phone')"
+          >
+            <label for="phone">{{ 'PATIENT.FIELD_PHONE' | translate }}</label>
+            <input
+              class="inp"
+              id="phone"
+              type="tel"
+              formControlName="phone"
+              autocomplete="tel"
+              (blur)="onBlur('phone')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('phone') as errKey">{{ errKey | translate }}</p>
+          </div>
+
+          <div
+            class="field"
+            [class.error]="showFieldError('contactPreference')"
+            [class.changed]="isChanged('contactPreference')"
+          >
+            <label for="contactPreference">{{
+              'PATIENT.FIELD_CONTACT_PREFERENCE' | translate
+            }}</label>
+            <select
+              class="inp"
+              id="contactPreference"
+              formControlName="contactPreference"
+              (blur)="onBlur('contactPreference')"
+            >
+              <option value="">{{ 'PATIENT.CONTACT_PREFERENCE_NONE' | translate }}</option>
+              <option value="call">{{ 'PATIENT.CONTACT_PREFERENCE_CALL' | translate }}</option>
+              <option value="whatsapp">
+                {{ 'PATIENT.CONTACT_PREFERENCE_WHATSAPP' | translate }}
+              </option>
+              <option value="email">{{ 'PATIENT.CONTACT_PREFERENCE_EMAIL' | translate }}</option>
+            </select>
+            <p class="err" *ngIf="fieldErrorKey('contactPreference') as errKey">
+              {{ errKey | translate }}
+            </p>
+          </div>
+
+          <div
+            class="field wide"
+            [class.error]="showFieldError('contactHours')"
+            [class.changed]="isChanged('contactHours')"
+          >
+            <label for="contactHours">{{ 'PATIENT.FIELD_CONTACT_HOURS' | translate }}</label>
+            <input
+              class="inp"
+              id="contactHours"
+              type="text"
+              formControlName="contactHours"
+              (blur)="onBlur('contactHours')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('contactHours') as errKey">
+              {{ errKey | translate }}
+            </p>
+          </div>
+
+          <div
+            class="field"
+            [class.error]="showFieldError('city')"
+            [class.changed]="isChanged('city')"
+          >
+            <label for="city">{{ 'ITEMS.CITY' | translate }}</label>
+            <input
+              class="inp"
+              id="city"
+              type="text"
+              formControlName="city"
+              autocomplete="address-level2"
+              (blur)="onBlur('city')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('city') as errKey">{{ errKey | translate }}</p>
+          </div>
+
+          <div
+            class="field"
+            [class.error]="showFieldError('country')"
+            [class.changed]="isChanged('country')"
+          >
+            <label for="country">{{ 'ITEMS.COUNTRY' | translate }}</label>
+            <input
+              class="inp"
+              id="country"
+              type="text"
+              formControlName="country"
+              autocomplete="country-name"
+              (blur)="onBlur('country')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('country') as errKey">{{ errKey | translate }}</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="block" aria-labelledby="coverage-heading">
+        <header class="block-head">
+          <h3 id="coverage-heading">{{ 'PATIENT.SECTION_COVERAGE' | translate }}</h3>
+          <p>{{ 'PATIENT.SECTION_COVERAGE_DESC' | translate }}</p>
+        </header>
+
+        <div class="fields">
+          <div class="field wide checkbox-field" [class.changed]="isChanged('privateCare')">
+            <label class="checkbox-label" for="privateCare">
+              <input id="privateCare" type="checkbox" formControlName="privateCare" />
+              <span>{{ 'PATIENT.FIELD_PRIVATE_CARE' | translate }}</span>
+            </label>
+          </div>
+
+          <div
+            class="field wide"
+            [class.field-disabled]="insuranceFieldsDisabled"
+            [class.error]="showFieldError('insuranceName')"
+            [class.changed]="isChanged('insuranceName')"
+          >
+            <label for="insuranceName">{{ 'PATIENT.FIELD_INSURANCE' | translate }}</label>
+            <input
+              class="inp"
+              id="insuranceName"
+              type="text"
+              formControlName="insuranceName"
+              (blur)="onBlur('insuranceName')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('insuranceName') as errKey">
+              {{ errKey | translate }}
+            </p>
+          </div>
+
+          <div
+            class="field"
+            [class.field-disabled]="insuranceFieldsDisabled"
+            [class.error]="showFieldError('affiliateNumber')"
+            [class.changed]="isChanged('affiliateNumber')"
+          >
+            <label for="affiliateNumber">{{ 'PATIENT.FIELD_AFFILIATE' | translate }}</label>
+            <input
+              class="inp"
+              id="affiliateNumber"
+              type="text"
+              formControlName="affiliateNumber"
+              (blur)="onBlur('affiliateNumber')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('affiliateNumber') as errKey">
+              {{ errKey | translate }}
+            </p>
+          </div>
+
+          <div
+            class="field"
+            [class.field-disabled]="insuranceFieldsDisabled"
+            [class.error]="showFieldError('plan')"
+            [class.changed]="isChanged('plan')"
+          >
+            <label for="plan">{{ 'PATIENT.FIELD_PLAN' | translate }}</label>
+            <input
+              class="inp"
+              id="plan"
+              type="text"
+              formControlName="plan"
+              (blur)="onBlur('plan')"
+            />
+            <p class="err" *ngIf="fieldErrorKey('plan') as errKey">{{ errKey | translate }}</p>
+          </div>
+        </div>
+      </section>
+    </form>
+  </div>
+
+  <div class="ficha-bar" *ngIf="!isLoading && !loadErrorKey">
+    <p class="status-text">
+      <ng-container *ngIf="mode === 'edit'; else createStatus">
+        {{
+          changedFieldCount() === 0
+            ? ('PATIENT.STATUS_NO_CHANGES' | translate)
+            : changedFieldCount() === 1
+              ? ('PATIENT.STATUS_CHANGES_ONE' | translate)
+              : ('PATIENT.STATUS_CHANGES_MANY' | translate: { count: changedFieldCount() })
+        }}
+      </ng-container>
+      <ng-template #createStatus>{{ 'PATIENT.STATUS_CREATE' | translate }}</ng-template>
+    </p>
+
+    <div class="acts">
+      <button type="button" class="btn" (click)="discard()" [disabled]="isSaving">
+        {{ 'PATIENT.DISCARD' | translate }}
+      </button>
+      <button type="button" class="btn primary" (click)="submit()" [disabled]="isSaving">
+        {{
+          mode === 'create'
+            ? ('PATIENT.SUBMIT_CREATE' | translate)
+            : ('PATIENT.SUBMIT_EDIT' | translate)
+        }}
+      </button>
+    </div>
+  </div>
+
+  <app-patient-toast></app-patient-toast>
+</section>

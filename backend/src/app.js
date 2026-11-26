@@ -1,178 +1,453 @@
 import express from 'express';
 
-import { PatientStore, validatePatient } from './patient-store.js';
+import { PatientStore } from './patient-store.js';
+import { PatientService, PatientServiceError } from './patient-service.js';
+import { FirestorePatientStoreError } from './firestore-patient-store.js';
+import { PatientStoreError } from './patient-store.js';
+import {
+  parseVersionQuery,
+  validatePatientInput,
+  validateVersionBody
+} from './patient-schema.js';
+import { UserStore, validateUserStatusUpdate } from './user-store.js';
 import { authenticate } from './middleware/authenticate.js';
-import { authorizeRoles } from './middleware/authorize-roles.js';
-import { fetchInitialPatients } from './seed-patients.js';
-import { getHealthsitesCache } from './seed-healthsites.js';
+import { authorizeUser } from './middleware/authorize-user.js';
+import {
+  createReferralService,
+  registerReferralRoutes
+} from './referral-routes.js';
+import { ReferralStore } from './referral-store.js';
+import {
+  createHealthsitesService,
+  HealthsitesError
+} from './healthsites-service.js';
+import { createCorsMiddleware } from './middleware/cors.js';
+import { securityHeaders } from './middleware/security-headers.js';
+import { createRateLimiter } from './middleware/rate-limiter.js';
+import { requestId } from './middleware/request-id.js';
+import { createLogger, requestLogger } from './middleware/logger.js';
 
 export function createApp(store = new PatientStore(), options = {}) {
   const app = express();
+  const patientService = options.patientService ?? new PatientService(store);
+  const userStore = options.userStore ?? new UserStore();
+  const referralStore = options.referralStore ?? new ReferralStore();
+  const referralService =
+    options.referralService ??
+    createReferralService({
+      referralStore,
+      patientService,
+      userStore
+    });
+  const setCustomUserClaims =
+    options.setCustomUserClaims ??
+    (async () => {});
+  const revokeRefreshTokens =
+    options.revokeRefreshTokens ??
+    (async () => {});
+
   const verifyIdToken =
     options.verifyIdToken ??
     (async () => {
       throw new Error('El verificador de tokens no está configurado.');
     });
+
   const authenticateRequest = authenticate(verifyIdToken);
-  const allowAuthenticatedUsers = authorizeRoles('user', 'admin');
-  const allowAdmins = authorizeRoles('admin');
 
-  app.use(express.json());
-  app.use((request, response, next) => {
-    response.setHeader(
-      'Access-Control-Allow-Origin',
-      process.env.CORS_ORIGIN ?? '*'
-    );
-    response.setHeader(
-      'Access-Control-Allow-Headers',
-      'Content-Type, Authorization'
-    );
-    response.setHeader(
-      'Access-Control-Allow-Methods',
-      'GET, POST, PUT, PATCH, DELETE, OPTIONS'
-    );
+  // Carga o crea automáticamente el perfil en userStore al autenticar
+  const attachUserProfile = async (request, _response, next) => {
+    try {
+      const { uid, email, name, picture, role } = request.user;
+      let profile = await userStore.findById(uid);
 
-    if (request.method === 'OPTIONS') {
-      return response.sendStatus(204);
+      if (!profile) {
+        // En registros nuevos, la cuenta queda con status: 'pending' y active: false
+        // Si el token ya contenía un rol previo (ej. inicialización de admin), se respeta
+        const isPreApproved = role === 'admin' || role === 'user';
+        profile = await userStore.create(uid, {
+          email: email || '',
+          displayName: name || '',
+          photoUrl: picture || null,
+          role: role || null,
+          status: isPreApproved ? 'approved' : 'pending',
+          active: isPreApproved
+        });
+      }
+
+      request.user = {
+        ...request.user,
+        status: profile.status,
+        active: profile.active,
+        role: profile.role ?? null
+      };
+      request.userProfile = profile;
+      next();
+    } catch (error) {
+      next(error);
     }
+  };
 
-    next();
-  });
+  const authenticatedChain = [authenticateRequest, attachUserProfile];
+  const allowAuthenticatedUsers = [
+    ...authenticatedChain,
+    authorizeUser({ allowedRoles: ['user', 'admin'], requireApproved: true })
+  ];
+  const allowAdmins = [
+    ...authenticatedChain,
+    authorizeUser({ allowedRoles: ['admin'], requireApproved: true })
+  ];
+  const healthsitesService =
+    options.healthsitesService ?? createHealthsitesService();
 
+  app.disable('x-powered-by');
+
+  const logger =
+    options.logger ??
+    createLogger({
+      silent:
+        options.silentLogs ??
+        (process.env.NODE_ENV === 'test' && !options.enableTestLogs)
+    });
+
+  app.use(securityHeaders());
+  app.use(requestId());
+  app.use(requestLogger({ logger }));
+
+  const corsMiddleware =
+    options.corsMiddleware ??
+    createCorsMiddleware({
+      allowedOrigins: options.corsAllowedOrigins
+    });
+  app.use(corsMiddleware);
+
+  if (options.rateLimiter !== false) {
+    const rateLimiter =
+      typeof options.rateLimiter === 'function'
+        ? options.rateLimiter
+        : createRateLimiter(options.rateLimitOptions);
+    app.use(rateLimiter);
+  }
+
+  app.use(express.json({ limit: options.bodyLimit ?? '8kb' }));
+
+  // Health check público
   app.get('/health', (_request, response) => {
     response.json({ status: 'ok' });
   });
 
-  app.get(
-    '/api/patients',
-    authenticateRequest,
-    allowAuthenticatedUsers,
-    async (_request, response) => {
-      let patients = await store.findAll();
-      if (patients.length === 0) {
-        try {
-          const initialPatients = await fetchInitialPatients();
-          for (const { id, ...data } of initialPatients) {
-            await store.replace(id, data);
-          }
-          patients = await store.findAll();
-        } catch (error) {
-          console.error('Error al auto-cargar pacientes:', error);
-        }
+  // Rutas de Usuario (GI-04 / Contrato v1)
+  // Perfil propio (accesible incluso si está pending para ver el estado de su cuenta)
+  const getMeHandler = (request, response) => {
+    response.json(request.userProfile);
+  };
+  app.get('/api/v1/users/me', authenticatedChain, getMeHandler);
+  app.get('/api/users/me', authenticatedChain, getMeHandler);
+
+  // Modificar perfil propio (nombre o foto)
+  const patchMeHandler = async (request, response) => {
+    const { displayName, photoUrl } = request.body || {};
+    const changes = {};
+    if (displayName !== undefined) changes.displayName = String(displayName).trim();
+    if (photoUrl !== undefined) changes.photoUrl = photoUrl;
+
+    const updated = await userStore.update(request.user.uid, changes, request.user.uid);
+    response.json(updated);
+  };
+  app.patch('/api/v1/users/me', authenticatedChain, patchMeHandler);
+  app.patch('/api/users/me', authenticatedChain, patchMeHandler);
+
+  // Listar usuarios (solo administradores)
+  const listUsersHandler = async (_request, response) => {
+    const users = await userStore.findAll();
+    response.json(users);
+  };
+  app.get('/api/v1/users', allowAdmins, listUsersHandler);
+  app.get('/api/users', allowAdmins, listUsersHandler);
+
+  // Obtener un usuario por UID (solo administradores)
+  const getUserByIdHandler = async (request, response) => {
+    const user = await userStore.findById(request.params.uid);
+    if (!user) {
+      return response.status(404).json({ message: 'Usuario no encontrado.' });
+    }
+    response.json(user);
+  };
+  app.get('/api/v1/users/:uid', allowAdmins, getUserByIdHandler);
+  app.get('/api/users/:uid', allowAdmins, getUserByIdHandler);
+
+  // Modificar estado y/o rol de un usuario (aprobar, rechazar, deshabilitar, rol)
+  const updateUserStatusHandler = async (request, response) => {
+    const validationError = validateUserStatusUpdate(request.body);
+    if (validationError) {
+      return response.status(400).json({ message: validationError });
+    }
+
+    const { status, role } = request.body;
+    const targetUid = request.params.uid;
+
+    const targetUser = await userStore.findById(targetUid);
+    if (!targetUser) {
+      return response.status(404).json({ message: 'Usuario no encontrado.' });
+    }
+
+    const changes = {};
+    if (status !== undefined) changes.status = status;
+    if (role !== undefined) changes.role = role;
+
+    // Si se asigna un rol en Firebase Auth
+    if (role !== undefined) {
+      await setCustomUserClaims(targetUid, { role });
+    }
+
+    // Si se deshabilita, se rechaza o cambia el rol, revocar tokens
+    if (status === 'disabled' || status === 'rejected' || role !== undefined) {
+      await revokeRefreshTokens(targetUid);
+    }
+
+    const updated = await userStore.update(targetUid, changes, request.user.uid);
+    response.json(updated);
+  };
+
+  app.patch('/api/v1/users/:uid/status', allowAdmins, updateUserStatusHandler);
+  app.patch('/api/users/:uid/status', allowAdmins, updateUserStatusHandler);
+  app.patch('/api/v1/users/:uid/role', allowAdmins, updateUserStatusHandler);
+  app.patch('/api/users/:uid/role', allowAdmins, updateUserStatusHandler);
+
+  const handlePatientServiceError = (error, response) => {
+    if (error instanceof PatientServiceError) {
+      return response.status(error.status).json({
+        message: error.message,
+        code: error.code
+      });
+    }
+
+    if (error instanceof PatientStoreError || error instanceof FirestorePatientStoreError) {
+      const status = error.code === 'DUPLICATE_DOCUMENT' ? 409 : 400;
+      return response.status(status).json({
+        message: error.message,
+        code: error.code ?? 'INVALID_PATIENT'
+      });
+    }
+
+    if (error instanceof Error && error.message.startsWith('La propiedad')) {
+      return response.status(400).json({ message: error.message });
+    }
+
+    throw error;
+  };
+
+  // Rutas de Pacientes
+  const getPatientsHandler = async (request, response, next) => {
+    try {
+      const includeDeletedRequested = request.query.includeDeleted === 'true';
+      if (includeDeletedRequested && request.user.role !== 'admin') {
+        return response.status(403).json({
+          message: 'Solo un administrador puede incluir pacientes dados de baja.'
+        });
       }
-      response.json(patients);
+
+      response.json(await patientService.list(request.query));
+    } catch (error) {
+      try {
+        handlePatientServiceError(error, response);
+      } catch (unhandled) {
+        next(unhandled);
+      }
     }
-  );
+  };
+  app.get('/api/patients', allowAuthenticatedUsers, getPatientsHandler);
+  app.get('/api/v1/patients', allowAuthenticatedUsers, getPatientsHandler);
 
-  app.get(
-    '/api/healthsites',
-    authenticateRequest,
-    allowAuthenticatedUsers,
-    async (_request, response) => {
-      const healthsites = await getHealthsitesCache();
-      response.json(healthsites);
+  const getHealthsitesHandler = async (_request, response) => {
+    const healthsites = await healthsitesService.getHealthsites();
+    response.json(healthsites);
+  };
+  app.get('/api/healthsites', allowAuthenticatedUsers, getHealthsitesHandler);
+  app.get('/api/v1/healthsites', allowAuthenticatedUsers, getHealthsitesHandler);
+
+  const getPatientByIdHandler = async (request, response) => {
+    const includeDeleted =
+      request.query.includeDeleted === 'true' && request.user.role === 'admin';
+    const patient = await patientService.getById(request.params.id, {
+      includeDeleted
+    });
+
+    if (!patient) {
+      return response.status(404).json({ message: 'Paciente no encontrado.' });
     }
-  );
 
-  app.get(
-    '/api/patients/:id',
-    authenticateRequest,
-    allowAuthenticatedUsers,
-    async (request, response) => {
-      const patient = await store.findById(request.params.id);
+    response.json(patient);
+  };
+  app.get('/api/patients/:id', allowAuthenticatedUsers, getPatientByIdHandler);
+  app.get('/api/v1/patients/:id', allowAuthenticatedUsers, getPatientByIdHandler);
 
+  const createPatientHandler = async (request, response, next) => {
+    try {
+      const validation = validatePatientInput(request.body, 'create');
+      if (!validation.ok) {
+        return response.status(400).json({ message: validation.message });
+      }
+
+      const patient = await patientService.create(
+        validation.value,
+        request.user.uid
+      );
+      response.status(201).json(patient);
+    } catch (error) {
+      try {
+        handlePatientServiceError(error, response);
+      } catch (unhandled) {
+        next(unhandled);
+      }
+    }
+  };
+  app.post('/api/patients', allowAdmins, createPatientHandler);
+  app.post('/api/v1/patients', allowAdmins, createPatientHandler);
+
+  const replacePatientHandler = async (request, response, next) => {
+    try {
+      const validation = validatePatientInput(request.body, 'replace');
+      if (!validation.ok) {
+        return response.status(400).json({ message: validation.message });
+      }
+
+      const patient = await patientService.replace(
+        request.params.id,
+        validation.value,
+        request.user.uid
+      );
       if (!patient) {
-        return response
-          .status(404)
-          .json({ message: 'Paciente no encontrado.' });
+        return response.status(404).json({ message: 'Paciente no encontrado.' });
       }
 
       response.json(patient);
+    } catch (error) {
+      try {
+        handlePatientServiceError(error, response);
+      } catch (unhandled) {
+        next(unhandled);
+      }
     }
-  );
+  };
+  app.put('/api/patients/:id', allowAdmins, replacePatientHandler);
+  app.put('/api/v1/patients/:id', allowAdmins, replacePatientHandler);
 
-  app.post(
-    '/api/patients',
-    authenticateRequest,
-    allowAdmins,
-    async (request, response) => {
-      const validationError = validatePatient(request.body);
-
-      if (validationError) {
-        return response.status(400).json({ message: validationError });
+  const patchPatientHandler = async (request, response, next) => {
+    try {
+      const validation = validatePatientInput(request.body, 'patch');
+      if (!validation.ok) {
+        return response.status(400).json({ message: validation.message });
       }
 
-      response.status(201).json(await store.create(request.body));
-    }
-  );
-
-  app.put(
-    '/api/patients/:id',
-    authenticateRequest,
-    allowAdmins,
-    async (request, response) => {
-      const validationError = validatePatient(request.body);
-
-      if (validationError) {
-        return response.status(400).json({ message: validationError });
-      }
-
-      const patient = await store.replace(request.params.id, request.body);
-
+      const patient = await patientService.patch(
+        request.params.id,
+        validation.value,
+        request.user.uid
+      );
       if (!patient) {
-        return response
-          .status(404)
-          .json({ message: 'Paciente no encontrado.' });
+        return response.status(404).json({ message: 'Paciente no encontrado.' });
       }
 
       response.json(patient);
+    } catch (error) {
+      try {
+        handlePatientServiceError(error, response);
+      } catch (unhandled) {
+        next(unhandled);
+      }
     }
-  );
+  };
+  app.patch('/api/patients/:id', allowAdmins, patchPatientHandler);
+  app.patch('/api/v1/patients/:id', allowAdmins, patchPatientHandler);
 
-  app.patch(
-    '/api/patients/:id',
-    authenticateRequest,
-    allowAdmins,
-    async (request, response) => {
-      const validationError = validatePatient(request.body, false);
-
-      if (validationError) {
-        return response.status(400).json({ message: validationError });
+  const deletePatientHandler = async (request, response, next) => {
+    try {
+      const versionResult = parseVersionQuery(request.query.version);
+      if (!versionResult.ok) {
+        return response.status(400).json({ message: versionResult.message });
       }
 
-      const patient = await store.update(request.params.id, request.body);
-
-      if (!patient) {
-        return response
-          .status(404)
-          .json({ message: 'Paciente no encontrado.' });
-      }
-
-      response.json(patient);
-    }
-  );
-
-  app.delete(
-    '/api/patients/:id',
-    authenticateRequest,
-    allowAdmins,
-    async (request, response) => {
-      if (!(await store.delete(request.params.id))) {
-        return response
-          .status(404)
-          .json({ message: 'Paciente no encontrado.' });
+      const deleted = await patientService.softDelete(
+        request.params.id,
+        versionResult.version,
+        request.user.uid
+      );
+      if (!deleted) {
+        return response.status(404).json({ message: 'Paciente no encontrado.' });
       }
 
       response.sendStatus(204);
+    } catch (error) {
+      try {
+        handlePatientServiceError(error, response);
+      } catch (unhandled) {
+        next(unhandled);
+      }
     }
-  );
+  };
+  app.delete('/api/patients/:id', allowAdmins, deletePatientHandler);
+  app.delete('/api/v1/patients/:id', allowAdmins, deletePatientHandler);
+
+  const restorePatientHandler = async (request, response, next) => {
+    try {
+      const validation = validateVersionBody(request.body);
+      if (!validation.ok) {
+        return response.status(400).json({ message: validation.message });
+      }
+
+      const patient = await patientService.restore(
+        request.params.id,
+        validation.version,
+        request.user.uid
+      );
+      if (!patient) {
+        return response.status(404).json({ message: 'Paciente no encontrado.' });
+      }
+
+      response.json(patient);
+    } catch (error) {
+      try {
+        handlePatientServiceError(error, response);
+      } catch (unhandled) {
+        next(unhandled);
+      }
+    }
+  };
+  app.post('/api/patients/:id/restore', allowAdmins, restorePatientHandler);
+  app.post('/api/v1/patients/:id/restore', allowAdmins, restorePatientHandler);
+
+  registerReferralRoutes(app, {
+    referralService,
+    allowAuthenticatedUsers
+  });
 
   app.use((_request, response) => {
     response.status(404).json({ message: 'Ruta no encontrada.' });
   });
 
-  app.use((error, _request, response, _next) => {
-    console.error(error);
+  app.use((error, request, response, _next) => {
+    if (error instanceof HealthsitesError) {
+      return response.status(error.statusCode).json({
+        code: error.code,
+        message: error.message
+      });
+    }
+
+    if (error?.type === 'entity.too.large') {
+      return response.status(413).json({
+        message: 'El cuerpo de la solicitud es demasiado grande.'
+      });
+    }
+
+    if (error instanceof SyntaxError && 'body' in error) {
+      return response.status(400).json({ message: 'JSON inválido.' });
+    }
+
+    logger.error('INTERNAL_SERVER_ERROR', {
+      requestId: request?.id,
+      error: error?.message,
+      stack: error?.stack
+    });
     response.status(500).json({ message: 'Error interno del servidor.' });
   });
 

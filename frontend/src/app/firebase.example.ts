@@ -1,3 +1,4 @@
+// Copiá este archivo a firebase.ts (firebase.ts está en .gitignore).
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 

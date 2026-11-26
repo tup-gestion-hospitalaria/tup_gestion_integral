@@ -1,0 +1,129 @@
+<section class="referral-flow-page">
+  <header class="flow-top">
+    <a [routerLink]="referral ? ['/pacientes', referral.patientId] : ['/items']" class="back-link">
+      ← Volver al paciente
+    </a>
+    <span class="eyebrow">Detalle de derivación</span>
+  </header>
+
+  <div *ngIf="isLoading" class="flow-loading">
+    <mat-spinner diameter="42"></mat-spinner>
+    <p>Cargando derivación…</p>
+  </div>
+
+  <p *ngIf="errorMessage && !isLoading" class="feedback error" role="alert">
+    {{ errorMessage }}
+  </p>
+
+  <div *ngIf="referral && !isLoading && !errorMessage" class="detail-layout">
+    <section class="detail-hero">
+      <div>
+        <p class="kicker">{{ patientName() }}</p>
+        <h1>{{ referral.destination.name }}</h1>
+        <p>{{ referral.destination.address }}</p>
+      </div>
+      <span class="status-pill" [attr.data-status]="referral.status">
+        {{ statusLabel(referral.status) }}
+      </span>
+    </section>
+
+    <p *ngIf="feedbackMessage" class="feedback success" aria-live="polite">
+      {{ feedbackMessage }}
+    </p>
+
+    <div class="detail-grid">
+      <main>
+        <section class="detail-card">
+          <div class="card-heading">
+            <span>01</span>
+            <h2>Información</h2>
+          </div>
+          <dl class="data-list">
+            <div>
+              <dt>Motivo</dt>
+              <dd>{{ referral.reason }}</dd>
+            </div>
+            <div>
+              <dt>Prioridad</dt>
+              <dd>{{ priorityLabel() }}</dd>
+            </div>
+            <div>
+              <dt>Observaciones</dt>
+              <dd>{{ referral.notes || '—' }}</dd>
+            </div>
+            <div>
+              <dt>Responsable</dt>
+              <dd>{{ referral.responsibleId }}</dd>
+            </div>
+            <div>
+              <dt>Creada</dt>
+              <dd>{{ referral.createdAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
+            </div>
+            <div>
+              <dt>Última actualización</dt>
+              <dd>{{ referral.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
+            </div>
+          </dl>
+          <p *ngIf="referral.rejectionReason" class="rejection-note">
+            <strong>Motivo del rechazo:</strong> {{ referral.rejectionReason }}
+          </p>
+        </section>
+
+        <section class="detail-card">
+          <div class="card-heading">
+            <span>02</span>
+            <h2>Historial</h2>
+          </div>
+          <ol class="timeline">
+            <li *ngFor="let event of history">
+              <span class="timeline-dot"></span>
+              <div>
+                <strong>{{ eventLabel(event) }}</strong>
+                <time [attr.datetime]="event.at">{{ event.at | date: 'dd/MM/yyyy HH:mm' }}</time>
+                <small>Por {{ event.actorId }}</small>
+              </div>
+            </li>
+          </ol>
+          <p *ngIf="history.length === 0" class="muted">No hay eventos registrados.</p>
+        </section>
+      </main>
+
+      <aside class="transition-panel">
+        <p class="kicker">Próximas acciones</p>
+        <h2>Cambiar estado</h2>
+        <p *ngIf="allowedTransitions.length === 0" class="muted">
+          No hay transiciones disponibles para tu rol en el estado actual.
+        </p>
+
+        <button
+          *ngFor="let transition of allowedTransitions"
+          type="button"
+          class="button transition"
+          [class.danger]="transition === 'rejected' || transition === 'cancelled'"
+          [disabled]="isTransitioning"
+          (click)="startTransition(transition)"
+        >
+          {{ transitionLabel(transition) }}
+        </button>
+
+        <div *ngIf="showRejectionInput" class="rejection-form">
+          <label for="rejectionReason">Motivo del rechazo</label>
+          <textarea id="rejectionReason" [(ngModel)]="rejectionReason" rows="4"></textarea>
+          <div class="inline-actions">
+            <button type="button" class="button secondary" (click)="showRejectionInput = false">
+              Volver
+            </button>
+            <button
+              type="button"
+              class="button danger"
+              [disabled]="isTransitioning"
+              (click)="confirmRejection()"
+            >
+              Confirmar rechazo
+            </button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

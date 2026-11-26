@@ -1,8 +1,14 @@
 # API REST - Gestión Hospitalaria
 
-Backend Express del TP11. Al iniciar realiza un GET a Random User y conserva los
-pacientes obtenidos en memoria. Los cambios realizados mediante la API se
-reinician cuando el proceso vuelve a arrancar.
+Backend Express de Gestión Integral Hospitalaria. Usa Firebase Authentication
+para validar identidades y Cloud Firestore para persistir pacientes. El
+arranque no carga datos externos: los datos locales se crean con un comando
+explícito y reproducible.
+
+El contrato objetivo versionado de GI-01 está documentado en
+[`docs/GI-01-alcance-roles-firestore-api.md`](../docs/GI-01-alcance-roles-firestore-api.md).
+La implementación actual conserva temporalmente el prefijo `/api` hasta que se
+realice la migración a `/api/v1`.
 
 ## Ejecutar
 
@@ -12,6 +18,15 @@ npm run dev
 ```
 
 La API queda disponible en `http://localhost:3000`.
+
+Copiar `.env.example` a `.env` y configurar, como mínimo, las credenciales de
+Firebase y `HEALTHSITES_API_KEY`. La credencial de Healthsites es exclusiva del
+backend y no debe incluirse en ningún archivo del frontend.
+
+El proxy de Healthsites cancela cada consulta al proveedor después de
+`HEALTHSITES_TIMEOUT_MS` (5 segundos por defecto) y conserva la respuesta
+normalizada durante `HEALTHSITES_CACHE_TTL_MS` (5 minutos por defecto). También
+se puede ajustar la cantidad de páginas con `HEALTHSITES_PAGE_COUNT`.
 
 Las rutas bajo `/api` requieren un ID token de Firebase en el encabezado:
 
@@ -44,41 +59,117 @@ npm run dev:windows
 
 | Método | Ruta | Acción |
 | --- | --- | --- |
-| GET | `/api/patients` | Obtener todos (`user`, `admin`) |
+| GET | `/api/patients` | Listar con búsqueda, filtros y paginación (`user`, `admin`) |
 | GET | `/api/patients/:id` | Obtener uno (`user`, `admin`) |
 | POST | `/api/patients` | Crear (`admin`) |
-| PUT | `/api/patients/:id` | Reemplazar completamente (`admin`) |
-| PATCH | `/api/patients/:id` | Modificar parcialmente (`admin`) |
-| DELETE | `/api/patients/:id` | Eliminar (`admin`) |
+| PUT | `/api/patients/:id` | Reemplazar completamente con `version` (`admin`) |
+| PATCH | `/api/patients/:id` | Modificar parcialmente con `version` (`admin`) |
+| DELETE | `/api/patients/:id?version=` | Baja lógica (`admin`) |
+| POST | `/api/patients/:id/restore` | Restaurar baja con `{ "version" }` (`admin`) |
+| GET | `/api/referrals` | Listar (`user`: propias o asignadas; `admin`: todas). Filtros `patientId`, `status` |
+| GET | `/api/referrals/:id` | Obtener derivación con `history` |
+| POST | `/api/referrals` | Crear borrador. Encabezado opcional `Idempotency-Key` |
+| PATCH | `/api/referrals/:id` | Editar borrador |
+| DELETE | `/api/referrals/:id` | Eliminar borrador |
+| POST | `/api/referrals/:id/transitions` | Cambiar estado (`{ "to": "...", "rejectionReason"?: "..." }`) |
+| GET | `/api/v1/healthsites` | Obtener centros normalizados (`user`, `admin`) |
+| GET | `/api/healthsites` | Alias temporal de compatibilidad (`user`, `admin`) |
 | GET | `/health` | Comprobar el estado del servicio |
 
 Ejemplos completos para probar cada operación:
 
 ```bash
-curl http://localhost:3000/api/patients
+curl "http://localhost:3000/api/patients?page=1&limit=20&q=ana&sort=fullName&order=asc&active=true" \
+  -H "Authorization: Bearer $FIREBASE_ID_TOKEN"
 
-curl http://localhost:3000/api/patients/ID
+curl http://localhost:3000/api/patients/ID \
+  -H "Authorization: Bearer $FIREBASE_ID_TOKEN"
 
 curl -X POST http://localhost:3000/api/patients \
+  -H "Authorization: Bearer $FIREBASE_ID_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"fullName":"Ana Pérez","email":"ana@example.com","city":"La Plata","country":"Argentina","picture":"https://example.com/ana.jpg","active":true}'
+  -d '{"fullName":"Ana","lastName":"Pérez","documentNumber":"30123456","birthDate":"15-03-1990","email":"ana@example.com","phone":"","contactPreference":"","contactHours":"","city":"La Plata","country":"Argentina","privateCare":false,"insuranceName":"OSDE","affiliateNumber":"123456","plan":"","picture":"https://example.com/ana.jpg","active":true}'
 
 curl -X PUT http://localhost:3000/api/patients/ID \
+  -H "Authorization: Bearer $FIREBASE_ID_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"fullName":"Ana Gómez","email":"ana.gomez@example.com","city":"Berisso","country":"Argentina","picture":"https://example.com/ana.jpg","active":false}'
+  -d '{"fullName":"Ana","lastName":"Gómez","documentNumber":"30123456","birthDate":"15-03-1990","email":"ana.gomez@example.com","phone":"","contactPreference":"","contactHours":"","city":"Berisso","country":"Argentina","privateCare":false,"insuranceName":"OSDE","affiliateNumber":"123456","plan":"","picture":"https://example.com/ana.jpg","active":false,"version":1}'
 
 curl -X PATCH http://localhost:3000/api/patients/ID \
+  -H "Authorization: Bearer $FIREBASE_ID_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"active":false}'
+  -d '{"active":false,"version":2}'
 
-curl -X DELETE http://localhost:3000/api/patients/ID
+curl -X DELETE "http://localhost:3000/api/patients/ID?version=3" \
+  -H "Authorization: Bearer $FIREBASE_ID_TOKEN"
+
+curl -X POST http://localhost:3000/api/patients/ID/restore \
+  -H "Authorization: Bearer $FIREBASE_ID_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"version":4}'
 ```
 
 ## Pruebas
 
+Las pruebas unitarias no necesitan servicios externos:
+
 ```bash
 npm test
 ```
+
+Las pruebas de integración levantan Firebase Authentication y Firestore
+Emulator, cargan fixtures deterministas, prueban el store, el arranque de la
+API, los permisos, el aislamiento entre usuarios y las reglas, y apagan los
+emuladores al terminar. La matriz de resultados está en
+[`docs/GI-12-matriz-permisos-emuladores.md`](../docs/GI-12-matriz-permisos-emuladores.md):
+
+En Windows, con JDK 21 o superior instalado, ejecutar:
+
+```powershell
+npm run test:emulators:windows
+```
+
+En otros sistemas, ejecutar:
+
+```bash
+npm run test:emulators
+```
+
+El comando usa siempre el proyecto local `demo-tup-gestion-integral`. El script
+de fixtures además rechaza ejecutarse si no detecta ambos emuladores, por lo que
+no puede borrar ni sembrar datos de producción.
+
+El recorrido E2E crítico de GI-13 se ejecuta por separado con los mismos
+emuladores y usuarios/pacientes deterministas:
+
+```bash
+npm run test:e2e
+```
+
+La prueba autentica usuarios autorizados, crea/edita/consulta pacientes,
+persiste y vuelve a leer una derivación, valida respuestas 401/403 y simula la
+caída y recuperación de Healthsites sin hacer solicitudes al proveedor real.
+Guarda el detalle en `ci-reports/e2e-evidence.json`; el job de integración de
+CI publica ese archivo junto con los logs. En Windows, con JDK 21 o superior,
+ejecutar `npm run test:e2e:windows`.
+
+Para desarrollo interactivo, este comando levanta los emuladores, carga los
+fixtures y arranca el backend (la UI queda en `http://127.0.0.1:4000`):
+
+```bash
+npm run emulators:dev
+```
+
+También se pueden dejar los emuladores activos y volver a cargar los fixtures
+manualmente, desde otra terminal:
+
+```bash
+npm run emulators:start
+npm run emulators:seed
+```
+
+Firebase Emulator requiere JDK 21 o superior. Las credenciales de Google o
+Firebase no son necesarias para estos comandos locales.
 
 ## Hosting en Render
 

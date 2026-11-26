@@ -1,23 +1,23 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 
-import { Patient } from '../../models/patient';
 import { Healthsite } from '../../models/healthsite';
 import { ItemsService } from '../../services/items.service';
 import { TranslateModule } from '@ngx-translate/core';
-import { AnalyticsService } from '../../services/analytics.service';
 
 @Component({
   selector: 'app-referral-centers',
   imports: [
     CommonModule,
     FormsModule,
+    MatButtonModule,
     MatCardModule,
     MatProgressSpinnerModule,
     MatInputModule,
@@ -27,12 +27,8 @@ import { AnalyticsService } from '../../services/analytics.service';
   templateUrl: './referral-centers.html',
   styleUrl: './referral-centers.css',
 })
-export class ReferralCenters implements OnInit, OnDestroy {
+export class ReferralCenters implements OnInit {
   private readonly itemsService = inject(ItemsService);
-  private readonly analyticsService = inject(AnalyticsService);
-  private featureStartTime = 0;
-
-  selectedPatient: Patient | null = null;
 
   healthsites: Healthsite[] = [];
   filteredHealthsites: Healthsite[] = [];
@@ -45,24 +41,34 @@ export class ReferralCenters implements OnInit, OnDestroy {
   availableCities: string[] = [];
 
   isLoading = true;
-  errorMessage = '';
+  hasLoadError = false;
 
   ngOnInit(): void {
-    this.featureStartTime = performance.now();
-    this.analyticsService.featureOpened('centros_derivacion');
-
-    this.selectedPatient = history.state.patient ?? null;
-
-    this.loadHealthsites();
+    this.loadHealthsites(false);
   }
 
-  ngOnDestroy(): void {
-    const durationSeconds = Math.round((performance.now() - this.featureStartTime) / 1000);
-    this.analyticsService.featureTimeSpent('centros_derivacion', durationSeconds);
+  retryLoad(): void {
+    this.loadHealthsites(true);
   }
 
-  private loadHealthsites(): void {
-    this.itemsService.getHealthsites().subscribe({
+  isCatalogEmpty(): boolean {
+    return !this.isLoading && !this.hasLoadError && this.healthsites.length === 0;
+  }
+
+  hasFilteredResults(): boolean {
+    return (
+      !this.isLoading &&
+      !this.hasLoadError &&
+      this.healthsites.length > 0 &&
+      this.filteredHealthsites.length === 0
+    );
+  }
+
+  private loadHealthsites(refresh: boolean): void {
+    this.isLoading = true;
+    this.hasLoadError = false;
+
+    this.itemsService.getHealthsites({ refresh }).subscribe({
       next: (healthsites) => {
         this.healthsites = healthsites;
 
@@ -75,11 +81,14 @@ export class ReferralCenters implements OnInit, OnDestroy {
         ].sort();
 
         this.applyFilters();
-
         this.isLoading = false;
       },
       error: () => {
-        this.errorMessage = 'No se pudieron cargar los centros de derivación.';
+        this.healthsites = [];
+        this.filteredHealthsites = [];
+        this.availableTypes = [];
+        this.availableCities = [];
+        this.hasLoadError = true;
         this.isLoading = false;
       },
     });
@@ -100,16 +109,6 @@ export class ReferralCenters implements OnInit, OnDestroy {
 
       return matchesText && matchesType && matchesCity;
     });
-  }
-
-  referToHealthsite(healthsite: Healthsite): void {
-    if (!this.selectedPatient) {
-      return;
-    }
-
-    this.selectedPatient.healthsite = healthsite;
-
-    alert(`${this.selectedPatient.fullName} fue derivado a ${healthsite.name}`);
   }
 
   translateType(type: string): string {

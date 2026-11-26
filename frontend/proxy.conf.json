@@ -1,8 +1,0 @@
-{
-  "/api": {
-    "target": "https://healthsites.io",
-    "secure": true,
-    "changeOrigin": true,
-    "logLevel": "debug"
-  }
-}
