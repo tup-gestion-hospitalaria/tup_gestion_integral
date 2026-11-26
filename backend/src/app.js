@@ -21,6 +21,11 @@ import {
   createHealthsitesService,
   HealthsitesError
 } from './healthsites-service.js';
+import { createCorsMiddleware } from './middleware/cors.js';
+import { securityHeaders } from './middleware/security-headers.js';
+import { createRateLimiter } from './middleware/rate-limiter.js';
+import { requestId } from './middleware/request-id.js';
+import { createLogger, requestLogger } from './middleware/logger.js';
 
 export function createApp(store = new PatientStore(), options = {}) {
   const app = express();
@@ -94,27 +99,36 @@ export function createApp(store = new PatientStore(), options = {}) {
   const healthsitesService =
     options.healthsitesService ?? createHealthsitesService();
 
-  app.use(express.json({ limit: '8kb' }));
-  app.use((request, response, next) => {
-    response.setHeader(
-      'Access-Control-Allow-Origin',
-      process.env.CORS_ORIGIN ?? '*'
-    );
-    response.setHeader(
-      'Access-Control-Allow-Headers',
-      'Content-Type, Authorization, Idempotency-Key'
-    );
-    response.setHeader(
-      'Access-Control-Allow-Methods',
-      'GET, POST, PUT, PATCH, DELETE, OPTIONS'
-    );
+  app.disable('x-powered-by');
 
-    if (request.method === 'OPTIONS') {
-      return response.sendStatus(204);
-    }
+  const logger =
+    options.logger ??
+    createLogger({
+      silent:
+        options.silentLogs ??
+        (process.env.NODE_ENV === 'test' && !options.enableTestLogs)
+    });
 
-    next();
-  });
+  app.use(securityHeaders());
+  app.use(requestId());
+  app.use(requestLogger({ logger }));
+
+  const corsMiddleware =
+    options.corsMiddleware ??
+    createCorsMiddleware({
+      allowedOrigins: options.corsAllowedOrigins
+    });
+  app.use(corsMiddleware);
+
+  if (options.rateLimiter !== false) {
+    const rateLimiter =
+      typeof options.rateLimiter === 'function'
+        ? options.rateLimiter
+        : createRateLimiter(options.rateLimitOptions);
+    app.use(rateLimiter);
+  }
+
+  app.use(express.json({ limit: options.bodyLimit ?? '8kb' }));
 
   // Health check público
   app.get('/health', (_request, response) => {
@@ -411,7 +425,7 @@ export function createApp(store = new PatientStore(), options = {}) {
     response.status(404).json({ message: 'Ruta no encontrada.' });
   });
 
-  app.use((error, _request, response, _next) => {
+  app.use((error, request, response, _next) => {
     if (error instanceof HealthsitesError) {
       return response.status(error.statusCode).json({
         code: error.code,
@@ -429,7 +443,11 @@ export function createApp(store = new PatientStore(), options = {}) {
       return response.status(400).json({ message: 'JSON inválido.' });
     }
 
-    console.error(error);
+    logger.error('INTERNAL_SERVER_ERROR', {
+      requestId: request?.id,
+      error: error?.message,
+      stack: error?.stack
+    });
     response.status(500).json({ message: 'Error interno del servidor.' });
   });
 
